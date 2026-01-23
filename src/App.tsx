@@ -3,7 +3,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { AppLayout } from "@/components/layout/AppLayout";
+import Overview from "./pages/Overview";
+import AIScan from "./pages/AIScan";
+import BuildFootprint from "./pages/BuildFootprint";
+import Distribution from "./pages/Distribution";
+import ProofTracking from "./pages/ProofTracking";
+import Reports from "./pages/Reports";
+import Billing from "./pages/Billing";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -14,11 +22,19 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<Overview />} />
+            <Route path="/scan" element={<AIScan />} />
+            <Route path="/footprint" element={<BuildFootprint />} />
+            <Route path="/distribution" element={<Distribution />} />
+            <Route path="/proof" element={<ProofTracking />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/billing" element={<Billing />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppLayout>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

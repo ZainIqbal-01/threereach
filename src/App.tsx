@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import Onboarding from "./pages/Onboarding";
 import Overview from "./pages/Overview";
 import AIScan from "./pages/AIScan";
 import BuildFootprint from "./pages/BuildFootprint";
@@ -22,19 +23,27 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Overview />} />
-            <Route path="/scan" element={<AIScan />} />
-            <Route path="/footprint" element={<BuildFootprint />} />
-            <Route path="/distribution" element={<Distribution />} />
-            <Route path="/proof" element={<ProofTracking />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/billing" element={<Billing />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppLayout>
+        <Routes>
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route
+            path="/*"
+            element={
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<Overview />} />
+                  <Route path="/scan" element={<AIScan />} />
+                  <Route path="/footprint" element={<BuildFootprint />} />
+                  <Route path="/distribution" element={<Distribution />} />
+                  <Route path="/proof" element={<ProofTracking />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/billing" element={<Billing />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AppLayout>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

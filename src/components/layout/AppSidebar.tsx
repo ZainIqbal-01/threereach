@@ -13,14 +13,14 @@ import {
 import logo from "@/assets/logo.png";
 
 const navigation = [
-  { name: "Overview", href: "/", icon: LayoutDashboard },
-  { name: "AI Visibility Scan", href: "/scan", icon: Search },
-  { name: "Build AI Footprint", href: "/footprint", icon: Building2 },
-  { name: "Distribution", href: "/distribution", icon: Share2 },
-  { name: "Proof & Tracking", href: "/proof", icon: Shield },
-  { name: "Reports", href: "/reports", icon: FileText },
-  { name: "Billing", href: "/billing", icon: CreditCard },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "AI Visibility Scan", href: "/dashboard/scan", icon: Search },
+  { name: "Build AI Footprint", href: "/dashboard/footprint", icon: Building2 },
+  { name: "Distribution", href: "/dashboard/distribution", icon: Share2 },
+  { name: "Proof & Tracking", href: "/dashboard/proof", icon: Shield },
+  { name: "Reports", href: "/dashboard/reports", icon: FileText },
+  { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function AppSidebar() {

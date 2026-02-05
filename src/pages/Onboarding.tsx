@@ -37,7 +37,7 @@
      await new Promise((resolve) => setTimeout(resolve, 2500));
      
      setIsAnalyzing(false);
-     navigate("/");
+      navigate("/dashboard");
    };
  
    const isFormValid = formData.websiteUrl.trim() !== "" || formData.businessName.trim() !== "";

@@ -1,39 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Three Reach Design System - Duolingo-Inspired Emotional UI */
+/* Three Reach Design System
+   Deep Navy + Electric Blue + Cyan Theme
+   Professional, Minimal, High-Trust Aesthetic
+*/
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    /* Core Brand Colors */
+    --background: 0 0% 100%;
     --foreground: 222 47% 11%;
     
+    /* Deep Navy - Primary text and headings */
     --navy: 222 47% 11%;
     --navy-light: 222 30% 20%;
     
+    /* Electric Blue - Primary actions */
     --electric: 217 91% 60%;
     --electric-hover: 217 91% 55%;
     --electric-light: 217 91% 95%;
     
+    /* Cyan - Success and accents */
     --cyan: 187 85% 53%;
     --cyan-light: 187 85% 95%;
     --cyan-glow: 187 85% 60%;
     
-    /* Duolingo-inspired colors */
-    --success: 145 63% 49%;
-    --success-light: 145 63% 92%;
-    --warning: 38 92% 50%;
-    --warning-light: 38 92% 92%;
-    --danger: 0 84% 60%;
-    --danger-light: 0 84% 94%;
-    --purple: 262 83% 58%;
-    --purple-light: 262 83% 94%;
-    --gold: 45 93% 47%;
-    --gold-light: 45 93% 90%;
-    
+    /* UI Colors */
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     
@@ -59,13 +55,15 @@
     --input: 220 13% 91%;
     --ring: 217 91% 60%;
     
-    --radius: 1rem;
+    --radius: 0.75rem;
     
+    /* Status Colors */
     --status-invisible: 0 84% 60%;
     --status-weak: 38 92% 50%;
     --status-visible: 217 91% 60%;
-    --status-strong: 145 63% 49%;
+    --status-strong: 142 71% 45%;
     
+    /* Sidebar */
     --sidebar-background: 222 47% 6%;
     --sidebar-foreground: 220 14% 80%;
     --sidebar-primary: 217 91% 60%;
@@ -76,37 +74,47 @@
     --sidebar-ring: 217 91% 60%;
     --sidebar-muted: 220 9% 46%;
     
+    /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(187 85% 53%) 100%);
-    --gradient-fun: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(217 91% 60%) 50%, hsl(187 85% 53%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 92% 50%) 100%);
+    --gradient-header: linear-gradient(180deg, hsl(220 14% 96%) 0%, hsl(0 0% 100%) 100%);
+    --gradient-card-hover: linear-gradient(135deg, hsl(217 91% 98%) 0%, hsl(187 85% 98%) 100%);
     
+    /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.07), 0 2px 4px -2px hsl(222 47% 11% / 0.05);
     --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.08), 0 4px 6px -4px hsl(222 47% 11% / 0.05);
-    --shadow-card: 0 2px 8px 0 hsl(222 47% 11% / 0.06);
-    --shadow-card-hover: 0 8px 25px 0 hsl(217 91% 60% / 0.12);
-    --shadow-fun: 0 4px 0 0 hsl(217 91% 50%);
+    --shadow-card: 0 1px 3px 0 hsl(222 47% 11% / 0.04), 0 1px 2px -1px hsl(222 47% 11% / 0.04);
+    --shadow-card-hover: 0 4px 12px 0 hsl(217 91% 60% / 0.08);
     
+    /* Typography */
     font-feature-settings: "tnum" on, "lnum" on;
   }
 
   .dark {
     --background: 222 47% 6%;
     --foreground: 220 14% 96%;
+    
     --card: 222 30% 10%;
     --card-foreground: 220 14% 96%;
+    
     --popover: 222 30% 10%;
     --popover-foreground: 220 14% 96%;
+    
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
+    
     --secondary: 222 30% 15%;
     --secondary-foreground: 220 14% 96%;
+    
     --muted: 222 30% 15%;
     --muted-foreground: 220 9% 60%;
+    
     --accent: 187 85% 53%;
     --accent-foreground: 0 0% 100%;
+    
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
+    
     --border: 222 30% 18%;
     --input: 222 30% 18%;
     --ring: 217 91% 60%;
@@ -123,26 +131,24 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Nunito', system-ui, sans-serif;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, sans-serif;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Nunito', system-ui, sans-serif;
-    @apply font-bold tracking-tight;
+    @apply font-semibold text-navy tracking-tight;
   }
 }
 
 @layer components {
   .card-reach {
-    @apply bg-card rounded-2xl border-2 border-border p-6;
+    @apply bg-card rounded-xl border border-border p-6;
     box-shadow: var(--shadow-card);
-    transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
   }
   
   .card-reach:hover {
     box-shadow: var(--shadow-card-hover);
-    transform: translateY(-2px);
   }
   
   .gradient-text {
@@ -152,72 +158,52 @@
     background-clip: text;
   }
   
-  .gradient-fun {
-    background: var(--gradient-fun);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .btn-primary-glow {
+    @apply relative overflow-hidden;
   }
   
-  .btn-fun {
-    @apply relative font-bold rounded-2xl transition-all duration-200 active:scale-95;
-    box-shadow: 0 4px 0 0 hsl(var(--electric-hover));
+  .btn-primary-glow::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, hsl(217 91% 60% / 0.2) 0%, hsl(187 85% 53% / 0.2) 100%);
   }
   
-  .btn-fun:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 5px 0 0 hsl(var(--electric-hover));
-  }
-  
-  .btn-fun:active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 0 0 hsl(var(--electric-hover));
+  .btn-primary-glow:hover::after {
+    @apply opacity-100;
   }
   
   .status-badge {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold;
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium;
   }
   
   .status-invisible {
-    @apply bg-danger-light text-danger border-2 border-danger/20;
+    @apply bg-red-50 text-red-700 border border-red-200;
   }
   
   .status-weak {
-    @apply bg-warning-light text-warning border-2 border-warning/20;
+    @apply bg-amber-50 text-amber-700 border border-amber-200;
   }
   
   .status-visible {
-    @apply bg-electric-light text-electric border-2 border-electric/20;
+    @apply bg-blue-50 text-blue-700 border border-blue-200;
   }
   
   .status-strong {
-    @apply bg-success-light text-success border-2 border-success/20;
+    @apply bg-emerald-50 text-emerald-700 border border-emerald-200;
   }
   
   .engine-card {
-    @apply flex items-center gap-3 p-4 rounded-2xl border-2 border-border bg-card transition-all duration-300;
+    @apply flex items-center gap-3 p-4 rounded-lg border border-border bg-card transition-all duration-200;
   }
   
   .engine-card:hover {
-    @apply border-electric/30;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-card-hover);
+    @apply border-electric/30 bg-electric-light/30;
   }
   
-  .xp-badge {
-    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold;
-    background: var(--gradient-gold);
-    color: white;
+  .progress-step {
+    @apply flex flex-col items-center;
   }
   
-  .streak-badge {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-warning-light text-warning border-2 border-warning/20;
-  }
-  
-  .level-badge {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-purple-light text-purple border-2 border-purple/20;
-  }
-
   .progress-step-dot {
     @apply w-3 h-3 rounded-full bg-border transition-colors duration-300;
   }
@@ -227,40 +213,6 @@
   }
   
   .progress-step-dot.completed {
-    @apply bg-success;
-  }
-
-  @keyframes bounce-in {
-    0% { transform: scale(0); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-  }
-  
-  @keyframes confetti {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
-  }
-  
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
-  
-  @keyframes wiggle {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-5deg); }
-    75% { transform: rotate(5deg); }
-  }
-  
-  .animate-bounce-in {
-    animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-  
-  .animate-wiggle {
-    animation: wiggle 0.5s ease-in-out;
+    @apply bg-cyan;
   }
 }

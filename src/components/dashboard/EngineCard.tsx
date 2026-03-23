@@ -1,5 +1,4 @@
 import { Check, X, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface EngineCardProps {
   name: string;
@@ -10,40 +9,42 @@ interface EngineCardProps {
 
 const statusConfig = {
   mentioned: {
-    label: "Found! 🎉",
-    className: "text-success bg-success-light border-success/20",
-    emoji: "✅",
+    label: "Mentioned",
+    icon: Check,
+    className: "text-emerald-600 bg-emerald-50",
+    iconClass: "text-emerald-500",
   },
   weak: {
-    label: "Weak 😐",
-    className: "text-warning bg-warning-light border-warning/20",
-    emoji: "⚠️",
+    label: "Weak",
+    icon: AlertCircle,
+    className: "text-amber-600 bg-amber-50",
+    iconClass: "text-amber-500",
   },
   not_found: {
-    label: "Not Found 😞",
-    className: "text-danger bg-danger-light border-danger/20",
-    emoji: "❌",
+    label: "Not Found",
+    icon: X,
+    className: "text-red-600 bg-red-50",
+    iconClass: "text-red-500",
   },
 };
 
 export function EngineCard({ name, logo, status, lastChecked = "2 hours ago" }: EngineCardProps) {
   const config = statusConfig[status];
+  const StatusIcon = config.icon;
 
   return (
-    <motion.div
-      whileHover={{ y: -3, scale: 1.02 }}
-      className="engine-card group"
-    >
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-foreground">
+    <div className="engine-card group">
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-navy">
         {logo}
       </div>
       <div className="flex-1">
-        <div className="text-sm font-bold text-foreground">{name}</div>
-        <div className="text-xs text-muted-foreground font-semibold">Checked {lastChecked}</div>
+        <div className="text-sm font-medium text-navy">{name}</div>
+        <div className="text-xs text-muted-foreground">Checked {lastChecked}</div>
       </div>
-      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 ${config.className}`}>
+      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.className}`}>
+        <StatusIcon className={`h-3.5 w-3.5 ${config.iconClass}`} />
         {config.label}
       </div>
-    </motion.div>
+    </div>
   );
 }

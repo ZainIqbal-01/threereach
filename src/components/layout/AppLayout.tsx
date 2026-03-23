@@ -12,7 +12,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <AppSidebar />
       <TopBar status="weak" />
       <main className="pl-64 pt-16">
-        <div className="p-6">
+        <div className="p-8">
           {children}
         </div>
       </main>

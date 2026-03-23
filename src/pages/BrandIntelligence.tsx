@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Brain, Search, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, BarChart3, Target, Zap, RefreshCw, Globe, Shield, ChevronRight, Sparkles, Eye, EyeOff, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
+import { Brain, Search, AlertTriangle, BarChart3, Target, Zap, RefreshCw, ChevronRight, Sparkles, Eye, EyeOff, ThumbsUp, ThumbsDown, Minus, Globe, ArrowRight, Activity, Layers, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 
 type AnalysisPhase = "input" | "analyzing" | "results";
 
@@ -69,30 +68,43 @@ const mockAnalysis: AnalysisData = {
   ],
 };
 
-const sentimentIcon = (s: "positive" | "neutral" | "negative") => {
-  if (s === "positive") return <ThumbsUp className="h-4 w-4 text-cyan" />;
-  if (s === "negative") return <ThumbsDown className="h-4 w-4 text-destructive" />;
-  return <Minus className="h-4 w-4 text-muted-foreground" />;
+const MetaCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <div className={`bg-card rounded-2xl border border-border/60 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.06)] p-5 ${className}`}>
+    {children}
+  </div>
+);
+
+const SentimentPill = ({ sentiment }: { sentiment: "positive" | "neutral" | "negative" }) => {
+  const styles = {
+    positive: "bg-[hsl(142,71%,95%)] text-[hsl(142,71%,35%)]",
+    neutral: "bg-secondary text-muted-foreground",
+    negative: "bg-destructive/8 text-destructive",
+  };
+  const icons = {
+    positive: <ThumbsUp className="h-3 w-3" />,
+    neutral: <Minus className="h-3 w-3" />,
+    negative: <ThumbsDown className="h-3 w-3" />,
+  };
+  const labels = { positive: "Positive", neutral: "Neutral", negative: "Negative" };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${styles[sentiment]}`}>
+      {icons[sentiment]} {labels[sentiment]}
+    </span>
+  );
 };
 
-const sentimentLabel = (s: "positive" | "neutral" | "negative") => {
-  const config: Record<string, string> = {
-    positive: "status-strong",
-    neutral: "status-weak",
-    negative: "status-invisible",
+const PriorityDot = ({ priority }: { priority: "high" | "medium" | "low" }) => {
+  const colors = {
+    high: "bg-destructive",
+    medium: "bg-[hsl(38,92%,50%)]",
+    low: "bg-muted-foreground/40",
   };
-  const labels: Record<string, string> = {
-    positive: "Positive",
-    neutral: "Neutral",
-    negative: "Negative",
-  };
-  return <span className={`status-badge ${config[s]}`}>{labels[s]}</span>;
-};
-
-const priorityColor = (p: "high" | "medium" | "low") => {
-  if (p === "high") return "bg-destructive/10 text-destructive border-destructive/20";
-  if (p === "medium") return "bg-amber-500/10 text-amber-600 border-amber-500/20";
-  return "bg-muted text-muted-foreground border-border";
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground font-medium capitalize">
+      <span className={`h-1.5 w-1.5 rounded-full ${colors[priority]}`} />
+      {priority}
+    </span>
+  );
 };
 
 export default function BrandIntelligence() {
@@ -136,88 +148,85 @@ export default function BrandIntelligence() {
     setAnalysisStep("");
   };
 
-  // INPUT PHASE
+  // ─── INPUT PHASE ───
   if (phase === "input") {
     return (
-      <div className="space-y-8 animate-slide-in">
-        <div>
-          <h1 className="text-2xl font-bold text-navy">AI Brand Intelligence</h1>
-          <p className="text-muted-foreground mt-1">
+      <div className="space-y-6 animate-slide-in">
+        {/* Hero header */}
+        <div className="rounded-2xl bg-gradient-to-br from-primary/5 via-background to-accent/5 border border-border/40 p-8">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Brain className="h-5 w-5 text-primary" />
+            </div>
+            <h1 className="text-xl font-semibold text-foreground tracking-tight">AI Brand Intelligence</h1>
+          </div>
+          <p className="text-sm text-muted-foreground ml-[52px]">
             Analyze how AI engines perceive your brand and get a targeted improvement plan
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <div className="card-reach">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-electric/10">
-                <Brain className="h-6 w-6 text-electric" />
-              </div>
+        <div className="max-w-[620px] mx-auto space-y-5">
+          <MetaCard>
+            <p className="text-sm font-medium text-foreground mb-5">Enter your brand details</p>
+            <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold text-navy">Brand Analysis Setup</h2>
-                <p className="text-sm text-muted-foreground">Enter your brand details to begin AI perception analysis</p>
-              </div>
-            </div>
-
-            <div className="space-y-5">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Brand / Company Name *</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block">Brand Name *</label>
                 <Input
                   placeholder="e.g. Acme Corp"
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
-                  className="h-12"
+                  className="h-11 rounded-xl border-border/60 bg-secondary/40 focus:bg-background transition-colors"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Website URL *</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block">Website URL *</label>
                 <Input
                   placeholder="https://yourwebsite.com"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  className="h-12"
+                  className="h-11 rounded-xl border-border/60 bg-secondary/40 focus:bg-background transition-colors"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Industry / Category</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block">Industry</label>
                 <Input
                   placeholder="e.g. Fintech, SaaS, Healthcare"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
-                  className="h-12"
+                  className="h-11 rounded-xl border-border/60 bg-secondary/40 focus:bg-background transition-colors"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">What does your brand do?</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block">Description</label>
                 <Textarea
                   placeholder="Briefly describe your products, services, and what makes you unique..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="min-h-[100px]"
+                  className="min-h-[90px] rounded-xl border-border/60 bg-secondary/40 focus:bg-background transition-colors resize-none"
                 />
               </div>
 
               <Button
                 onClick={startAnalysis}
                 disabled={!brandName.trim() || !website.trim()}
-                className="w-full h-12 bg-electric hover:bg-electric-hover text-primary-foreground text-base font-semibold gap-2"
+                className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2 shadow-none"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
                 Analyze AI Perception
               </Button>
             </div>
-          </div>
+          </MetaCard>
 
-          <div className="grid grid-cols-3 gap-4 mt-6">
+          {/* Feature pills */}
+          <div className="flex items-center justify-center gap-3">
             {[
-              { icon: Eye, label: "Visibility Check", desc: "See if AI engines mention you" },
-              { icon: BarChart3, label: "Sentiment Analysis", desc: "Understand how you're portrayed" },
-              { icon: Target, label: "Improvement Plan", desc: "Get actionable GEO strategy" },
+              { icon: Eye, label: "Visibility Check" },
+              { icon: BarChart3, label: "Sentiment Analysis" },
+              { icon: Target, label: "Improvement Plan" },
             ].map((item) => (
-              <div key={item.label} className="card-reach text-center p-4">
-                <item.icon className="h-6 w-6 text-electric mx-auto mb-2" />
-                <p className="text-sm font-medium text-navy">{item.label}</p>
-                <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
+              <div key={item.label} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-secondary/70 border border-border/40">
+                <item.icon className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-medium text-foreground">{item.label}</span>
               </div>
             ))}
           </div>
@@ -226,143 +235,156 @@ export default function BrandIntelligence() {
     );
   }
 
-  // ANALYZING PHASE
+  // ─── ANALYZING PHASE ───
   if (phase === "analyzing") {
     return (
-      <div className="space-y-8 animate-slide-in">
-        <div>
-          <h1 className="text-2xl font-bold text-navy">AI Brand Intelligence</h1>
-          <p className="text-muted-foreground mt-1">Analyzing your brand across AI engines...</p>
+      <div className="space-y-6 animate-slide-in">
+        <div className="rounded-2xl bg-gradient-to-br from-primary/5 via-background to-accent/5 border border-border/40 p-8">
+          <h1 className="text-xl font-semibold text-foreground tracking-tight">AI Brand Intelligence</h1>
+          <p className="text-sm text-muted-foreground mt-1">Analyzing your brand across AI engines...</p>
         </div>
 
-        <div className="max-w-xl mx-auto mt-16">
-          <div className="card-reach text-center py-12">
-            <div className="relative mx-auto mb-8 h-24 w-24">
-              <div className="absolute inset-0 rounded-full border-4 border-electric/20" />
-              <div className="absolute inset-0 rounded-full border-4 border-electric border-t-transparent animate-spin" />
-              <div className="absolute inset-3 rounded-full bg-electric/10 flex items-center justify-center">
-                <Brain className="h-10 w-10 text-electric" />
+        <div className="max-w-md mx-auto mt-12">
+          <MetaCard className="text-center py-14 px-8">
+            {/* Spinner */}
+            <div className="relative mx-auto mb-8 h-20 w-20">
+              <div className="absolute inset-0 rounded-full border-[3px] border-secondary" />
+              <div className="absolute inset-0 rounded-full border-[3px] border-primary border-t-transparent animate-spin" />
+              <div className="absolute inset-[10px] rounded-full bg-primary/5 flex items-center justify-center">
+                <Radio className="h-7 w-7 text-primary" />
               </div>
             </div>
 
-            <h2 className="text-xl font-semibold text-navy mb-2">Scanning AI Engines</h2>
+            <h2 className="text-base font-semibold text-foreground mb-1">Scanning AI Engines</h2>
             <p className="text-sm text-muted-foreground mb-6">{analysisStep}</p>
 
-            <div className="max-w-sm mx-auto">
-              <Progress value={progress} className="h-3" />
-              <p className="text-xs text-muted-foreground mt-2">{progress}% complete</p>
+            {/* Progress bar */}
+            <div className="max-w-xs mx-auto">
+              <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-2">{progress}% complete</p>
             </div>
 
-            <div className="mt-8 flex justify-center gap-6">
-              {["ChatGPT", "Gemini", "Perplexity"].map((engine) => (
-                <div key={engine} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className={`h-2 w-2 rounded-full ${progress > 30 ? "bg-cyan" : "bg-muted-foreground/30"} transition-colors`} />
+            {/* Engine dots */}
+            <div className="mt-8 flex justify-center gap-5">
+              {["ChatGPT", "Gemini", "Perplexity"].map((engine, i) => (
+                <span key={engine} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className={`h-2 w-2 rounded-full transition-colors duration-500 ${progress > (i + 1) * 15 ? "bg-primary" : "bg-border"}`} />
                   {engine}
-                </div>
+                </span>
               ))}
             </div>
-          </div>
+          </MetaCard>
         </div>
       </div>
     );
   }
 
-  // RESULTS PHASE
+  // ─── RESULTS PHASE ───
   const data = mockAnalysis;
-  const statusConfig: Record<string, { label: string; class: string }> = {
-    invisible: { label: "Invisible", class: "status-invisible" },
-    weak: { label: "Weak", class: "status-weak" },
-    visible: { label: "Visible", class: "status-moderate" },
-    strong: { label: "Strong", class: "status-strong" },
+  const statusStyles: Record<string, { label: string; color: string }> = {
+    invisible: { label: "Invisible", color: "bg-destructive/10 text-destructive" },
+    weak: { label: "Weak", color: "bg-[hsl(38,92%,90%)] text-[hsl(38,92%,35%)]" },
+    visible: { label: "Visible", color: "bg-primary/10 text-primary" },
+    strong: { label: "Strong", color: "bg-[hsl(142,71%,95%)] text-[hsl(142,71%,35%)]" },
   };
 
   return (
-    <div className="space-y-8 animate-slide-in">
+    <div className="space-y-5 animate-slide-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-primary/5 via-background to-accent/5 border border-border/40 p-6">
         <div>
-          <h1 className="text-2xl font-bold text-navy">AI Brand Intelligence</h1>
-          <p className="text-muted-foreground mt-1">
-            Analysis results for <span className="font-semibold text-navy">{brandName}</span>
+          <h1 className="text-xl font-semibold text-foreground tracking-tight">AI Brand Intelligence</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Results for <span className="font-medium text-foreground">{brandName}</span>
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={resetAnalysis} className="gap-2">
-            <RefreshCw className="h-4 w-4" />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={resetAnalysis} className="rounded-xl gap-1.5 h-9 border-border/60 shadow-none text-xs">
+            <RefreshCw className="h-3.5 w-3.5" />
             New Analysis
           </Button>
-          <Button className="gap-2 bg-electric hover:bg-electric-hover text-primary-foreground">
-            <Zap className="h-4 w-4" />
-            Activate Improvement Plan
+          <Button className="rounded-xl gap-1.5 h-9 bg-primary hover:bg-primary/90 text-primary-foreground shadow-none text-xs">
+            <Zap className="h-3.5 w-3.5" />
+            Activate Plan
           </Button>
         </div>
       </div>
 
-      {/* Score Overview */}
-      <div className="grid grid-cols-4 gap-6">
-        <div className="card-reach col-span-1 text-center py-8">
-          <div className="relative mx-auto h-28 w-28 mb-4">
-            <svg className="h-28 w-28 -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+      {/* Score + Engines Row */}
+      <div className="grid grid-cols-4 gap-4">
+        {/* Score */}
+        <MetaCard className="flex flex-col items-center justify-center py-7">
+          <div className="relative h-24 w-24 mb-3">
+            <svg className="h-24 w-24 -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--secondary))" strokeWidth="6" />
               <circle
-                cx="60" cy="60" r="52" fill="none"
-                stroke="hsl(var(--electric))" strokeWidth="8"
-                strokeDasharray={`${(data.overallScore / 100) * 327} 327`}
+                cx="50" cy="50" r="42" fill="none"
+                stroke="hsl(var(--primary))" strokeWidth="6"
+                strokeDasharray={`${(data.overallScore / 100) * 264} 264`}
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-3xl font-bold text-navy">{data.overallScore}</span>
+              <span className="text-2xl font-bold text-foreground">{data.overallScore}</span>
             </div>
           </div>
-          <p className="text-sm font-medium text-navy">AI Visibility Score</p>
-          <span className={`status-badge ${statusConfig[data.status].class} mt-2`}>
-            {statusConfig[data.status].label}
+          <p className="text-xs font-medium text-muted-foreground">Visibility Score</p>
+          <span className={`mt-1.5 inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusStyles[data.status].color}`}>
+            {statusStyles[data.status].label}
           </span>
-        </div>
+        </MetaCard>
 
+        {/* Engine Cards */}
         {data.engines.map((eng) => (
-          <div key={eng.engine} className="card-reach">
+          <MetaCard key={eng.engine}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-navy">{eng.engine}</h3>
+              <span className="text-sm font-semibold text-foreground">{eng.engine}</span>
               {eng.mentioned ? (
-                <Eye className="h-4 w-4 text-cyan" />
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[hsl(142,71%,95%)]">
+                  <Eye className="h-3 w-3 text-[hsl(142,71%,35%)]" />
+                </span>
               ) : (
-                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary">
+                  <EyeOff className="h-3 w-3 text-muted-foreground" />
+                </span>
               )}
             </div>
             <div className="flex items-center gap-2 mb-3">
-              {sentimentIcon(eng.sentiment)}
-              {sentimentLabel(eng.sentiment)}
+              <SentimentPill sentiment={eng.sentiment} />
               {eng.position && (
-                <span className="text-xs text-muted-foreground ml-auto">Position #{eng.position}</span>
+                <span className="text-[11px] text-muted-foreground ml-auto font-medium">#{eng.position}</span>
               )}
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{eng.snippet}</p>
-          </div>
+          </MetaCard>
         ))}
       </div>
 
-      {/* Narrative & Sentiment Breakdown */}
-      <div className="grid grid-cols-2 gap-6">
-        <div className="card-reach">
-          <h3 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-electric" />
-            Narrative Breakdown
-          </h3>
-          <div className="space-y-4">
+      {/* Two Column: Narrative + Gaps */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Narrative */}
+        <MetaCard>
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Narrative Breakdown</h3>
+          </div>
+          <div className="space-y-3">
             {data.engines.map((eng) => (
-              <div key={eng.engine} className="border border-border rounded-lg p-4">
+              <div key={eng.engine} className="rounded-xl bg-secondary/40 p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-navy text-sm">{eng.engine}</span>
-                  {sentimentLabel(eng.sentiment)}
+                  <span className="text-sm font-medium text-foreground">{eng.engine}</span>
+                  <SentimentPill sentiment={eng.sentiment} />
                 </div>
-                <p className="text-sm text-muted-foreground mb-3">{eng.snippet}</p>
+                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{eng.snippet}</p>
                 <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-navy">Why this perception:</p>
                   {eng.reasons.map((r, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
+                      <span className="h-1 w-1 rounded-full bg-[hsl(38,92%,50%)] shrink-0" />
                       {r}
                     </div>
                   ))}
@@ -370,82 +392,81 @@ export default function BrandIntelligence() {
               </div>
             ))}
           </div>
-        </div>
+        </MetaCard>
 
         {/* Visibility Gaps */}
-        <div className="card-reach">
-          <h3 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
-            Visibility Gaps Detected
-          </h3>
-          <div className="space-y-3">
+        <MetaCard>
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="h-4 w-4 text-[hsl(38,92%,50%)]" />
+            <h3 className="text-sm font-semibold text-foreground">Visibility Gaps</h3>
+          </div>
+          <div className="space-y-2.5">
             {data.gaps.map((gap, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/10">
-                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive/10">
-                  <span className="text-xs font-bold text-destructive">{i + 1}</span>
-                </div>
-                <p className="text-sm text-foreground">{gap}</p>
+              <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-[10px] font-bold text-destructive mt-0.5">
+                  {i + 1}
+                </span>
+                <p className="text-sm text-foreground leading-snug">{gap}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 p-4 rounded-lg bg-electric/5 border border-electric/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="h-4 w-4 text-electric" />
-              <p className="text-sm font-semibold text-navy">Auto-Detection Active</p>
+          <div className="mt-5 p-4 rounded-xl bg-primary/5 border border-primary/10">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <p className="text-xs font-semibold text-foreground">Auto-Detection Active</p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Our system continuously monitors AI engine responses and automatically detects new gaps as they emerge.
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Continuously monitoring AI engine responses and detecting new gaps as they emerge.
             </p>
           </div>
-        </div>
+        </MetaCard>
       </div>
 
       {/* Improvement Plan */}
-      <div className="card-reach">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-navy flex items-center gap-2">
-            <Target className="h-5 w-5 text-electric" />
-            Targeted Improvement Plan
-          </h3>
-          <Button className="gap-2 bg-electric hover:bg-electric-hover text-primary-foreground" size="sm">
-            <Zap className="h-4 w-4" />
-            Activate All Steps
+      <MetaCard>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Improvement Plan</h3>
+          </div>
+          <Button className="rounded-xl gap-1.5 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-none text-xs px-4">
+            <Zap className="h-3.5 w-3.5" />
+            Activate All
           </Button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           {data.improvementPlan.map((step, i) => (
-            <div key={i} className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-electric/30 transition-colors group">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-electric/10 text-electric font-semibold text-sm">
+            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30 hover:bg-secondary/60 transition-colors group cursor-pointer">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm">
                 {i + 1}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <h4 className="font-semibold text-navy">{step.title}</h4>
-                  <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${priorityColor(step.priority)}`}>
-                    {step.priority}
-                  </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2.5 mb-0.5">
+                  <h4 className="text-sm font-medium text-foreground">{step.title}</h4>
+                  <PriorityDot priority={step.priority} />
                 </div>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
+                <p className="text-xs text-muted-foreground truncate">{step.description}</p>
               </div>
-              <Button variant="ghost" size="sm" className="text-electric opacity-0 group-hover:opacity-100 transition-opacity gap-1">
-                Start <ChevronRight className="h-4 w-4" />
-              </Button>
+              <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
             </div>
           ))}
         </div>
 
-        <div className="mt-6 p-4 rounded-lg bg-cyan-light border border-cyan/20">
-          <div className="flex items-center gap-2 mb-2">
-            <RefreshCw className="h-4 w-4 text-cyan" />
-            <p className="text-sm font-semibold text-navy">Continuous Optimization Loop</p>
+        {/* Continuous loop banner */}
+        <div className="mt-5 flex items-center gap-4 p-4 rounded-xl bg-accent/10 border border-accent/20">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/20">
+            <RefreshCw className="h-4 w-4 text-accent-foreground" />
           </div>
-          <p className="text-xs text-muted-foreground">
-            Once activated, Three Reach continuously monitors AI engine responses, re-evaluates your visibility, and refines the strategy automatically—creating an ongoing loop that actively works to improve and control your brand perception.
-          </p>
+          <div>
+            <p className="text-xs font-semibold text-foreground">Continuous Optimization Loop</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Three Reach continuously monitors, re-evaluates, and refines your strategy automatically.
+            </p>
+          </div>
         </div>
-      </div>
+      </MetaCard>
     </div>
   );
 }

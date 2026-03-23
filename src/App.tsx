@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Onboarding from "./pages/Onboarding";
 import Overview from "./pages/Overview";
 import AIScan from "./pages/AIScan";
+import BrandIntelligence from "./pages/BrandIntelligence";
 import BuildFootprint from "./pages/BuildFootprint";
 import Distribution from "./pages/Distribution";
 import ProofTracking from "./pages/ProofTracking";
@@ -30,6 +31,7 @@ function ProtectedRoutes() {
       <Routes>
         <Route path="/" element={<Overview />} />
         <Route path="/scan" element={<AIScan />} />
+        <Route path="/brand-intelligence" element={<BrandIntelligence />} />
         <Route path="/footprint" element={<BuildFootprint />} />
         <Route path="/distribution" element={<Distribution />} />
         <Route path="/proof" element={<ProofTracking />} />

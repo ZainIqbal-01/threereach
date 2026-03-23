@@ -31,6 +31,7 @@ function ProtectedRoutes() {
       <Routes>
         <Route path="/" element={<Overview />} />
         <Route path="/scan" element={<AIScan />} />
+        <Route path="/brand-intelligence" element={<BrandIntelligence />} />
         <Route path="/footprint" element={<BuildFootprint />} />
         <Route path="/distribution" element={<Distribution />} />
         <Route path="/proof" element={<ProofTracking />} />

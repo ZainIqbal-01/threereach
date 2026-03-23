@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Search,
+  Brain,
   Building2,
   Share2,
   Shield,

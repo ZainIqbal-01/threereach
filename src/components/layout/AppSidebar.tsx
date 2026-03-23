@@ -14,6 +14,7 @@ import logo from "@/assets/logo.png";
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "AI Brand Intelligence", href: "/dashboard/brand-intelligence", icon: Brain },
   { name: "AI Visibility Scan", href: "/dashboard/scan", icon: Search },
   { name: "Build AI Footprint", href: "/dashboard/footprint", icon: Building2 },
   { name: "Distribution", href: "/dashboard/distribution", icon: Share2 },

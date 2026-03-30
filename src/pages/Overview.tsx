@@ -5,6 +5,7 @@ import { ProgressTimeline } from "@/components/dashboard/ProgressTimeline";
 import { EngineCard } from "@/components/dashboard/EngineCard";
 import { ModuleProgress } from "@/components/dashboard/ModuleProgress";
 import { ProofCount } from "@/components/dashboard/ProofCount";
+import { StarAgent } from "@/components/StarAgent";
 
 // Simple SVG logos for AI engines
 const ChatGPTLogo = () => (
@@ -28,18 +29,21 @@ const PerplexityLogo = () => (
 export default function Overview() {
   return (
     <div className="space-y-8 animate-slide-in">
-      {/* Header */}
+      {/* Header with Star Agent */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-navy">Command Center</h1>
-          <p className="text-muted-foreground mt-1">Monitor and improve your AI visibility</p>
+        <div className="flex items-center gap-4">
+          <StarAgent mood="happy" size={52} animate={true} />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Command Center</h1>
+            <p className="text-muted-foreground mt-1">Monitor and improve your AI visibility</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" className="gap-2">
             <Download className="h-4 w-4" />
             Download Proof
           </Button>
-          <Button className="gap-2 bg-electric hover:bg-electric-hover text-primary-foreground">
+          <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
             <Sparkles className="h-4 w-4" />
             Advance My AI Visibility
           </Button>
@@ -63,7 +67,7 @@ export default function Overview() {
           <div className="card-reach">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-muted-foreground">AI Engine Status</h3>
-              <Button variant="ghost" size="sm" className="text-electric hover:text-electric-hover gap-1">
+              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 gap-1">
                 Run Full Scan
                 <ArrowRight className="h-4 w-4" />
               </Button>

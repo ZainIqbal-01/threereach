@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Brain, Search, AlertTriangle, BarChart3, Target, Zap, RefreshCw, ChevronRight, Sparkles, Eye, EyeOff, ThumbsUp, ThumbsDown, Minus, Globe, ArrowRight, Activity, Layers, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { StarAgent, StarMood } from "@/components/StarAgent";
 
 type AnalysisPhase = "input" | "analyzing" | "results";
 
@@ -107,6 +108,22 @@ const PriorityDot = ({ priority }: { priority: "high" | "medium" | "low" }) => {
   );
 };
 
+// Agent messages based on context
+const agentMessages: Record<string, Record<string, string>> = {
+  input: {
+    happy: "Tell me about your brand! I'll check how AI sees you ✨",
+  },
+  analyzing: {
+    scanning: "Scanning AI engines... almost there!",
+  },
+  results: {
+    invisible: "Oh no! AI can't find you at all 😢",
+    weak: "We found some gaps. Let's fix them together! 💪",
+    visible: "Not bad! But there's room to grow 🚀",
+    strong: "Amazing! Your brand is AI-famous! 🎉",
+  },
+};
+
 export default function BrandIntelligence() {
   const [phase, setPhase] = useState<AnalysisPhase>("input");
   const [brandName, setBrandName] = useState("");
@@ -115,6 +132,30 @@ export default function BrandIntelligence() {
   const [industry, setIndustry] = useState("");
   const [progress, setProgress] = useState(0);
   const [analysisStep, setAnalysisStep] = useState("");
+
+  // Determine star mood based on phase and results
+  const getStarMood = (): StarMood => {
+    if (phase === "input") return "waving";
+    if (phase === "analyzing") return "scanning";
+    if (phase === "results") {
+      const data = mockAnalysis;
+      if (data.status === "invisible") return "sad";
+      if (data.status === "weak") return "thinking";
+      if (data.status === "visible") return "happy";
+      return "superhero";
+    }
+    return "happy";
+  };
+
+  const getStarMessage = (): string => {
+    if (phase === "input") return agentMessages.input.happy;
+    if (phase === "analyzing") return agentMessages.analyzing.scanning;
+    if (phase === "results") {
+      const data = mockAnalysis;
+      return agentMessages.results[data.status] || "";
+    }
+    return "";
+  };
 
   const startAnalysis = () => {
     if (!brandName.trim() || !website.trim()) return;
@@ -152,17 +193,22 @@ export default function BrandIntelligence() {
   if (phase === "input") {
     return (
       <div className="space-y-6 animate-slide-in">
-        {/* Hero header */}
+        {/* Hero header with Star Agent */}
         <div className="rounded-2xl bg-gradient-to-br from-primary/5 via-background to-accent/5 border border-border/40 p-8">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <Brain className="h-5 w-5 text-primary" />
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <Brain className="h-5 w-5 text-primary" />
+                </div>
+                <h1 className="text-xl font-semibold text-foreground tracking-tight">AI Brand Intelligence</h1>
+              </div>
+              <p className="text-sm text-muted-foreground ml-[52px]">
+                Analyze how AI engines perceive your brand and get a targeted improvement plan
+              </p>
             </div>
-            <h1 className="text-xl font-semibold text-foreground tracking-tight">AI Brand Intelligence</h1>
+            <StarAgent mood="waving" size={90} message={getStarMessage()} />
           </div>
-          <p className="text-sm text-muted-foreground ml-[52px]">
-            Analyze how AI engines perceive your brand and get a targeted improvement plan
-          </p>
         </div>
 
         <div className="max-w-[620px] mx-auto space-y-5">
@@ -244,15 +290,11 @@ export default function BrandIntelligence() {
           <p className="text-sm text-muted-foreground mt-1">Analyzing your brand across AI engines...</p>
         </div>
 
-        <div className="max-w-md mx-auto mt-12">
-          <MetaCard className="text-center py-14 px-8">
-            {/* Spinner */}
-            <div className="relative mx-auto mb-8 h-20 w-20">
-              <div className="absolute inset-0 rounded-full border-[3px] border-secondary" />
-              <div className="absolute inset-0 rounded-full border-[3px] border-primary border-t-transparent animate-spin" />
-              <div className="absolute inset-[10px] rounded-full bg-primary/5 flex items-center justify-center">
-                <Radio className="h-7 w-7 text-primary" />
-              </div>
+        <div className="max-w-md mx-auto mt-8">
+          <MetaCard className="text-center py-12 px-8">
+            {/* Star Agent as the scanner */}
+            <div className="mb-6">
+              <StarAgent mood="scanning" size={100} animate={true} />
             </div>
 
             <h2 className="text-base font-semibold text-foreground mb-1">Scanning AI Engines</h2>
@@ -270,7 +312,7 @@ export default function BrandIntelligence() {
             </div>
 
             {/* Engine dots */}
-            <div className="mt-8 flex justify-center gap-5">
+            <div className="mt-6 flex justify-center gap-5">
               {["ChatGPT", "Gemini", "Perplexity"].map((engine, i) => (
                 <span key={engine} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className={`h-2 w-2 rounded-full transition-colors duration-500 ${progress > (i + 1) * 15 ? "bg-primary" : "bg-border"}`} />
@@ -293,15 +335,22 @@ export default function BrandIntelligence() {
     strong: { label: "Strong", color: "bg-[hsl(142,71%,95%)] text-[hsl(142,71%,35%)]" },
   };
 
+  const resultMood = getStarMood();
+
   return (
     <div className="space-y-5 animate-slide-in">
-      {/* Header */}
+      {/* Header with Star Agent */}
       <div className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-primary/5 via-background to-accent/5 border border-border/40 p-6">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground tracking-tight">AI Brand Intelligence</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Results for <span className="font-medium text-foreground">{brandName}</span>
-          </p>
+        <div className="flex items-center gap-4">
+          <StarAgent mood={resultMood} size={64} animate={true} />
+          <div>
+            <h1 className="text-xl font-semibold text-foreground tracking-tight">AI Brand Intelligence</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Results for <span className="font-medium text-foreground">{brandName}</span>
+              <span className="mx-2 text-border">•</span>
+              <span className="text-xs italic">{getStarMessage()}</span>
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={resetAnalysis} className="rounded-xl gap-1.5 h-9 border-border/60 shadow-none text-xs">
@@ -396,9 +445,12 @@ export default function BrandIntelligence() {
 
         {/* Visibility Gaps */}
         <MetaCard>
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="h-4 w-4 text-[hsl(38,92%,50%)]" />
-            <h3 className="text-sm font-semibold text-foreground">Visibility Gaps</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-[hsl(38,92%,50%)]" />
+              <h3 className="text-sm font-semibold text-foreground">Visibility Gaps</h3>
+            </div>
+            <StarAgent mood="sad" size={36} animate={false} />
           </div>
           <div className="space-y-2.5">
             {data.gaps.map((gap, i) => (
@@ -426,9 +478,12 @@ export default function BrandIntelligence() {
       {/* Improvement Plan */}
       <MetaCard>
         <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Improvement Plan</h3>
+          <div className="flex items-center gap-3">
+            <StarAgent mood="superhero" size={40} animate={false} />
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Improvement Plan</h3>
+              <p className="text-[11px] text-muted-foreground">Your AI agent is ready to execute</p>
+            </div>
           </div>
           <Button className="rounded-xl gap-1.5 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-none text-xs px-4">
             <Zap className="h-3.5 w-3.5" />

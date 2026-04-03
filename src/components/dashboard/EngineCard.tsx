@@ -5,45 +5,48 @@ interface EngineCardProps {
   logo: React.ReactNode;
   status: "mentioned" | "weak" | "not_found";
   lastChecked?: string;
+  confidence?: number;
 }
 
 const statusConfig = {
   mentioned: {
     label: "Mentioned",
     icon: Check,
-    className: "text-emerald-600 bg-emerald-50",
-    iconClass: "text-emerald-500",
+    className: "bg-success-light text-success border border-success/20",
   },
   weak: {
     label: "Weak",
     icon: AlertCircle,
-    className: "text-amber-600 bg-amber-50",
-    iconClass: "text-amber-500",
+    className: "bg-warning-light text-warning border border-warning/20",
   },
   not_found: {
     label: "Not Found",
     icon: X,
-    className: "text-red-600 bg-red-50",
-    iconClass: "text-red-500",
+    className: "bg-destructive/10 text-destructive border border-destructive/20",
   },
 };
 
-export function EngineCard({ name, logo, status, lastChecked = "2 hours ago" }: EngineCardProps) {
+export function EngineCard({ name, logo, status, lastChecked = "2 hours ago", confidence }: EngineCardProps) {
   const config = statusConfig[status];
   const StatusIcon = config.icon;
 
   return (
     <div className="engine-card group">
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-navy">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-foreground">
         {logo}
       </div>
-      <div className="flex-1">
-        <div className="text-sm font-medium text-navy">{name}</div>
-        <div className="text-xs text-muted-foreground">Checked {lastChecked}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold text-foreground">{name}</div>
+        <div className="text-[11px] text-muted-foreground">Checked {lastChecked}</div>
       </div>
-      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.className}`}>
-        <StatusIcon className={`h-3.5 w-3.5 ${config.iconClass}`} />
-        {config.label}
+      <div className="flex flex-col items-end gap-1">
+        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium ${config.className}`}>
+          <StatusIcon className="h-3 w-3" />
+          {config.label}
+        </div>
+        {confidence !== undefined && (
+          <span className="text-[10px] text-muted-foreground">{confidence}% confidence</span>
+        )}
       </div>
     </div>
   );

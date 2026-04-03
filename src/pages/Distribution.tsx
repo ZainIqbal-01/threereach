@@ -1,179 +1,401 @@
-import { RefreshCw, ExternalLink, Upload, ToggleLeft, Check, Clock, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { 
+  Share2, Sparkles, Send, Eye, Clock, CheckCircle2, 
+  ExternalLink, RefreshCw, Plus, FileText, MessageSquare,
+  TrendingUp, Zap, ArrowRight, Copy, ThumbsUp
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { StarAgent } from "@/components/StarAgent";
+import { toast } from "@/hooks/use-toast";
 
-interface SubmissionCard {
-  id: string;
-  platform: string;
-  logo: string;
-  submittedDate?: string;
-  liveDate?: string;
-  indexedDate?: string;
-  verifiedDate?: string;
-  status: "not_started" | "submitted" | "live" | "indexed" | "verified";
-  link?: string;
+type Platform = "reddit" | "quora" | "linkedin" | "medium" | "hackernews" | "twitter";
+type ContentStatus = "draft" | "generating" | "ready" | "posted" | "failed";
+
+interface PlatformConfig {
+  id: Platform;
+  name: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  description: string;
+  autoPost: boolean;
 }
 
-const submissions: SubmissionCard[] = [
+interface ContentPost {
+  id: string;
+  platform: Platform;
+  title: string;
+  content: string;
+  status: ContentStatus;
+  scheduledDate?: string;
+  postedDate?: string;
+  engagement?: { views: number; upvotes: number; comments: number };
+}
+
+const platforms: PlatformConfig[] = [
+  { id: "reddit", name: "Reddit", icon: "📢", color: "text-[hsl(16,100%,50%)]", bgColor: "bg-[hsl(16,100%,96%)]", borderColor: "border-[hsl(16,100%,85%)]", description: "Subreddit posts & comments", autoPost: false },
+  { id: "quora", name: "Quora", icon: "❓", color: "text-[hsl(0,72%,51%)]", bgColor: "bg-[hsl(0,72%,97%)]", borderColor: "border-[hsl(0,72%,90%)]", description: "Answer relevant questions", autoPost: false },
+  { id: "linkedin", name: "LinkedIn", icon: "💼", color: "text-[hsl(210,85%,40%)]", bgColor: "bg-[hsl(210,85%,96%)]", borderColor: "border-[hsl(210,85%,85%)]", description: "Professional articles & posts", autoPost: true },
+  { id: "medium", name: "Medium", icon: "✍️", color: "text-foreground", bgColor: "bg-secondary", borderColor: "border-border", description: "Long-form articles", autoPost: false },
+  { id: "hackernews", name: "Hacker News", icon: "🔶", color: "text-[hsl(24,100%,50%)]", bgColor: "bg-[hsl(24,100%,97%)]", borderColor: "border-[hsl(24,100%,85%)]", description: "Tech community visibility", autoPost: false },
+  { id: "twitter", name: "X / Twitter", icon: "𝕏", color: "text-foreground", bgColor: "bg-secondary", borderColor: "border-border", description: "Short-form & threads", autoPost: false },
+];
+
+const initialPosts: ContentPost[] = [
   {
-    id: "1",
-    platform: "Crunchbase",
-    logo: "CB",
-    submittedDate: "Jan 10",
-    liveDate: "Jan 12",
-    indexedDate: "Jan 18",
-    verifiedDate: "Jan 20",
-    status: "verified",
-    link: "https://crunchbase.com/acme",
+    id: "1", platform: "reddit", title: "How AI is changing fintech discovery", 
+    content: "We've been exploring how AI search engines like ChatGPT and Perplexity are reshaping how businesses find fintech solutions. Our research shows that 73% of B2B buyers now use AI assistants in their evaluation process...",
+    status: "posted", postedDate: "2 hours ago",
+    engagement: { views: 1240, upvotes: 45, comments: 12 }
   },
   {
-    id: "2",
-    platform: "AngelList",
-    logo: "AL",
-    submittedDate: "Jan 12",
-    liveDate: "Jan 14",
-    indexedDate: "Jan 19",
-    status: "indexed",
-    link: "https://angel.co/acme",
+    id: "2", platform: "quora", title: "What are the best payment processing solutions for startups?",
+    content: "Great question! As someone working in the fintech space, I'd recommend evaluating solutions based on three key criteria: API flexibility, transparent pricing, and AI-readiness...",
+    status: "posted", postedDate: "1 day ago",
+    engagement: { views: 3400, upvotes: 89, comments: 7 }
   },
   {
-    id: "3",
-    platform: "LinkedIn Company",
-    logo: "LI",
-    submittedDate: "Jan 15",
-    liveDate: "Jan 16",
-    status: "live",
-    link: "https://linkedin.com/company/acme",
+    id: "3", platform: "linkedin", title: "Why Your Brand Needs an AI Visibility Strategy in 2026",
+    content: "The way businesses are discovered is fundamentally changing. With over 60% of professional queries now routed through AI assistants, having a strong AI footprint is no longer optional...",
+    status: "ready", scheduledDate: "Tomorrow, 9:00 AM"
   },
   {
-    id: "4",
-    platform: "Product Hunt",
-    logo: "PH",
-    submittedDate: "Jan 18",
-    status: "submitted",
-  },
-  {
-    id: "5",
-    platform: "G2 Crowd",
-    logo: "G2",
-    status: "not_started",
-  },
-  {
-    id: "6",
-    platform: "Capterra",
-    logo: "CA",
-    status: "not_started",
+    id: "4", platform: "medium", title: "The Complete Guide to AI Engine Optimization (AEO)",
+    content: "", status: "draft"
   },
 ];
 
-const columns = [
-  { id: "not_started", label: "Not Started", color: "bg-muted" },
-  { id: "submitted", label: "Submitted", color: "bg-amber-100" },
-  { id: "live", label: "Live", color: "bg-blue-100" },
-  { id: "indexed", label: "Indexed", color: "bg-cyan-100" },
-  { id: "verified", label: "Verified by AI", color: "bg-emerald-100" },
-];
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "verified":
-      return <Check className="h-4 w-4 text-emerald-600" />;
-    case "indexed":
-    case "live":
-      return <Clock className="h-4 w-4 text-electric" />;
-    case "submitted":
-      return <AlertCircle className="h-4 w-4 text-amber-600" />;
-    default:
-      return null;
-  }
+const statusConfig: Record<ContentStatus, { label: string; className: string; icon: typeof Clock }> = {
+  draft: { label: "Draft", className: "bg-secondary text-muted-foreground", icon: FileText },
+  generating: { label: "Generating...", className: "bg-primary/10 text-primary", icon: Sparkles },
+  ready: { label: "Ready to Post", className: "bg-success-light text-success border border-success/20", icon: CheckCircle2 },
+  posted: { label: "Posted", className: "bg-primary/10 text-primary border border-primary/20", icon: CheckCircle2 },
+  failed: { label: "Failed", className: "bg-destructive/10 text-destructive", icon: RefreshCw },
 };
 
 export default function Distribution() {
+  const [posts, setPosts] = useState<ContentPost[]>(initialPosts);
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
+  const [topic, setTopic] = useState("");
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [showGenerator, setShowGenerator] = useState(false);
+
+  const generateContent = (platform: Platform) => {
+    if (!topic.trim()) {
+      toast({ title: "Enter a topic", description: "Provide a topic for AI to generate content", variant: "destructive" });
+      return;
+    }
+
+    const newId = crypto.randomUUID();
+    const platformConfig = platforms.find(p => p.id === platform)!;
+    
+    const newPost: ContentPost = {
+      id: newId, platform, title: `AI-generated: ${topic}`, content: "", status: "generating"
+    };
+    
+    setPosts(prev => [newPost, ...prev]);
+    setGeneratingId(newId);
+
+    // Simulate AI generation
+    setTimeout(() => {
+      const generatedContents: Record<Platform, string> = {
+        reddit: `🚀 ${topic}\n\nHey r/technology! I've been researching how AI search engines are changing the game for ${topic.toLowerCase()}. Here's what I found:\n\n1. **AI-First Discovery** - 73% of B2B buyers now start with AI assistants\n2. **Structured Data Matters** - Businesses with proper schema markup get 3x more AI mentions\n3. **Content Authority** - Regular, high-quality content significantly boosts AI visibility\n\nWhat's your experience with AI discovery? Has it changed how you find tools and services?\n\n---\n*Disclaimer: I work in the AI visibility space*`,
+        quora: `Great question about ${topic}!\n\nBased on my experience working with businesses on their AI visibility strategies, here are the key things to consider:\n\n**1. AI engines prioritize authoritative sources**\nUnlike traditional SEO, AI engines weigh authority signals differently. They look for comprehensive, well-structured information that directly answers user queries.\n\n**2. Presence across platforms matters**\nBeing mentioned consistently across trusted directories, review sites, and industry publications increases your chances of being recommended by AI.\n\n**3. Regular content updates signal relevance**\nAI models favor brands that consistently publish fresh, valuable content.\n\nHope this helps! Happy to share more specifics.`,
+        linkedin: `🤖 The Future of Business Discovery: Why ${topic} Matters\n\nThe landscape of how businesses are found is shifting dramatically.\n\nHere's what our data shows:\n\n📊 73% of B2B decision-makers now use AI assistants during evaluation\n🔍 Brands with strong AI footprints see 2.4x more qualified leads\n💡 AI Engine Optimization (AEO) is becoming as critical as SEO\n\n3 things every business should do today:\n\n1️⃣ Audit your AI visibility across ChatGPT, Gemini, and Perplexity\n2️⃣ Ensure your structured data is comprehensive and up-to-date\n3️⃣ Build authority through consistent, platform-diverse content\n\nThe businesses that act now will own the AI discovery layer.\n\n#AI #Business #Marketing #AEO #Innovation`,
+        medium: `# ${topic}: A Comprehensive Guide\n\nThe way businesses are discovered is undergoing a fundamental transformation. As AI assistants become the primary interface for information discovery, the concept of AI Engine Optimization (AEO) has emerged as a critical strategy.\n\n## Understanding AI Discovery\n\nTraditional search engines rank pages. AI engines recommend solutions. This distinction matters because it changes what you optimize for...\n\n## The Three Pillars of AI Visibility\n\n### 1. Authority Building\nAI models are trained on vast datasets and learn to associate certain brands with authority in specific domains...\n\n### 2. Content Distribution\nBeing present across multiple trusted platforms signals legitimacy to AI systems...\n\n### 3. Structured Information\nClear, well-organized business information helps AI engines accurately represent your brand...`,
+        hackernews: `${topic} - How AI Search is Disrupting Traditional Discovery\n\nI've been working on measuring how AI engines (ChatGPT, Gemini, Perplexity) recommend businesses vs traditional Google search results. Some interesting findings:\n\n- AI engines tend to recommend fewer options (3-5 vs 10+ in search)\n- Authority signals are weighted differently than PageRank\n- Structured data and API accessibility play a bigger role\n- Fresh content gets picked up faster in AI models\n\nWould love to hear the HN community's thoughts on this shift.`,
+        twitter: `🧵 Thread: ${topic}\n\n1/ AI assistants are becoming the new front door for business discovery. 73% of B2B buyers now start their research with AI.\n\n2/ Unlike Google, AI engines RECOMMEND rather than rank. Being in the top 3 recommendations = 5x more visibility.\n\n3/ The key factors:\n- Authority signals\n- Cross-platform presence\n- Structured data\n- Fresh content\n\n4/ We call this AI Engine Optimization (AEO) - and it's the next big shift in marketing.\n\n5/ Start by auditing: Ask ChatGPT and Gemini about your industry. Are you mentioned? That's your baseline.`,
+      };
+
+      setPosts(prev => prev.map(p => 
+        p.id === newId 
+          ? { ...p, content: generatedContents[platform], status: "ready" as ContentStatus, title: `${topic} - ${platformConfig.name}` }
+          : p
+      ));
+      setGeneratingId(null);
+      setTopic("");
+      setShowGenerator(false);
+      toast({ title: "Content generated!", description: `AI-optimized post ready for ${platformConfig.name}` });
+    }, 2500);
+  };
+
+  const publishPost = (postId: string) => {
+    setPosts(prev => prev.map(p => 
+      p.id === postId 
+        ? { ...p, status: "posted" as ContentStatus, postedDate: "Just now", engagement: { views: 0, upvotes: 0, comments: 0 } }
+        : p
+    ));
+    toast({ title: "Published!", description: "Your content has been posted successfully" });
+  };
+
+  const copyContent = (content: string) => {
+    navigator.clipboard.writeText(content);
+    toast({ title: "Copied!", description: "Content copied to clipboard" });
+  };
+
+  const postedCount = posts.filter(p => p.status === "posted").length;
+  const readyCount = posts.filter(p => p.status === "ready").length;
+  const totalEngagement = posts.reduce((sum, p) => sum + (p.engagement?.views || 0), 0);
+
   return (
-    <div className="space-y-8 animate-slide-in">
+    <div className="space-y-6 animate-slide-in">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-navy">Distribution Engine</h1>
-          <p className="text-muted-foreground mt-1">
-            Track your presence across platforms and directories
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2">
-            <Upload className="h-4 w-4" />
-            Manual Upload
-          </Button>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted">
-            <span className="text-sm text-muted-foreground">Auto Retry</span>
-            <Switch defaultChecked />
+        <div className="flex items-center gap-4">
+          <StarAgent mood="excited" size={48} animate={true} />
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Content Distribution Engine</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              AI-powered content creation & distribution across platforms
+            </p>
           </div>
         </div>
+        <Button onClick={() => setShowGenerator(true)} className="rounded-xl gap-2 h-10 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow">
+          <Sparkles className="h-4 w-4" />
+          Generate Content
+        </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-5 gap-4">
-        {columns.map((col) => {
-          const count = submissions.filter((s) => s.status === col.id).length;
+      <div className="grid grid-cols-4 gap-4">
+        <div className="metric-card">
+          <div className="metric-value">{platforms.length}</div>
+          <div className="metric-label">Platforms</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value">{postedCount}</div>
+          <div className="metric-label">Published</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value">{readyCount}</div>
+          <div className="metric-label">Ready to Post</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value flex items-center justify-center gap-1">
+            {totalEngagement > 1000 ? `${(totalEngagement / 1000).toFixed(1)}k` : totalEngagement}
+            <TrendingUp className="h-4 w-4 text-success" />
+          </div>
+          <div className="metric-label">Total Reach</div>
+        </div>
+      </div>
+
+      {/* AI Content Generator Modal */}
+      {showGenerator && (
+        <div className="card-reach gradient-border animate-scale-in">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <StarAgent mood="thinking" size={40} animate={true} />
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">AI Content Generator</h3>
+                <p className="text-[11px] text-muted-foreground">Describe your topic and I'll create platform-optimized content</p>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setShowGenerator(false)} className="text-muted-foreground">✕</Button>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">Topic / Key Message</label>
+              <Textarea
+                placeholder="e.g., How AI is changing business discovery, Why AEO matters in 2026, Our latest product features..."
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="min-h-[80px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none"
+              />
+            </div>
+            
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Select Platform</label>
+              <div className="grid grid-cols-3 gap-2">
+                {platforms.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedPlatform(p.id)}
+                    className={`platform-badge justify-start ${selectedPlatform === p.id ? `${p.bgColor} ${p.borderColor} ${p.color}` : ""}`}
+                  >
+                    <span className="text-lg">{p.icon}</span>
+                    <div className="text-left">
+                      <div className="text-xs font-semibold">{p.name}</div>
+                      <div className="text-[10px] text-muted-foreground">{p.description}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Button 
+              onClick={() => selectedPlatform && generateContent(selectedPlatform)}
+              disabled={!topic.trim() || !selectedPlatform || !!generatingId}
+              className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
+            >
+              {generatingId ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Generating AI Content...
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4" />
+                  Generate & Preview
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Platform Overview */}
+      <div className="grid grid-cols-6 gap-3">
+        {platforms.map((p) => {
+          const platformPosts = posts.filter(post => post.platform === p.id);
+          const posted = platformPosts.filter(post => post.status === "posted").length;
           return (
-            <div key={col.id} className={`card-reach py-4 ${col.color}`}>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-navy">{count}</div>
-                <div className="text-xs text-muted-foreground">{col.label}</div>
+            <div key={p.id} className={`card-reach p-4 text-center ${p.bgColor} border ${p.borderColor}`}>
+              <div className="text-2xl mb-2">{p.icon}</div>
+              <div className="text-xs font-semibold text-foreground">{p.name}</div>
+              <div className="text-[10px] text-muted-foreground mt-1">{posted} posts</div>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <div className={`h-1.5 w-1.5 rounded-full ${posted > 0 ? "bg-success" : "bg-muted-foreground/30"}`} />
+                <span className="text-[9px] text-muted-foreground">{posted > 0 ? "Active" : "Not started"}</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Pipeline View */}
-      <div className="grid grid-cols-5 gap-4 min-h-[500px]">
-        {columns.map((col) => (
-          <div key={col.id} className="space-y-3">
-            <div className={`p-3 rounded-lg ${col.color}`}>
-              <h3 className="text-sm font-semibold text-navy text-center">{col.label}</h3>
-            </div>
-            <div className="space-y-3">
-              {submissions
-                .filter((s) => s.status === col.id)
-                .map((submission) => (
-                  <div
-                    key={submission.id}
-                    className="card-reach p-4 hover:shadow-card-hover transition-shadow"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-electric-light text-electric text-sm font-bold">
-                        {submission.logo}
+      {/* Content Feed */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">Content Feed</h2>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-success" /> Posted</span>
+            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-primary" /> Ready</span>
+            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-muted-foreground/30" /> Draft</span>
+          </div>
+        </div>
+
+        {posts.map((post) => {
+          const platform = platforms.find(p => p.id === post.platform)!;
+          const status = statusConfig[post.status];
+          const StatusIcon = status.icon;
+          
+          return (
+            <div key={post.id} className="card-reach p-5 animate-fade-in">
+              <div className="flex items-start gap-4">
+                {/* Platform icon */}
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${platform.bgColor} border ${platform.borderColor} text-lg shrink-0`}>
+                  {platform.icon}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={`text-xs font-semibold ${platform.color}`}>{platform.name}</span>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium ${status.className}`}>
+                          <StatusIcon className="h-3 w-3" />
+                          {status.label}
+                        </span>
                       </div>
-                      {getStatusIcon(submission.status)}
+                      <h3 className="text-sm font-semibold text-foreground">{post.title}</h3>
                     </div>
-                    <h4 className="text-sm font-medium text-navy mb-1">{submission.platform}</h4>
                     
-                    {submission.submittedDate && (
-                      <p className="text-xs text-muted-foreground">
-                        Submitted: {submission.submittedDate}
-                      </p>
+                    {post.postedDate && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
+                        <Clock className="h-3 w-3" />
+                        {post.postedDate}
+                      </span>
                     )}
-                    
-                    <div className="flex items-center gap-2 mt-3">
-                      {submission.link && (
-                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-electric">
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          View
-                        </Button>
-                      )}
-                      {submission.status !== "verified" && submission.status !== "not_started" && (
-                        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground">
-                          <RefreshCw className="h-3 w-3 mr-1" />
-                          Re-check
-                        </Button>
-                      )}
-                    </div>
                   </div>
-                ))}
+                  
+                  {/* Content preview */}
+                  {post.content && (
+                    <div className="bg-secondary/50 rounded-xl p-3 mb-3">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 whitespace-pre-line">
+                        {post.content}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Engagement */}
+                  {post.engagement && (
+                    <div className="flex items-center gap-4 mb-3">
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <Eye className="h-3 w-3" />
+                        {post.engagement.views.toLocaleString()} views
+                      </span>
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <ThumbsUp className="h-3 w-3" />
+                        {post.engagement.upvotes} upvotes
+                      </span>
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <MessageSquare className="h-3 w-3" />
+                        {post.engagement.comments} comments
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    {post.status === "ready" && (
+                      <Button onClick={() => publishPost(post.id)} size="sm" className="h-7 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-[11px] gap-1.5">
+                        <Send className="h-3 w-3" />
+                        Publish Now
+                      </Button>
+                    )}
+                    {post.content && (
+                      <Button variant="ghost" size="sm" onClick={() => copyContent(post.content)} className="h-7 px-2 text-[11px] text-muted-foreground gap-1">
+                        <Copy className="h-3 w-3" />
+                        Copy
+                      </Button>
+                    )}
+                    {post.status === "posted" && (
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px] text-primary gap-1">
+                        <ExternalLink className="h-3 w-3" />
+                        View Post
+                      </Button>
+                    )}
+                    {post.status === "draft" && (
+                      <Button variant="ghost" size="sm" onClick={() => { setSelectedPlatform(post.platform); setShowGenerator(true); }} className="h-7 px-2 text-[11px] text-primary gap-1">
+                        <Sparkles className="h-3 w-3" />
+                        Generate with AI
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Auto Distribution Settings */}
+      <div className="card-reach">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <StarAgent mood="superhero" size={36} animate={false} />
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Auto Distribution</h3>
+              <p className="text-[11px] text-muted-foreground">Configure automatic posting schedules</p>
             </div>
           </div>
-        ))}
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {platforms.slice(0, 3).map((p) => (
+            <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{p.icon}</span>
+                <span className="text-xs font-medium text-foreground">{p.name}</span>
+              </div>
+              <Switch defaultChecked={p.autoPost} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

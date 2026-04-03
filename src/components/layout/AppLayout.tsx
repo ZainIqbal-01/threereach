@@ -11,8 +11,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     <div className="min-h-screen bg-background">
       <AppSidebar />
       <TopBar status="weak" />
-      <main className="pl-64 pt-16">
-        <div className="p-8">
+      <main className="pl-64 pt-14">
+        <div className="p-6 max-w-[1400px]">
           {children}
         </div>
       </main>

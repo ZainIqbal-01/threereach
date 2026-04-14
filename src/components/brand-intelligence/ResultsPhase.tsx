@@ -1,6 +1,8 @@
 import { Eye, EyeOff, AlertTriangle, Activity, Sparkles, RefreshCw, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StarAgent, StarMood } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
+import type { StarMood } from "@/components/StarAgent";
 import { MetaCard, SentimentPill, PriorityDot, statusStyles } from "./UIComponents";
 import { CompetitorBenchmark } from "./CompetitorBenchmark";
 import { HistoryChart } from "./HistoryChart";

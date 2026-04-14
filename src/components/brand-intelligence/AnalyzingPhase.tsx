@@ -1,4 +1,5 @@
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
 import { MetaCard } from "./UIComponents";
 import { Brain } from "lucide-react";
 

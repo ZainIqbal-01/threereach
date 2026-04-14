@@ -9,6 +9,7 @@ import { AgentBadge } from "@/components/agents/AgentBadge";
 import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useBusinessName } from "@/hooks/useBusinessName";
 
 interface QueryResult {
   id: number;
@@ -34,6 +35,7 @@ const statusBadge = (status: string) => {
 };
 
 export default function AIScan() {
+  const businessName = useBusinessName();
   const [queries, setQueries] = useState<QueryResult[]>(initialQueries);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEngine, setSelectedEngine] = useState("all");
@@ -48,7 +50,7 @@ export default function AIScan() {
     toast({ title: "🔍 Full scan initiated", description: "AI is scanning all engines for brand mentions..." });
     try {
       const { data, error } = await supabase.functions.invoke("ai-scan", {
-        body: { query: "Top companies in our industry", brandName: "Three Reach", engines: ["ChatGPT", "Gemini", "Perplexity"] },
+        body: { query: "Top companies in our industry", brandName: businessName, engines: ["ChatGPT", "Gemini", "Perplexity"] },
       });
       if (error) throw error;
       const newQueries: QueryResult[] = (data.results || []).map((r: any, i: number) => ({
@@ -77,7 +79,7 @@ export default function AIScan() {
     const engines = selectedEngine === "all" ? ["ChatGPT", "Gemini", "Perplexity"] : [selectedEngine === "chatgpt" ? "ChatGPT" : selectedEngine === "gemini" ? "Gemini" : "Perplexity"];
     try {
       const { data, error } = await supabase.functions.invoke("ai-scan", {
-        body: { query: searchQuery, brandName: "Three Reach", engines },
+        body: { query: searchQuery, brandName: businessName, engines },
       });
       if (error) throw error;
       const newResults: QueryResult[] = (data.results || []).map((r: any, i: number) => ({

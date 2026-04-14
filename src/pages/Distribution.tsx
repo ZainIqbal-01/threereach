@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
 
 type Platform = "reddit" | "quora" | "linkedin" | "medium" | "hackernews" | "twitter";
@@ -150,11 +151,11 @@ export default function Distribution() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 md:gap-4">
-          <StarAgent mood="excited" size={40} animate={true} />
+          <AgentBadge agent={agents.spark} isWorking={!!generatingId} size={40} />
           <div>
             <h1 className="text-lg md:text-xl font-bold text-foreground">Content Distribution Engine</h1>
             <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              AI-powered content creation & distribution
+              Spark generates AI-optimized content & distributes it everywhere
             </p>
           </div>
         </div>
@@ -192,7 +193,7 @@ export default function Distribution() {
         <div className="card-reach gradient-border animate-scale-in">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <StarAgent mood="thinking" size={40} animate={true} />
+              <AgentBadge agent={agents.spark} mood="thinking" size={40} showRole={false} />
               <div>
                 <h3 className="text-sm font-semibold text-foreground">AI Content Generator</h3>
                 <p className="text-[11px] text-muted-foreground">Describe your topic and I'll create platform-optimized content</p>

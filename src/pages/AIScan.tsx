@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -108,10 +109,10 @@ export default function AIScan() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 md:gap-4">
-          <StarAgent mood={isScanning || isSimulating ? "scanning" : "happy"} size={40} animate={true} />
+          <AgentBadge agent={agents.scout} isWorking={isScanning || isSimulating} size={40} />
           <div>
             <h1 className="text-lg md:text-xl font-bold text-foreground">AI Visibility Scan</h1>
-            <p className="text-xs md:text-sm text-muted-foreground">Monitor how AI engines reference your business</p>
+            <p className="text-xs md:text-sm text-muted-foreground">Scout monitors how AI engines reference your business</p>
           </div>
         </div>
         <Button 

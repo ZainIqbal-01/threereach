@@ -3,7 +3,8 @@ import { FileText, Share2, Download, Eye, RefreshCw, Check } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
 
 interface ReportSection {
@@ -76,10 +77,10 @@ export default function Reports() {
     <div className="space-y-6 animate-slide-in">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <StarAgent mood={isGenerating ? "scanning" : reportReady ? "excited" : "thinking"} size={48} animate={true} />
+        <AgentBadge agent={agents.sage} isWorking={isGenerating} mood={reportReady ? "excited" : undefined} size={48} />
         <div>
           <h1 className="text-xl font-bold text-foreground">Reports</h1>
-          <p className="text-sm text-muted-foreground">Generate and share your AI visibility reports</p>
+          <p className="text-sm text-muted-foreground">Sage generates and shares your AI visibility reports</p>
         </div>
       </div>
 

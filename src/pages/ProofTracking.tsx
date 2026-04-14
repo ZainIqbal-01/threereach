@@ -3,7 +3,8 @@ import { Search, Filter, Download, CheckCircle2, Calendar, Eye, X, Copy, Externa
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
 
 interface Proof {
@@ -59,10 +60,10 @@ export default function ProofTracking() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 md:gap-4">
-          <StarAgent mood="superhero" size={40} animate={true} />
+          <AgentBadge agent={agents.sentinel} size={40} />
           <div>
             <h1 className="text-lg md:text-xl font-bold text-foreground">Proof & Tracking</h1>
-            <p className="text-xs md:text-sm text-muted-foreground">Verified AI mentions — {filtered.length} records</p>
+            <p className="text-xs md:text-sm text-muted-foreground">Sentinel guards your verified AI mentions — {filtered.length} records</p>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={exportAll} className="gap-2 rounded-xl h-9 text-xs w-full sm:w-auto">
@@ -109,7 +110,7 @@ export default function ProofTracking() {
       {/* Proof Grid */}
       {visible.length === 0 ? (
         <div className="card-reach text-center py-12">
-          <StarAgent mood="sad" size={64} />
+          <AgentBadge agent={agents.sentinel} mood="sad" size={64} showRole={false} />
           <p className="text-sm text-muted-foreground mt-4">No proof records match your filters</p>
           <Button variant="outline" size="sm" onClick={() => { setSearchTerm(""); setEngineFilter("all"); }} className="mt-3 rounded-xl text-xs">Clear Filters</Button>
         </div>

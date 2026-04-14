@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
 
 interface ContentAsset {
@@ -128,10 +129,10 @@ export default function BuildFootprint() {
     <div className="space-y-6 animate-slide-in">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <StarAgent mood={isGenerating ? "scanning" : "thinking"} size={48} animate={true} />
+        <AgentBadge agent={agents.atlas} isWorking={isGenerating} size={48} />
         <div>
           <h1 className="text-xl font-bold text-foreground">Build AI Footprint</h1>
-          <p className="text-sm text-muted-foreground">Create content that makes you discoverable by AI engines</p>
+          <p className="text-sm text-muted-foreground">Atlas builds content that makes you discoverable by AI engines</p>
         </div>
       </div>
 

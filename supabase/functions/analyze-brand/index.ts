@@ -1,24 +1,67 @@
+/**
+ * Analyze Brand Edge Function — Hardened
+ *
+ * Security measures:
+ * - IP-based rate limiting (5 req/min — heavier operation)
+ * - Strict input validation with length limits
+ * - URL validation (http/https only)
+ * - Competitor array size cap
+ * - No client-side key exposure
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import {
+  corsResponse,
+  jsonResponse,
+  errorResponse,
+  checkRateLimit,
+  sanitizeString,
+  sanitizeUrl,
+  enforceLength,
+  safeParseBody,
+} from "../_shared/security.ts";
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return corsResponse();
+
+  // ── Rate limit: 5 requests per minute (expensive AI operation) ──
+  const rateLimited = checkRateLimit(req, { maxRequests: 5, windowMs: 60_000 });
+  if (rateLimited) return rateLimited;
+
+  if (req.method !== "POST") {
+    return errorResponse("Method not allowed", 405);
+  }
 
   try {
-    const { brandName, website, description, industry, competitors } = await req.json();
-    
-    if (!brandName || !website) {
-      return new Response(JSON.stringify({ error: "brandName and website are required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // ── Parse & validate body ──
+    const body = await safeParseBody(req);
+    if (!body) {
+      return errorResponse("Invalid or oversized request body", 400);
+    }
+
+    const brandName = enforceLength(sanitizeString(body.brandName), 200);
+    const website = sanitizeUrl(body.website);
+    const description = enforceLength(sanitizeString(body.description), 1000);
+    const industry = enforceLength(sanitizeString(body.industry), 100);
+
+    // Validate competitors: max 10, each max 200 chars
+    const rawCompetitors = Array.isArray(body.competitors) ? body.competitors : [];
+    const competitors = rawCompetitors
+      .slice(0, 10)
+      .map((c: unknown) => enforceLength(sanitizeString(c), 200))
+      .filter(Boolean);
+
+    if (!brandName) {
+      return errorResponse("brandName is required (max 200 chars)", 400);
+    }
+    if (!website) {
+      return errorResponse("A valid website URL is required", 400);
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY not configured");
+      return errorResponse("Service configuration error", 503);
+    }
 
     const systemPrompt = `You are an AI Brand Visibility Analyst. Analyze how visible a brand is across AI engines (ChatGPT, Gemini, Perplexity). Return a JSON object with this exact structure:
 {
@@ -61,7 +104,7 @@ Be realistic. Score lower for unknown brands. Provide actionable, specific gaps 
 - Website: ${website}
 - Industry: ${industry || "Not specified"}
 - Description: ${description || "Not provided"}
-- Competitors to benchmark: ${competitors?.length ? competitors.join(", ") : "None specified"}
+- Competitors to benchmark: ${competitors.length ? competitors.join(", ") : "None specified"}
 
 Provide a thorough, realistic analysis.`;
 
@@ -97,10 +140,10 @@ Provide a thorough, realistic analysis.`;
                       position: { type: "number" },
                       sentiment: { type: "string", enum: ["positive", "neutral", "negative"] },
                       snippet: { type: "string" },
-                      reasons: { type: "array", items: { type: "string" } }
+                      reasons: { type: "array", items: { type: "string" } },
                     },
-                    required: ["engine", "mentioned", "sentiment", "snippet", "reasons"]
-                  }
+                    required: ["engine", "mentioned", "sentiment", "snippet", "reasons"],
+                  },
                 },
                 gaps: { type: "array", items: { type: "string" } },
                 improvementPlan: {
@@ -110,10 +153,10 @@ Provide a thorough, realistic analysis.`;
                     properties: {
                       title: { type: "string" },
                       description: { type: "string" },
-                      priority: { type: "string", enum: ["high", "medium", "low"] }
+                      priority: { type: "string", enum: ["high", "medium", "low"] },
                     },
-                    required: ["title", "description", "priority"]
-                  }
+                    required: ["title", "description", "priority"],
+                  },
                 },
                 competitors: {
                   type: "array",
@@ -130,56 +173,42 @@ Provide a thorough, realistic analysis.`;
                           properties: {
                             engine: { type: "string" },
                             mentioned: { type: "boolean" },
-                            sentiment: { type: "string", enum: ["positive", "neutral", "negative"] }
+                            sentiment: { type: "string", enum: ["positive", "neutral", "negative"] },
                           },
-                          required: ["engine", "mentioned", "sentiment"]
-                        }
-                      }
+                          required: ["engine", "mentioned", "sentiment"],
+                        },
+                      },
                     },
-                    required: ["name", "score", "status", "engines"]
-                  }
-                }
+                    required: ["name", "score", "status", "engines"],
+                  },
+                },
               },
-              required: ["overallScore", "status", "engines", "gaps", "improvementPlan"]
-            }
-          }
+              required: ["overallScore", "status", "engines", "gaps", "improvementPlan"],
+            },
+          },
         }],
         tool_choice: { type: "function", function: { name: "brand_analysis" } },
       }),
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited. Please try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings > Workspace > Usage." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const text = await response.text();
-      console.error("AI gateway error:", response.status, text);
-      throw new Error("AI gateway error");
+      if (response.status === 429) return errorResponse("Rate limited by AI provider. Try again shortly.", 429);
+      if (response.status === 402) return errorResponse("AI credits exhausted.", 402);
+      console.error("AI gateway error:", response.status);
+      return errorResponse("AI service temporarily unavailable", 502);
     }
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
     if (!toolCall) {
-      throw new Error("No tool call in response");
+      console.error("No tool call in AI response");
+      return errorResponse("Unexpected AI response format", 502);
     }
 
     const analysis = JSON.parse(toolCall.function.arguments);
-
-    return new Response(JSON.stringify(analysis), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse(analysis);
   } catch (e) {
     console.error("analyze-brand error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return errorResponse("An internal error occurred. Please try again.", 500);
   }
 });

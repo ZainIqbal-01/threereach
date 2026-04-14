@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Zap } from "lucide-react";
+import { TrendingUp, TrendingDown, Zap, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ScoreCardProps {
@@ -14,6 +14,7 @@ const statusConfig = {
     text: "text-destructive",
     bg: "bg-destructive/10",
     border: "border-destructive/20",
+    glow: "hsl(0, 84%, 60%)",
   },
   weak: {
     label: "Weak",
@@ -21,6 +22,7 @@ const statusConfig = {
     text: "text-warning",
     bg: "bg-warning/10",
     border: "border-warning/20",
+    glow: "hsl(38, 92%, 50%)",
   },
   visible: {
     label: "Visible",
@@ -28,6 +30,7 @@ const statusConfig = {
     text: "text-primary",
     bg: "bg-primary/10",
     border: "border-primary/20",
+    glow: "hsl(217, 91%, 60%)",
   },
   strong: {
     label: "Strong",
@@ -35,6 +38,7 @@ const statusConfig = {
     text: "text-success",
     bg: "bg-success/10",
     border: "border-success/20",
+    glow: "hsl(142, 71%, 45%)",
   },
 };
 
@@ -42,23 +46,23 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
   const [animatedScore, setAnimatedScore] = useState(0);
   const change = score - previousScore;
   const config = statusConfig[status];
-  const radius = 54;
-  const strokeWidth = 10;
+
+  const radius = 58;
+  const strokeWidth = 8;
   const circumference = 2 * Math.PI * radius;
   const progress = (animatedScore / 100) * circumference;
-  const viewBox = 130;
+  const viewBox = 140;
   const center = viewBox / 2;
 
-  // Animate score on mount
   useEffect(() => {
     let frame: number;
     let start: number;
-    const duration = 1200;
+    const duration = 1400;
     const animate = (timestamp: number) => {
       if (!start) start = timestamp;
       const elapsed = timestamp - start;
       const pct = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - pct, 3); // ease-out cubic
+      const eased = 1 - Math.pow(1 - pct, 3);
       setAnimatedScore(Math.round(score * eased));
       if (pct < 1) frame = requestAnimationFrame(animate);
     };
@@ -66,38 +70,42 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
     return () => cancelAnimationFrame(frame);
   }, [score]);
 
-  // Tick marks
-  const ticks = Array.from({ length: 40 }, (_, i) => {
-    const angle = (i / 40) * 360 - 90;
+  // Segment marks
+  const segments = Array.from({ length: 60 }, (_, i) => {
+    const angle = (i / 60) * 360 - 90;
     const rad = (angle * Math.PI) / 180;
-    const isMajor = i % 10 === 0;
-    const outerR = radius + strokeWidth / 2 + 4;
-    const innerR = outerR + (isMajor ? 5 : 3);
+    const isMajor = i % 15 === 0;
+    const isMid = i % 5 === 0;
+    const outerR = radius + strokeWidth / 2 + 3;
+    const innerR = outerR + (isMajor ? 6 : isMid ? 4 : 2);
     return {
       x1: center + outerR * Math.cos(rad),
       y1: center + outerR * Math.sin(rad),
       x2: center + innerR * Math.cos(rad),
       y2: center + innerR * Math.sin(rad),
       isMajor,
+      isMid,
     };
   });
 
   return (
-    <div className="card-premium flex flex-col items-center justify-center py-6 sm:py-8">
-      <div className="flex items-center gap-2 mb-5">
-        <Zap className="h-3.5 w-3.5 text-primary" />
+    <div className="card-premium flex flex-col items-center justify-center py-5 sm:py-6">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
+          <Activity className="h-3.5 w-3.5 text-primary" />
+        </div>
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Visibility Score</p>
       </div>
 
       <div className="relative">
-        <svg className="w-44 h-44 sm:w-48 sm:h-48" viewBox={`0 0 ${viewBox} ${viewBox}`}>
+        <svg className="w-40 h-40 sm:w-44 sm:h-44" viewBox={`0 0 ${viewBox} ${viewBox}`}>
           <defs>
             <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor={config.gradient[0]} />
               <stop offset="100%" stopColor={config.gradient[1]} />
             </linearGradient>
             <filter id="scoreGlow">
-              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feGaussianBlur stdDeviation="3" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -109,14 +117,14 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
             </linearGradient>
           </defs>
 
-          {/* Tick marks */}
-          {ticks.map((t, i) => (
+          {/* Segment marks */}
+          {segments.map((t, i) => (
             <line
               key={i}
               x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}
               stroke="hsl(var(--border))"
-              strokeWidth={t.isMajor ? 1.5 : 0.8}
-              opacity={t.isMajor ? 0.5 : 0.25}
+              strokeWidth={t.isMajor ? 1.5 : t.isMid ? 1 : 0.5}
+              opacity={t.isMajor ? 0.5 : t.isMid ? 0.35 : 0.15}
             />
           ))}
 
@@ -124,7 +132,7 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
           <circle
             cx={center} cy={center} r={radius}
             fill="none" stroke="url(#bgRing)" strokeWidth={strokeWidth}
-            className="opacity-40"
+            className="opacity-30"
             style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
           />
 
@@ -139,38 +147,44 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
             filter="url(#scoreGlow)"
           />
 
-          {/* Inner subtle ring */}
+          {/* Inner ring */}
           <circle
-            cx={center} cy={center} r={radius - strokeWidth / 2 - 3}
-            fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.3"
+            cx={center} cy={center} r={radius - strokeWidth / 2 - 4}
+            fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.2"
+          />
+          
+          {/* Outer ring */}
+          <circle
+            cx={center} cy={center} r={radius + strokeWidth / 2 + 1}
+            fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.15"
           />
         </svg>
 
         {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`text-5xl sm:text-[3.25rem] font-bold tabular-nums ${config.text} counter-up`}>
+          <span className={`text-4xl sm:text-5xl font-bold tabular-nums ${config.text} counter-up`}>
             {animatedScore}
           </span>
-          <span className="text-xs text-muted-foreground font-medium -mt-0.5">/100</span>
-          <span className={`mt-1.5 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${config.bg} ${config.text} ${config.border} border`}>
+          <span className="text-[10px] text-muted-foreground font-medium -mt-0.5">/100</span>
+          <span className={`mt-1.5 text-[9px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${config.bg} ${config.text} ${config.border} border`}>
             {config.label}
           </span>
         </div>
       </div>
 
       {change !== 0 && (
-        <div className="mt-5 flex items-center gap-2 text-xs">
+        <div className="mt-4 flex items-center gap-2 text-xs">
           <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${change > 0 ? "bg-success/10 border border-success/20" : "bg-destructive/10 border border-destructive/20"}`}>
             {change > 0 ? (
-              <TrendingUp className="h-3.5 w-3.5 text-success" />
+              <TrendingUp className="h-3 w-3 text-success" />
             ) : (
-              <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+              <TrendingDown className="h-3 w-3 text-destructive" />
             )}
             <span className={`font-semibold ${change > 0 ? "text-success" : "text-destructive"}`}>
               {change > 0 ? "+" : ""}{change} pts
             </span>
           </div>
-          <span className="text-muted-foreground">this week</span>
+          <span className="text-muted-foreground text-[11px]">this week</span>
         </div>
       )}
     </div>

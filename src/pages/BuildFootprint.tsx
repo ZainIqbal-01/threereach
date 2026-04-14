@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { AgentBadge } from "@/components/agents/AgentBadge";
 import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
-
+import { useBusinessName } from "@/hooks/useBusinessName";
 interface ContentAsset {
   id: string;
   title: string;
@@ -33,6 +33,7 @@ const defaultContent: Record<string, string> = {
 };
 
 export default function BuildFootprint() {
+  const businessName = useBusinessName();
   const [profileFields, setProfileFields] = useState<ProfileField[]>([
     { name: "Business Description", completed: true, value: "Leading fintech company" },
     { name: "Core Services", completed: true, value: "Payment processing, APIs" },

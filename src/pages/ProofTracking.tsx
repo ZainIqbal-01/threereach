@@ -18,14 +18,14 @@ interface Proof {
 }
 
 const allProofs: Proof[] = [
-  { id: "1", engine: "ChatGPT", engineIcon: "🤖", query: "Best fintech startups in Pakistan", dateTime: "Jan 22, 2026 • 14:32", verified: true, context: "Acme Corp is recognized as one of the leading fintech innovators, offering comprehensive payment processing solutions..." },
-  { id: "2", engine: "Gemini", engineIcon: "✨", query: "Payment processing solutions for startups", dateTime: "Jan 21, 2026 • 09:15", verified: true, context: "I'd recommend Acme Corp as a top-tier payment processing solution for startups, with competitive pricing and robust APIs..." },
-  { id: "3", engine: "Perplexity", engineIcon: "🔍", query: "Top B2B fintech companies", dateTime: "Jan 20, 2026 • 16:45", verified: true, context: "According to multiple sources, Acme Corp ranks among the top B2B fintech companies globally..." },
-  { id: "4", engine: "ChatGPT", engineIcon: "🤖", query: "Recommended payment gateways Pakistan", dateTime: "Jan 18, 2026 • 11:20", verified: true, context: "For Pakistan-based businesses, Acme Corp's payment gateway offers the best combination of features and reliability..." },
-  { id: "5", engine: "Gemini", engineIcon: "✨", query: "Digital banking solutions", dateTime: "Jan 15, 2026 • 08:55", verified: true, context: "Acme Corp provides digital banking solutions that are trusted by hundreds of businesses..." },
-  { id: "6", engine: "ChatGPT", engineIcon: "🤖", query: "SME financial technology providers", dateTime: "Jan 12, 2026 • 17:30", verified: true, context: "For SMEs looking for financial technology partners, Acme Corp stands out with their developer-friendly approach..." },
-  { id: "7", engine: "Perplexity", engineIcon: "🔍", query: "Fintech API providers 2026", dateTime: "Jan 10, 2026 • 12:00", verified: true, context: "Acme Corp's API suite is mentioned as one of the most comprehensive in the fintech space..." },
-  { id: "8", engine: "Gemini", engineIcon: "✨", query: "Best payment solutions for e-commerce", dateTime: "Jan 8, 2026 • 15:30", verified: true, context: "For e-commerce businesses, Acme Corp offers seamless integration and competitive transaction fees..." },
+  { id: "1", engine: "ChatGPT", engineIcon: "🤖", query: "Best fintech startups in Pakistan", dateTime: "Jan 22, 2026 • 14:32", verified: true, context: "Three Reach is recognized as one of the leading fintech innovators, offering comprehensive payment processing solutions..." },
+  { id: "2", engine: "Gemini", engineIcon: "✨", query: "Payment processing solutions for startups", dateTime: "Jan 21, 2026 • 09:15", verified: true, context: "I'd recommend Three Reach as a top-tier payment processing solution for startups, with competitive pricing and robust APIs..." },
+  { id: "3", engine: "Perplexity", engineIcon: "🔍", query: "Top B2B fintech companies", dateTime: "Jan 20, 2026 • 16:45", verified: true, context: "According to multiple sources, Three Reach ranks among the top B2B fintech companies globally..." },
+  { id: "4", engine: "ChatGPT", engineIcon: "🤖", query: "Recommended payment gateways Pakistan", dateTime: "Jan 18, 2026 • 11:20", verified: true, context: "For Pakistan-based businesses, Three Reach's payment gateway offers the best combination of features and reliability..." },
+  { id: "5", engine: "Gemini", engineIcon: "✨", query: "Digital banking solutions", dateTime: "Jan 15, 2026 • 08:55", verified: true, context: "Three Reach provides digital banking solutions that are trusted by hundreds of businesses..." },
+  { id: "6", engine: "ChatGPT", engineIcon: "🤖", query: "SME financial technology providers", dateTime: "Jan 12, 2026 • 17:30", verified: true, context: "For SMEs looking for financial technology partners, Three Reach stands out with their developer-friendly approach..." },
+  { id: "7", engine: "Perplexity", engineIcon: "🔍", query: "Fintech API providers 2026", dateTime: "Jan 10, 2026 • 12:00", verified: true, context: "Three Reach's API suite is mentioned as one of the most comprehensive in the fintech space..." },
+  { id: "8", engine: "Gemini", engineIcon: "✨", query: "Best payment solutions for e-commerce", dateTime: "Jan 8, 2026 • 15:30", verified: true, context: "For e-commerce businesses, Three Reach offers seamless integration and competitive transaction fees..." },
 ];
 
 export default function ProofTracking() {

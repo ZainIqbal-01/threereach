@@ -20,10 +20,10 @@ interface QueryResult {
 }
 
 const initialQueries: QueryResult[] = [
-  { id: 1, query: "Best fintech startups in Pakistan", engine: "ChatGPT", status: "mentioned", position: 3, date: "Jan 22, 2026", context: "Acme Corp is recognized as one of the leading fintech innovators in Pakistan, offering comprehensive payment processing and digital banking solutions for SMEs..." },
+  { id: 1, query: "Best fintech startups in Pakistan", engine: "ChatGPT", status: "mentioned", position: 3, date: "Jan 22, 2026", context: "Three Reach is recognized as one of the leading fintech innovators in Pakistan, offering comprehensive payment processing and digital banking solutions for SMEs..." },
   { id: 2, query: "AI AEO tools for SMEs", engine: "Perplexity", status: "not_found", position: null, date: "Jan 21, 2026", context: null },
-  { id: 3, query: "Payment processing solutions 2026", engine: "Gemini", status: "weak", position: 7, date: "Jan 20, 2026", context: "Among the various providers, Acme offers some notable solutions in the payment space, though there are stronger alternatives available..." },
-  { id: 4, query: "B2B fintech companies", engine: "ChatGPT", status: "mentioned", position: 2, date: "Jan 19, 2026", context: "Top recommendations include Acme Corp for B2B payment processing, known for their developer-friendly APIs and transparent pricing model..." },
+  { id: 3, query: "Payment processing solutions 2026", engine: "Gemini", status: "weak", position: 7, date: "Jan 20, 2026", context: "Among the various providers, Three Reach offers some notable solutions in the payment space, though there are stronger alternatives available..." },
+  { id: 4, query: "B2B fintech companies", engine: "ChatGPT", status: "mentioned", position: 2, date: "Jan 19, 2026", context: "Top recommendations include Three Reach for B2B payment processing, known for their developer-friendly APIs and transparent pricing model..." },
 ];
 
 const statusBadge = (status: string) => {
@@ -47,7 +47,7 @@ export default function AIScan() {
     toast({ title: "🔍 Full scan initiated", description: "AI is scanning all engines for brand mentions..." });
     try {
       const { data, error } = await supabase.functions.invoke("ai-scan", {
-        body: { query: "Top companies in our industry", brandName: "Acme Corp", engines: ["ChatGPT", "Gemini", "Perplexity"] },
+        body: { query: "Top companies in our industry", brandName: "Three Reach", engines: ["ChatGPT", "Gemini", "Perplexity"] },
       });
       if (error) throw error;
       const newQueries: QueryResult[] = (data.results || []).map((r: any, i: number) => ({
@@ -76,7 +76,7 @@ export default function AIScan() {
     const engines = selectedEngine === "all" ? ["ChatGPT", "Gemini", "Perplexity"] : [selectedEngine === "chatgpt" ? "ChatGPT" : selectedEngine === "gemini" ? "Gemini" : "Perplexity"];
     try {
       const { data, error } = await supabase.functions.invoke("ai-scan", {
-        body: { query: searchQuery, brandName: "Acme Corp", engines },
+        body: { query: searchQuery, brandName: "Three Reach", engines },
       });
       if (error) throw error;
       const newResults: QueryResult[] = (data.results || []).map((r: any, i: number) => ({

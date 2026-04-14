@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Bell, User, ChevronDown, Settings, LogOut, CreditCard, X, Search, Menu, Sun, Moon } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@/hooks/useTheme";
+import { useBusinessName } from "@/hooks/useBusinessName";
 import { SearchDialog } from "./SearchDialog";
 
 interface TopBarProps {
@@ -36,9 +37,10 @@ const pageTitles: Record<string, string> = {
   "/dashboard/settings": "Settings",
 };
 
-export function TopBar({ workspaceName = "Three Reach", status = "weak", onMenuClick }: TopBarProps) {
+export function TopBar({ status = "weak", onMenuClick }: TopBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const workspaceName = useBusinessName();
   const { dark, toggle } = useTheme();
   const statusInfo = statusConfig[status];
   const [showNotifs, setShowNotifs] = useState(false);

@@ -38,9 +38,17 @@ const moodForRoute: Record<string, "happy" | "scanning" | "thinking" | "excited"
   "/dashboard/reports": "thinking",
 };
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onNavigate?: () => void;
+}
+
+export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const location = useLocation();
   const currentMood = moodForRoute[location.pathname] || "happy";
+
+  const handleClick = () => {
+    onNavigate?.();
+  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
@@ -76,6 +84,7 @@ export function AppSidebar() {
             <Link
               key={item.name}
               to={item.href}
+              onClick={handleClick}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 group relative ${
                 isActive
                   ? "bg-primary/15 text-primary"
@@ -103,6 +112,7 @@ export function AppSidebar() {
             <Link
               key={item.name}
               to={item.href}
+              onClick={handleClick}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 group relative ${
                 isActive
                   ? "bg-primary/15 text-primary"

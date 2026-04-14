@@ -25,21 +25,6 @@ const initialQueries: QueryResult[] = [
   { id: 4, query: "B2B fintech companies", engine: "ChatGPT", status: "mentioned", position: 2, date: "Jan 19, 2026", context: "Top recommendations include Acme Corp for B2B payment processing, known for their developer-friendly APIs and transparent pricing model..." },
 ];
 
-const simulatedResponses: Record<string, { status: "mentioned" | "weak" | "not_found"; position: number | null; context: string | null }[]> = {
-  chatgpt: [
-    { status: "mentioned", position: 2, context: "Based on my analysis, Acme Corp stands out as a leading solution in this space, offering comprehensive features and reliable performance..." },
-    { status: "weak", position: 5, context: "While there are several options available, Acme Corp is mentioned among the providers worth considering..." },
-  ],
-  gemini: [
-    { status: "mentioned", position: 3, context: "I'd recommend looking into Acme Corp as one of the top contenders. Their platform offers robust capabilities..." },
-    { status: "not_found", position: null, context: null },
-  ],
-  perplexity: [
-    { status: "weak", position: 6, context: "Sources mention Acme Corp briefly in the context of emerging fintech solutions..." },
-    { status: "mentioned", position: 1, context: "According to multiple sources, Acme Corp is the leading provider in this category, with strong reviews across platforms..." },
-  ],
-};
-
 const statusBadge = (status: string) => {
   const config: Record<string, string> = { mentioned: "status-strong", weak: "status-weak", not_found: "status-invisible" };
   const labels: Record<string, string> = { mentioned: "Mentioned", weak: "Weak", not_found: "Not Found" };
@@ -59,20 +44,14 @@ export default function AIScan() {
   const runFullScan = async () => {
     setIsScanning(true);
     toast({ title: "🔍 Full scan initiated", description: "AI is scanning all engines for brand mentions..." });
-    
     try {
       const { data, error } = await supabase.functions.invoke("ai-scan", {
         body: { query: "Top companies in our industry", brandName: "Acme Corp", engines: ["ChatGPT", "Gemini", "Perplexity"] },
       });
-
       if (error) throw error;
-
       const newQueries: QueryResult[] = (data.results || []).map((r: any, i: number) => ({
-        id: Date.now() + i,
-        query: "Full scan — industry visibility check",
-        engine: r.engine,
-        status: r.status,
-        position: r.position || null,
+        id: Date.now() + i, query: "Full scan — industry visibility check", engine: r.engine,
+        status: r.status, position: r.position || null,
         date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
         context: r.context,
       }));
@@ -92,27 +71,19 @@ export default function AIScan() {
       toast({ title: "Enter a query", description: "Type a search query to simulate", variant: "destructive" });
       return;
     }
-
     setIsSimulating(true);
     const engines = selectedEngine === "all" ? ["ChatGPT", "Gemini", "Perplexity"] : [selectedEngine === "chatgpt" ? "ChatGPT" : selectedEngine === "gemini" ? "Gemini" : "Perplexity"];
-    
     try {
       const { data, error } = await supabase.functions.invoke("ai-scan", {
         body: { query: searchQuery, brandName: "Acme Corp", engines },
       });
-
       if (error) throw error;
-
       const newResults: QueryResult[] = (data.results || []).map((r: any, i: number) => ({
-        id: Date.now() + i,
-        query: searchQuery,
-        engine: r.engine,
-        status: r.status,
-        position: r.position || null,
+        id: Date.now() + i, query: searchQuery, engine: r.engine,
+        status: r.status, position: r.position || null,
         date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
         context: r.context,
       }));
-
       setQueries(prev => [...newResults, ...prev]);
       setSearchQuery("");
       const mentioned = newResults.filter((r: QueryResult) => r.status === "mentioned").length;
@@ -133,20 +104,20 @@ export default function AIScan() {
   const latestMention = queries.find(q => q.status !== "not_found");
 
   return (
-    <div className="space-y-6 animate-slide-in">
+    <div className="space-y-4 md:space-y-6 animate-slide-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <StarAgent mood={isScanning || isSimulating ? "scanning" : "happy"} size={48} animate={true} />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 md:gap-4">
+          <StarAgent mood={isScanning || isSimulating ? "scanning" : "happy"} size={40} animate={true} />
           <div>
-            <h1 className="text-xl font-bold text-foreground">AI Visibility Scan</h1>
-            <p className="text-sm text-muted-foreground">Monitor how AI engines reference your business</p>
+            <h1 className="text-lg md:text-xl font-bold text-foreground">AI Visibility Scan</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">Monitor how AI engines reference your business</p>
           </div>
         </div>
         <Button 
           onClick={runFullScan} 
           disabled={isScanning}
-          className="gap-2 rounded-xl h-10 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow text-xs"
+          className="gap-2 rounded-xl h-10 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow text-xs w-full sm:w-auto"
         >
           {isScanning ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           {isScanning ? "Scanning..." : "Run New Scan"}
@@ -158,7 +129,7 @@ export default function AIScan() {
         <h3 className="text-sm font-semibold text-foreground mb-1">Query Simulation</h3>
         <p className="text-[11px] text-muted-foreground mb-4">Test how AI engines respond to queries about your industry</p>
         
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Input 
             placeholder="Enter a query to test..." 
             value={searchQuery}
@@ -166,25 +137,27 @@ export default function AIScan() {
             onKeyDown={(e) => e.key === "Enter" && simulateQuery()}
             className="h-11 rounded-xl border-border/60 bg-secondary/30 focus:bg-card flex-1" 
           />
-          <Select value={selectedEngine} onValueChange={setSelectedEngine}>
-            <SelectTrigger className="w-40 h-11 rounded-xl border-border/60">
-              <SelectValue placeholder="Engine" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Engines</SelectItem>
-              <SelectItem value="chatgpt">ChatGPT</SelectItem>
-              <SelectItem value="gemini">Gemini</SelectItem>
-              <SelectItem value="perplexity">Perplexity</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button 
-            onClick={simulateQuery} 
-            disabled={isSimulating}
-            className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
-          >
-            {isSimulating ? <RefreshCw className="h-4 w-4 animate-spin mr-1.5" /> : <Zap className="h-4 w-4 mr-1.5" />}
-            {isSimulating ? "Simulating..." : "Simulate"}
-          </Button>
+          <div className="flex gap-3">
+            <Select value={selectedEngine} onValueChange={setSelectedEngine}>
+              <SelectTrigger className="w-full sm:w-40 h-11 rounded-xl border-border/60">
+                <SelectValue placeholder="Engine" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Engines</SelectItem>
+                <SelectItem value="chatgpt">ChatGPT</SelectItem>
+                <SelectItem value="gemini">Gemini</SelectItem>
+                <SelectItem value="perplexity">Perplexity</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button 
+              onClick={simulateQuery} 
+              disabled={isSimulating}
+              className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs whitespace-nowrap"
+            >
+              {isSimulating ? <RefreshCw className="h-4 w-4 animate-spin mr-1.5" /> : <Zap className="h-4 w-4 mr-1.5" />}
+              {isSimulating ? "Simulating..." : "Simulate"}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -197,25 +170,16 @@ export default function AIScan() {
               <Clock className="h-3 w-3" /> {latestMention.date}
             </span>
           </div>
-          
-          <div className="bg-secondary/40 rounded-xl p-5 border border-border/40">
+          <div className="bg-secondary/40 rounded-xl p-4 md:p-5 border border-border/40">
             <p className="text-xs font-medium text-foreground mb-2">Query: "{latestMention.query}"</p>
-            <div className="bg-card rounded-xl p-4 border border-border/60">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                "{latestMention.context}"
-              </p>
+            <div className="bg-card rounded-xl p-3 md:p-4 border border-border/60">
+              <p className="text-xs text-muted-foreground leading-relaxed">"{latestMention.context}"</p>
             </div>
-            <div className="flex items-center gap-3 mt-3">
+            <div className="flex flex-wrap items-center gap-3 mt-3">
               <span className={`status-badge ${latestMention.status === "mentioned" ? "status-strong" : "status-weak"}`}>
                 <Eye className="h-3 w-3" /> {latestMention.status === "mentioned" ? `Mentioned #${latestMention.position}` : `Weak #${latestMention.position}`}
               </span>
-              <Button 
-                variant="ghost" size="sm" 
-                onClick={() => {
-                  toast({ title: "📸 Screenshot captured", description: "Proof screenshot saved to your gallery" });
-                }}
-                className="text-primary gap-1 h-7 text-xs"
-              >
+              <Button variant="ghost" size="sm" onClick={() => toast({ title: "📸 Screenshot captured" })} className="text-primary gap-1 h-7 text-xs">
                 <Camera className="h-3 w-3" /> Screenshot
               </Button>
             </div>
@@ -227,52 +191,44 @@ export default function AIScan() {
       <div className="card-reach">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-foreground">Scan History ({filteredQueries.length})</h3>
-          <Button 
-            variant="outline" size="sm" 
-            onClick={() => setShowFilters(!showFilters)}
-            className={`gap-1 h-8 rounded-xl text-xs ${showFilters ? "bg-primary/10 text-primary border-primary/30" : ""}`}
-          >
+          <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)}
+            className={`gap-1 h-8 rounded-xl text-xs ${showFilters ? "bg-primary/10 text-primary border-primary/30" : ""}`}>
             <Filter className="h-3 w-3" /> Filters
           </Button>
         </div>
 
         {showFilters && (
-          <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-secondary/40 animate-fade-in">
+          <div className="flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl bg-secondary/40 animate-fade-in">
             <span className="text-xs text-muted-foreground">Engine:</span>
             {["all", "chatgpt", "gemini", "perplexity"].map(eng => (
-              <Button
-                key={eng}
-                variant={filterEngine === eng ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilterEngine(eng)}
-                className="h-7 px-3 rounded-lg text-[11px]"
-              >
+              <Button key={eng} variant={filterEngine === eng ? "default" : "outline"} size="sm"
+                onClick={() => setFilterEngine(eng)} className="h-7 px-3 rounded-lg text-[11px]">
                 {eng === "all" ? "All" : eng === "chatgpt" ? "ChatGPT" : eng === "gemini" ? "Gemini" : "Perplexity"}
               </Button>
             ))}
           </div>
         )}
         
-        <div className="rounded-xl border border-border/60 overflow-hidden">
+        <div className="rounded-xl border border-border/60 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="bg-secondary/50">
                 <TableHead className="text-[11px] uppercase tracking-wider">Date</TableHead>
                 <TableHead className="text-[11px] uppercase tracking-wider">Engine</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-wider">Query</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-wider hidden sm:table-cell">Query</TableHead>
                 <TableHead className="text-[11px] uppercase tracking-wider">Status</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-wider">Position</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-wider hidden md:table-cell">Position</TableHead>
                 <TableHead className="text-right text-[11px] uppercase tracking-wider">Proof</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredQueries.map((q) => (
                 <TableRow key={q.id} className="hover:bg-secondary/30 cursor-pointer" onClick={() => q.context && setViewingProof(q)}>
-                  <TableCell className="text-xs text-muted-foreground">{q.date}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{q.date}</TableCell>
                   <TableCell className="text-xs font-medium">{q.engine}</TableCell>
-                  <TableCell className="text-xs max-w-xs truncate">{q.query}</TableCell>
+                  <TableCell className="text-xs max-w-xs truncate hidden sm:table-cell">{q.query}</TableCell>
                   <TableCell>{statusBadge(q.status)}</TableCell>
-                  <TableCell className="text-xs">{q.position ? `#${q.position}` : "—"}</TableCell>
+                  <TableCell className="text-xs hidden md:table-cell">{q.position ? `#${q.position}` : "—"}</TableCell>
                   <TableCell className="text-right">
                     {q.status !== "not_found" && (
                       <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setViewingProof(q); }} className="gap-1 text-primary text-xs h-7">
@@ -289,13 +245,11 @@ export default function AIScan() {
 
       {/* Proof Detail Modal */}
       {viewingProof && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm animate-fade-in" onClick={() => setViewingProof(null)}>
-          <div className="bg-card rounded-2xl border border-border/60 p-6 max-w-lg w-full mx-4 animate-scale-in shadow-lg" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm animate-fade-in p-4" onClick={() => setViewingProof(null)}>
+          <div className="bg-card rounded-2xl border border-border/60 p-5 md:p-6 max-w-lg w-full animate-scale-in shadow-lg" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-foreground">AI Response Proof</h3>
-              <Button variant="ghost" size="sm" onClick={() => setViewingProof(null)} className="h-7 w-7 p-0">
-                <X className="h-4 w-4" />
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setViewingProof(null)} className="h-7 w-7 p-0"><X className="h-4 w-4" /></Button>
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -306,7 +260,7 @@ export default function AIScan() {
                 <span className="text-xs font-medium text-muted-foreground">Query:</span>
                 <span className="text-xs text-foreground">"{viewingProof.query}"</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Status:</span>
                 {statusBadge(viewingProof.status)}
                 {viewingProof.position && <span className="text-xs text-muted-foreground">Position #{viewingProof.position}</span>}
@@ -314,16 +268,14 @@ export default function AIScan() {
               <div className="bg-secondary/50 rounded-xl p-4 border border-border/40">
                 <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">{viewingProof.context}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button size="sm" className="h-8 rounded-xl text-xs gap-1" onClick={() => {
                   navigator.clipboard.writeText(viewingProof.context || "");
-                  toast({ title: "Copied!", description: "Response copied to clipboard" });
+                  toast({ title: "Copied!" });
                 }}>
                   <Camera className="h-3 w-3" /> Copy Response
                 </Button>
-                <Button variant="outline" size="sm" className="h-8 rounded-xl text-xs gap-1" onClick={() => {
-                  toast({ title: "📸 Screenshot saved", description: "Proof added to your gallery" });
-                }}>
+                <Button variant="outline" size="sm" className="h-8 rounded-xl text-xs gap-1" onClick={() => toast({ title: "📸 Screenshot saved" })}>
                   <Camera className="h-3 w-3" /> Save Screenshot
                 </Button>
               </div>

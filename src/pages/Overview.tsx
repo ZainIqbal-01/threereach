@@ -45,25 +45,25 @@ export default function Overview() {
   };
 
   return (
-    <div className="space-y-6 animate-slide-in">
+    <div className="space-y-4 md:space-y-6 animate-slide-in">
       {/* Hero Welcome */}
       <div className="card-premium gradient-hero">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <StarAgent mood="happy" size={56} animate={true} />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4 md:gap-5">
+            <StarAgent mood="happy" size={48} animate={true} />
             <div>
-              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
                 Welcome back <span className="gradient-text">Acme Corp</span>
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">Here's your AI visibility snapshot for today</p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1">Here's your AI visibility snapshot for today</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={exportDashboard} className="gap-2 rounded-xl h-9 text-xs border-border/60 shadow-none">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" onClick={exportDashboard} className="gap-2 rounded-xl h-9 text-xs border-border/60 shadow-none flex-1 sm:flex-none">
               <Download className="h-3.5 w-3.5" />
               Export
             </Button>
-            <Button size="sm" onClick={() => setShowBoost(true)} className="gap-2 rounded-xl h-9 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow text-xs">
+            <Button size="sm" onClick={() => setShowBoost(true)} className="gap-2 rounded-xl h-9 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow text-xs flex-1 sm:flex-none">
               <Sparkles className="h-3.5 w-3.5" />
               Boost Visibility
             </Button>
@@ -84,7 +84,7 @@ export default function Overview() {
             </div>
             <Button variant="ghost" size="sm" onClick={() => setShowBoost(false)} className="h-8 w-8 p-0 rounded-xl"><X className="h-4 w-4" /></Button>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { label: "Complete Footprint", desc: "Finish your business profile", href: "/dashboard/footprint", icon: "🏗️", color: "from-primary/10 to-primary/5" },
               { label: "Run Full Scan", desc: "Check all AI engines", href: "/dashboard/scan", icon: "🔍", color: "from-accent/10 to-accent/5" },
@@ -103,30 +103,30 @@ export default function Overview() {
       )}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { icon: Brain, label: "Brand Intelligence", desc: "AI perception analysis", href: "/dashboard/brand-intelligence", color: "text-primary", bgColor: "bg-primary/8" },
           { icon: Share2, label: "Distribution", desc: "AI content engine", href: "/dashboard/distribution", color: "text-accent", bgColor: "bg-accent/8" },
           { icon: Shield, label: "Proof & Tracking", desc: "3 verified mentions", href: "/dashboard/proof", color: "text-[hsl(var(--success))]", bgColor: "bg-success-light" },
           { icon: Zap, label: "Build Footprint", desc: "40% complete", href: "/dashboard/footprint", color: "text-[hsl(var(--warning))]", bgColor: "bg-warning-light" },
         ].map((action, i) => (
-          <Link key={action.label} to={action.href} className={`card-interactive p-5 group animate-slide-up stagger-${i + 1}`} style={{ animationFillMode: 'both' }}>
+          <Link key={action.label} to={action.href} className={`card-interactive p-4 md:p-5 group animate-slide-up stagger-${i + 1}`} style={{ animationFillMode: 'both' }}>
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.bgColor} mb-3`}>
               <action.icon className={`h-5 w-5 ${action.color}`} />
             </div>
-            <h3 className="text-sm font-semibold text-foreground">{action.label}</h3>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{action.desc}</p>
+            <h3 className="text-xs md:text-sm font-semibold text-foreground">{action.label}</h3>
+            <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">{action.desc}</p>
             <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/20 group-hover:text-primary mt-3 transition-all group-hover:translate-x-1" />
           </Link>
         ))}
       </div>
 
       {/* Score + Timeline */}
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-4">
           <ScoreCard score={42} previousScore={38} status="weak" />
         </div>
-        <div className="col-span-8">
+        <div className="lg:col-span-8">
           <ProgressTimeline />
         </div>
       </div>
@@ -142,7 +142,7 @@ export default function Overview() {
             Run Full Scan <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <EngineCard name="ChatGPT" logo={<ChatGPTLogo />} status="weak" lastChecked="2 hours ago" confidence={34} />
           <EngineCard name="Google Gemini" logo={<GeminiLogo />} status="mentioned" lastChecked="1 hour ago" confidence={67} />
           <EngineCard name="Perplexity" logo={<PerplexityLogo />} status="not_found" lastChecked="3 hours ago" />
@@ -150,7 +150,7 @@ export default function Overview() {
       </div>
 
       {/* Bottom Grid */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <ModuleProgress title="Footprint Build" description="Profile & content completion" progress={40} color="primary" />
         <ModuleProgress title="Distribution" description="Platform submissions" progress={18} total={60} unit="sources live" color="accent" />
         <ProofCount count={3} recentMentions={['"Acme Corp is a leading fintech..."', '"Recommended: Acme payment solutions"']} />
@@ -172,10 +172,10 @@ export default function Overview() {
             { icon: "📊", text: "Visibility score increased by +4 points", time: "1 day ago", href: "/dashboard/brand-intelligence" },
             { icon: "⚡", text: "New improvement plan generated based on scan results", time: "2 days ago", href: "/dashboard/scan" },
           ].map((activity, i) => (
-            <Link key={i} to={activity.href} className="flex items-center gap-3 p-3.5 rounded-xl hover:bg-secondary/60 transition-all group">
+            <Link key={i} to={activity.href} className="flex items-center gap-3 p-3 md:p-3.5 rounded-xl hover:bg-secondary/60 transition-all group">
               <span className="text-lg shrink-0">{activity.icon}</span>
-              <p className="text-xs text-foreground flex-1">{activity.text}</p>
-              <span className="text-[10px] text-muted-foreground shrink-0">{activity.time}</span>
+              <p className="text-xs text-foreground flex-1 line-clamp-1">{activity.text}</p>
+              <span className="text-[10px] text-muted-foreground shrink-0 hidden sm:inline">{activity.time}</span>
               <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-primary transition-all group-hover:translate-x-0.5" />
             </Link>
           ))}

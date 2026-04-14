@@ -279,8 +279,10 @@ export default function Onboarding() {
                           placeholder="Your Company Name"
                           value={formData.businessName}
                           onChange={handleInputChange}
-                          className="h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm"
+                          maxLength={200}
+                          className={`h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm ${formErrors.businessName ? "border-destructive" : ""}`}
                         />
+                        {formErrors.businessName && <p className="text-[10px] text-destructive mt-1">{formErrors.businessName}</p>}
                       </div>
                     </div>
 
@@ -293,8 +295,10 @@ export default function Onboarding() {
                         placeholder="Describe your business, products, and target audience..."
                         value={formData.description}
                         onChange={handleInputChange}
-                        className="min-h-[80px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none transition-colors focus-glow text-sm"
+                        maxLength={1000}
+                        className={`min-h-[80px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none transition-colors focus-glow text-sm ${formErrors.description ? "border-destructive" : ""}`}
                       />
+                      {formErrors.description && <p className="text-[10px] text-destructive mt-1">{formErrors.description}</p>}
                     </div>
 
                     <div>
@@ -306,7 +310,8 @@ export default function Onboarding() {
                         placeholder="e.g., Web Dev, Marketing, AI Solutions"
                         value={formData.services}
                         onChange={handleInputChange}
-                        className="h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm"
+                        maxLength={500}
+                        className={`h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm ${formErrors.services ? "border-destructive" : ""}`}
                       />
                     </div>
 

@@ -13,11 +13,11 @@ interface Competitor { name: string; domain: string; tracked: boolean; }
 
 export default function Settings() {
   const [profile, setProfile] = useState({
-    businessName: "Acme Corp",
-    description: "Acme Corp is a leading fintech company providing innovative payment solutions...",
+    businessName: "Three Reach",
+    description: "Three Reach is a leading fintech company providing innovative payment solutions...",
     industry: "Financial Technology",
     founded: "2020",
-    website: "https://acme.com",
+    website: "https://threereach.com",
   });
 
   const [engines, setEngines] = useState([
@@ -28,9 +28,9 @@ export default function Settings() {
   ]);
 
   const [team, setTeam] = useState<TeamMember[]>([
-    { name: "John Doe", email: "john@acme.com", role: "Admin", avatar: "JD" },
-    { name: "Sarah Smith", email: "sarah@acme.com", role: "Editor", avatar: "SS" },
-    { name: "Mike Johnson", email: "mike@acme.com", role: "Viewer", avatar: "MJ" },
+    { name: "John Doe", email: "john@threereach.com", role: "Admin", avatar: "JD" },
+    { name: "Sarah Smith", email: "sarah@threereach.com", role: "Editor", avatar: "SS" },
+    { name: "Mike Johnson", email: "mike@threereach.com", role: "Viewer", avatar: "MJ" },
   ]);
 
   const [competitors, setCompetitors] = useState<Competitor[]>([

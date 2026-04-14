@@ -112,7 +112,7 @@ export default function Onboarding() {
         {/* Left panel — branding showcase */}
         <div className="hidden lg:flex lg:w-[46%] xl:w-[44%] flex-col p-10 xl:p-14">
           <div className="flex-1 flex flex-col justify-center">
-            <img src={logo} alt="Three Reach" className="h-10 mb-10 animate-fade-in" />
+            <img src={logo} alt="Three Reach" className="h-12 w-auto object-contain mb-10 animate-fade-in" />
             
             <div className="mb-2 animate-slide-up">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-primary/8 text-primary border border-primary/15">
@@ -175,7 +175,7 @@ export default function Onboarding() {
           <div className="w-full max-w-[420px] animate-scale-in">
             {/* Mobile header */}
             <div className="lg:hidden text-center mb-6">
-              <img src={logo} alt="Three Reach" className="h-9 mx-auto mb-4" />
+              <img src={logo} alt="Three Reach" className="h-12 w-auto object-contain mx-auto mb-4" />
               <StarAgent
                 mood={isAnalyzing ? "scanning" : "waving"}
                 size={68}

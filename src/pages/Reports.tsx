@@ -52,7 +52,7 @@ export default function Reports() {
     }
     toast({ title: "📥 Downloading PDF...", description: "Your report is being prepared for download" });
     setTimeout(() => {
-      const content = `AI Visibility Report - Acme Corp\nGenerated: ${new Date().toLocaleDateString()}\n\nVisibility Score: 42/100\nStatus: Weak\n\nSections: ${sections.filter(s => s.checked).map(s => s.label).join(", ")}\n\nChatGPT: Weak (Position #3)\nGemini: Strong (Position #1)\nPerplexity: Not Found`;
+      const content = `AI Visibility Report - Three Reach\nGenerated: ${new Date().toLocaleDateString()}\n\nVisibility Score: 42/100\nStatus: Weak\n\nSections: ${sections.filter(s => s.checked).map(s => s.label).join(", ")}\n\nChatGPT: Weak (Position #3)\nGemini: Strong (Position #1)\nPerplexity: Not Found`;
       const blob = new Blob([content], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -154,7 +154,7 @@ export default function Reports() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-bold text-foreground">AI Visibility Report</h2>
-                      <p className="text-xs text-muted-foreground">Acme Corp • January 2026</p>
+                      <p className="text-xs text-muted-foreground">Three Reach • January 2026</p>
                     </div>
                     <div className="text-right">
                       <div className="text-3xl font-bold text-primary">42</div>

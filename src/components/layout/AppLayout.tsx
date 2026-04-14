@@ -27,7 +27,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       </Sheet>
 
       <TopBar status="weak" onMenuClick={() => setSidebarOpen(true)} />
-      <main className="pl-0 lg:pl-64 pt-14">
+      <main className="pl-0 lg:pl-64 pt-14 h-[calc(100vh-3.5rem)] overflow-y-auto scroll-smooth">
         <div className="p-4 md:p-6 max-w-[1400px]">
           {children}
         </div>

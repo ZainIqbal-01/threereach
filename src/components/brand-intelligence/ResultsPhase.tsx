@@ -1,4 +1,4 @@
-import { Eye, EyeOff, AlertTriangle, Activity, Sparkles, RefreshCw, Zap, ArrowRight, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, AlertTriangle, Activity, Sparkles, RefreshCw, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StarAgent, StarMood } from "@/components/StarAgent";
 import { MetaCard, SentimentPill, PriorityDot, statusStyles } from "./UIComponents";

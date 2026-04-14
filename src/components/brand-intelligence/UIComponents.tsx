@@ -1,8 +1,8 @@
 import { ThumbsUp, ThumbsDown, Minus } from "lucide-react";
 
-export const MetaCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+export const MetaCard = ({ children, className = "", style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
   <div className={`bg-card rounded-2xl border border-border/60 p-5 transition-all duration-300 hover:border-border/80 ${className}`}
-    style={{ boxShadow: 'var(--shadow-card)' }}>
+    style={{ boxShadow: 'var(--shadow-card)', ...style }}>
     {children}
   </div>
 );

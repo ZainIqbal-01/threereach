@@ -24,13 +24,13 @@ interface ProfileField {
   value?: string;
 }
 
-const defaultContent: Record<string, string> = {
-  landing: "# AI-Optimized Landing Page\n\nThree Reach provides cutting-edge fintech solutions designed for modern businesses.\n\n## Key Features\n- AI-powered payment processing\n- Real-time analytics dashboard\n- Enterprise-grade security\n\n## Why Choose Three Reach?\nTrusted by over 500+ businesses worldwide.",
-  knowledge: "# Three Reach Knowledge Base\n\n## About Us\nFounded in 2020, Three Reach is a leading fintech company...\n\n## Services\n- Payment Processing\n- Digital Banking APIs\n- Financial Analytics\n\n## FAQ\nQ: What industries do you serve?\nA: We serve startups, SMEs, and enterprise clients.",
-  faq: '{\n  "@context": "https://schema.org",\n  "@type": "FAQPage",\n  "mainEntity": [\n    {\n      "@type": "Question",\n      "name": "What is Three Reach?",\n      "acceptedAnswer": {\n        "@type": "Answer",\n        "text": "Three Reach is a leading fintech company providing innovative payment solutions."\n      }\n    }\n  ]\n}',
-  trust: "# Trust & Security\n\n## Certifications\n- SOC 2 Type II Compliant\n- PCI DSS Level 1\n- ISO 27001 Certified\n\n## Security Features\n- End-to-end encryption\n- Multi-factor authentication\n- 99.99% uptime SLA",
-  founder: "# John Doe - Founder & CEO\n\n## Background\nSerial entrepreneur with 10+ years in fintech.\nPreviously co-founded PayTech Solutions (acquired 2019).\n\n## Vision\n\"Making financial technology accessible to every business.\"\n\n## Speaking & Media\n- Featured in TechCrunch, Forbes, Bloomberg\n- Speaker at Money 20/20, Web Summit",
-};
+const getDefaultContent = (name: string): Record<string, string> => ({
+  landing: `# AI-Optimized Landing Page\n\n${name} provides cutting-edge solutions designed for modern businesses.\n\n## Key Features\n- AI-powered processing\n- Real-time analytics dashboard\n- Enterprise-grade security\n\n## Why Choose ${name}?\nTrusted by over 500+ businesses worldwide.`,
+  knowledge: `# ${name} Knowledge Base\n\n## About Us\n${name} is a leading company in its industry...\n\n## Services\n- Core Platform\n- APIs & Integrations\n- Analytics\n\n## FAQ\nQ: What industries do you serve?\nA: We serve startups, SMEs, and enterprise clients.`,
+  faq: `{\n  "@context": "https://schema.org",\n  "@type": "FAQPage",\n  "mainEntity": [\n    {\n      "@type": "Question",\n      "name": "What is ${name}?",\n      "acceptedAnswer": {\n        "@type": "Answer",\n        "text": "${name} is a leading company providing innovative solutions."\n      }\n    }\n  ]\n}`,
+  trust: `# Trust & Security\n\n## Certifications\n- SOC 2 Type II Compliant\n- PCI DSS Level 1\n- ISO 27001 Certified\n\n## Security Features\n- End-to-end encryption\n- Multi-factor authentication\n- 99.99% uptime SLA`,
+  founder: `# Founder & CEO\n\n## Background\nSerial entrepreneur with 10+ years of experience.\n\n## Vision\n"Making technology accessible to every business."\n\n## Speaking & Media\n- Featured in industry publications\n- Speaker at major conferences`,
+});
 
 export default function BuildFootprint() {
   const businessName = useBusinessName();

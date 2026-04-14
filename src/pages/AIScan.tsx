@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search, Clock, Eye, Camera, ExternalLink, Filter, Zap, RefreshCw, X, ChevronDown } from "lucide-react";
+import { getEngineLogo } from "@/components/ui/ai-engine-logos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -226,7 +227,7 @@ export default function AIScan() {
               {filteredQueries.map((q) => (
                 <TableRow key={q.id} className="hover:bg-secondary/30 cursor-pointer" onClick={() => q.context && setViewingProof(q)}>
                   <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{q.date}</TableCell>
-                  <TableCell className="text-xs font-medium">{q.engine}</TableCell>
+                  <TableCell className="text-xs font-medium"><div className="flex items-center gap-1.5">{getEngineLogo(q.engine, "h-3.5 w-3.5")}{q.engine}</div></TableCell>
                   <TableCell className="text-xs max-w-xs truncate hidden sm:table-cell">{q.query}</TableCell>
                   <TableCell>{statusBadge(q.status)}</TableCell>
                   <TableCell className="text-xs hidden md:table-cell">{q.position ? `#${q.position}` : "—"}</TableCell>

@@ -4,6 +4,7 @@ import {
   Globe, Building2, FileText, ArrowRight, Sparkles, Eye, Brain,
   BarChart3, TrendingUp, CheckCircle2, Rocket, Star, Layers
 } from "lucide-react";
+import { EngineStatusBadge, getEngineLogo } from "@/components/ui/ai-engine-logos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,9 +19,9 @@ const features = [
 ];
 
 const analysisSteps = [
-  { label: "Connecting to ChatGPT...", icon: "🤖" },
-  { label: "Scanning Google Gemini...", icon: "✨" },
-  { label: "Querying Perplexity...", icon: "🔍" },
+  { label: "Connecting to ChatGPT...", icon: "chatgpt" as const },
+  { label: "Scanning Google Gemini...", icon: "gemini" as const },
+  { label: "Querying Perplexity...", icon: "perplexity" as const },
   { label: "Analyzing brand mentions...", icon: "📊" },
   { label: "Calculating visibility score...", icon: "📈" },
   { label: "Preparing your dashboard...", icon: "🚀" },
@@ -147,10 +148,7 @@ export default function Onboarding() {
             {/* Engine status */}
             <div className="flex items-center gap-5 mt-8 text-muted-foreground animate-fade-in stagger-5" style={{ animationFillMode: 'both' }}>
               {["ChatGPT", "Gemini", "Perplexity"].map(e => (
-                <div key={e} className="flex items-center gap-1.5 text-[11px] font-medium">
-                  <div className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
-                  <span>{e}</span>
-                </div>
+                <EngineStatusBadge key={e} name={e} />
               ))}
             </div>
           </div>
@@ -229,7 +227,7 @@ export default function Onboarding() {
                               : "opacity-25 border border-transparent"
                           }`}
                         >
-                          <span className="text-sm shrink-0">{step.icon}</span>
+                          <span className="text-sm shrink-0">{["chatgpt","gemini","perplexity"].includes(step.icon) ? getEngineLogo(step.icon, "h-4 w-4") : step.icon}</span>
                           <span className="text-[12px] font-medium text-foreground flex-1">{step.label}</span>
                           {i < currentStep && <CheckCircle2 className="h-3.5 w-3.5 text-success" />}
                           {i === currentStep && (
@@ -315,10 +313,7 @@ export default function Onboarding() {
             {/* Mobile trust badges */}
             <div className="lg:hidden mt-5 flex items-center justify-center gap-5 text-muted-foreground">
               {["ChatGPT", "Gemini", "Perplexity"].map(engine => (
-                <div key={engine} className="flex items-center gap-1.5 text-[11px] font-medium">
-                  <div className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
-                  <span>{engine}</span>
-                </div>
+                <EngineStatusBadge key={engine} name={engine} />
               ))}
             </div>
           </div>

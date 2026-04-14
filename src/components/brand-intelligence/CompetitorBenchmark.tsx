@@ -1,4 +1,5 @@
 import { Users, Eye, EyeOff } from "lucide-react";
+import { getEngineLogo } from "@/components/ui/ai-engine-logos";
 import { MetaCard, SentimentPill, statusStyles } from "./UIComponents";
 import { CompetitorData, AnalysisData } from "./types";
 
@@ -52,7 +53,9 @@ export function CompetitorBenchmark({ brandName, brandData, competitors }: Compe
             <tr className="border-b border-border/40">
               <th className="text-left py-2 text-muted-foreground font-medium">Brand</th>
               {["ChatGPT", "Gemini", "Perplexity"].map(e => (
-                <th key={e} className="text-center py-2 text-muted-foreground font-medium">{e}</th>
+                <th key={e} className="text-center py-2 text-muted-foreground font-medium">
+                  <div className="flex items-center justify-center gap-1.5">{getEngineLogo(e, "h-3.5 w-3.5")}{e}</div>
+                </th>
               ))}
             </tr>
           </thead>

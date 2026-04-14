@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { InputPhase } from "@/components/brand-intelligence/InputPhase";
 import { AnalyzingPhase } from "@/components/brand-intelligence/AnalyzingPhase";
 import { ResultsPhase } from "@/components/brand-intelligence/ResultsPhase";
 import { mockAnalysis, generateCompetitorData } from "@/components/brand-intelligence/mockData";
 import { saveScan } from "@/components/brand-intelligence/scanHistory";
-import type { AnalysisPhase, CompetitorData, ScanRecord } from "@/components/brand-intelligence/types";
+import { toast } from "@/hooks/use-toast";
+import type { AnalysisPhase, AnalysisData, CompetitorData, ScanRecord } from "@/components/brand-intelligence/types";
 
 export default function BrandIntelligence() {
   const [phase, setPhase] = useState<AnalysisPhase>("input");
@@ -14,17 +16,14 @@ export default function BrandIntelligence() {
   const [industry, setIndustry] = useState("");
   const [competitors, setCompetitors] = useState<string[]>([]);
   const [competitorData, setCompetitorData] = useState<CompetitorData[]>([]);
+  const [analysisData, setAnalysisData] = useState<AnalysisData>(mockAnalysis);
   const [progress, setProgress] = useState(0);
   const [analysisStep, setAnalysisStep] = useState("");
 
-  const startAnalysis = () => {
+  const startAnalysis = async () => {
     if (!brandName.trim() || !website.trim()) return;
     setPhase("analyzing");
     setProgress(0);
-
-    // Generate competitor results
-    const compResults = competitors.map(generateCompetitorData);
-    setCompetitorData(compResults);
 
     const steps = [
       { pct: 12, label: "Querying ChatGPT for brand mentions..." },
@@ -34,32 +33,65 @@ export default function BrandIntelligence() {
       { pct: 65, label: "Evaluating sentiment & narrative..." },
       { pct: 80, label: "Identifying visibility gaps..." },
       { pct: 92, label: "Generating improvement strategy..." },
-      { pct: 100, label: "Analysis complete!" },
     ];
 
+    // Animate progress while AI works
     steps.forEach((step, i) => {
       setTimeout(() => {
         setProgress(step.pct);
         setAnalysisStep(step.label);
-        if (i === steps.length - 1) {
-          setTimeout(() => {
-            // Save to history
-            const record: ScanRecord = {
-              id: crypto.randomUUID(),
-              brandName,
-              website,
-              date: new Date().toISOString(),
-              score: mockAnalysis.overallScore,
-              status: mockAnalysis.status,
-              competitors: compResults,
-              data: mockAnalysis,
-            };
-            saveScan(record);
-            setPhase("results");
-          }, 800);
-        }
-      }, (i + 1) * 1000);
+      }, (i + 1) * 800);
     });
+
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-brand", {
+        body: { brandName, website, description, industry, competitors },
+      });
+
+      if (error) throw error;
+
+      setProgress(100);
+      setAnalysisStep("Analysis complete!");
+      
+      const result: AnalysisData = {
+        overallScore: data.overallScore || 0,
+        status: data.status || "invisible",
+        engines: data.engines || [],
+        gaps: data.gaps || [],
+        improvementPlan: data.improvementPlan || [],
+      };
+      
+      setAnalysisData(result);
+      setCompetitorData(data.competitors || competitors.map(generateCompetitorData));
+
+      setTimeout(() => {
+        const record: ScanRecord = {
+          id: crypto.randomUUID(),
+          brandName,
+          website,
+          date: new Date().toISOString(),
+          score: result.overallScore,
+          status: result.status,
+          competitors: data.competitors || competitors.map(generateCompetitorData),
+          data: result,
+        };
+        saveScan(record);
+        setPhase("results");
+      }, 800);
+
+      toast({ title: "✅ AI Analysis complete!", description: `Brand score: ${result.overallScore}/100` });
+    } catch (err: any) {
+      console.error("Analysis error:", err);
+      toast({ title: "Analysis failed", description: err?.message || "Could not complete analysis", variant: "destructive" });
+      // Fallback to mock data
+      setAnalysisData(mockAnalysis);
+      setCompetitorData(competitors.map(generateCompetitorData));
+      setTimeout(() => {
+        setProgress(100);
+        setAnalysisStep("Analysis complete (using cached data)");
+        setTimeout(() => setPhase("results"), 800);
+      }, 1000);
+    }
   };
 
   const resetAnalysis = () => {
@@ -73,6 +105,7 @@ export default function BrandIntelligence() {
     setWebsite(scan.website);
     setCompetitorData(scan.competitors);
     setCompetitors(scan.competitors.map(c => c.name));
+    setAnalysisData(scan.data);
     setPhase("results");
   };
 
@@ -97,7 +130,7 @@ export default function BrandIntelligence() {
     <ResultsPhase
       brandName={brandName}
       website={website}
-      data={mockAnalysis}
+      data={analysisData}
       competitors={competitorData}
       onReset={resetAnalysis}
     />

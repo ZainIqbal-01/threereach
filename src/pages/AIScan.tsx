@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StarAgent } from "@/components/StarAgent";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QueryResult {
   id: number;
@@ -55,23 +56,38 @@ export default function AIScan() {
   const [filterEngine, setFilterEngine] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
-  const runFullScan = () => {
+  const runFullScan = async () => {
     setIsScanning(true);
-    toast({ title: "🔍 Full scan initiated", description: "Scanning all AI engines for brand mentions..." });
+    toast({ title: "🔍 Full scan initiated", description: "AI is scanning all engines for brand mentions..." });
     
-    setTimeout(() => {
-      const newQueries: QueryResult[] = [
-        { id: Date.now(), query: "Top payment solutions 2026", engine: "ChatGPT", status: "mentioned", position: 1, date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), context: "Acme Corp leads the market with innovative payment processing technology..." },
-        { id: Date.now() + 1, query: "Best fintech APIs", engine: "Gemini", status: "weak", position: 4, date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), context: "Several APIs stand out including Acme's offering..." },
-        { id: Date.now() + 2, query: "Digital banking startups", engine: "Perplexity", status: "mentioned", position: 2, date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), context: "Acme Corp is frequently cited as a recommended digital banking solution..." },
-      ];
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-scan", {
+        body: { query: "Top companies in our industry", brandName: "Acme Corp", engines: ["ChatGPT", "Gemini", "Perplexity"] },
+      });
+
+      if (error) throw error;
+
+      const newQueries: QueryResult[] = (data.results || []).map((r: any, i: number) => ({
+        id: Date.now() + i,
+        query: "Full scan — industry visibility check",
+        engine: r.engine,
+        status: r.status,
+        position: r.position || null,
+        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        context: r.context,
+      }));
       setQueries(prev => [...newQueries, ...prev]);
+      const mentioned = newQueries.filter((r: QueryResult) => r.status === "mentioned").length;
+      toast({ title: "✅ Scan complete!", description: `Found ${mentioned} mention(s) across ${newQueries.length} engines` });
+    } catch (err: any) {
+      console.error("Scan error:", err);
+      toast({ title: "Scan failed", description: err?.message || "Could not complete scan", variant: "destructive" });
+    } finally {
       setIsScanning(false);
-      toast({ title: "✅ Scan complete!", description: "Found 2 new mentions across 3 engines" });
-    }, 3000);
+    }
   };
 
-  const simulateQuery = () => {
+  const simulateQuery = async () => {
     if (!searchQuery.trim()) {
       toast({ title: "Enter a query", description: "Type a search query to simulate", variant: "destructive" });
       return;
@@ -80,28 +96,33 @@ export default function AIScan() {
     setIsSimulating(true);
     const engines = selectedEngine === "all" ? ["ChatGPT", "Gemini", "Perplexity"] : [selectedEngine === "chatgpt" ? "ChatGPT" : selectedEngine === "gemini" ? "Gemini" : "Perplexity"];
     
-    setTimeout(() => {
-      const newResults: QueryResult[] = engines.map((eng, i) => {
-        const key = eng.toLowerCase() === "chatgpt" ? "chatgpt" : eng.toLowerCase() as "gemini" | "perplexity";
-        const responses = simulatedResponses[key] || simulatedResponses.chatgpt;
-        const resp = responses[Math.floor(Math.random() * responses.length)];
-        return {
-          id: Date.now() + i,
-          query: searchQuery,
-          engine: eng,
-          status: resp.status,
-          position: resp.position,
-          date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-          context: resp.context,
-        };
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-scan", {
+        body: { query: searchQuery, brandName: "Acme Corp", engines },
       });
 
+      if (error) throw error;
+
+      const newResults: QueryResult[] = (data.results || []).map((r: any, i: number) => ({
+        id: Date.now() + i,
+        query: searchQuery,
+        engine: r.engine,
+        status: r.status,
+        position: r.position || null,
+        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        context: r.context,
+      }));
+
       setQueries(prev => [...newResults, ...prev]);
-      setIsSimulating(false);
       setSearchQuery("");
-      const mentioned = newResults.filter(r => r.status === "mentioned").length;
-      toast({ title: "🎯 Simulation complete", description: `Found ${mentioned} mention(s) across ${engines.length} engine(s)` });
-    }, 2500);
+      const mentioned = newResults.filter((r: QueryResult) => r.status === "mentioned").length;
+      toast({ title: "🎯 AI Simulation complete", description: `Found ${mentioned} mention(s) across ${engines.length} engine(s)` });
+    } catch (err: any) {
+      console.error("Simulation error:", err);
+      toast({ title: "Simulation failed", description: err?.message || "Could not simulate query", variant: "destructive" });
+    } finally {
+      setIsSimulating(false);
+    }
   };
 
   const filteredQueries = queries.filter(q => {

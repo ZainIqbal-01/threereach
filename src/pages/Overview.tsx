@@ -123,9 +123,6 @@ export default function Overview() {
         ))}
       </div>
 
-      {/* Agent Hub */}
-      <AgentHub />
-
       {/* Score + Timeline */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-4">
@@ -135,6 +132,9 @@ export default function Overview() {
           <ProgressTimeline />
         </div>
       </div>
+
+      {/* Agent Hub - below score */}
+      <AgentHub />
 
       {/* AI Engines */}
       <div className="card-premium">

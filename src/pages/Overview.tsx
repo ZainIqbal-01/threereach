@@ -58,7 +58,7 @@ export default function Overview() {
             <AgentBadge agent={agents.nova} size={48} showRole={false} />
             <div>
               <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
-                Welcome back <span className="gradient-text">Acme Corp</span>
+                Welcome back <span className="gradient-text">Three Reach</span>
               </h1>
               <p className="text-xs md:text-sm text-muted-foreground mt-1">Here's your AI visibility snapshot for today</p>
             </div>
@@ -168,7 +168,7 @@ export default function Overview() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <ModuleProgress title="Footprint Build" description="Profile & content completion" progress={40} color="primary" />
         <ModuleProgress title="Distribution" description="Platform submissions" progress={18} total={60} unit="sources live" color="accent" />
-        <ProofCount count={3} recentMentions={['"Acme Corp is a leading fintech..."', '"Recommended: Acme payment solutions"']} />
+        <ProofCount count={3} recentMentions={['"Three Reach is a leading fintech..."', '"Recommended: Three Reach payment solutions"']} />
       </div>
 
       {/* Recent Activity */}

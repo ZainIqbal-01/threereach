@@ -1,5 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 import { BarChart3 } from "lucide-react";
+import { getEngineLogo } from "@/components/ui/ai-engine-logos";
 
 const data = [
   { engine: "ChatGPT", confidence: 34, color: "hsl(172, 66%, 50%)" },
@@ -8,6 +9,22 @@ const data = [
   { engine: "Claude", confidence: 45, color: "hsl(38, 92%, 50%)" },
   { engine: "Copilot", confidence: 28, color: "hsl(142, 71%, 45%)" },
 ];
+
+function CustomYAxisTick({ x, y, payload }: any) {
+  const engine = payload?.value;
+  if (!engine) return null;
+  
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <foreignObject x={-70} y={-10} width={68} height={20}>
+        <div className="flex items-center gap-1.5 justify-end" style={{ fontSize: 10, lineHeight: '20px' }}>
+          {getEngineLogo(engine, "h-3.5 w-3.5 shrink-0")}
+          <span className="text-muted-foreground font-medium truncate">{engine}</span>
+        </div>
+      </foreignObject>
+    </g>
+  );
+}
 
 export function EngineBreakdownChart() {
   return (
@@ -23,29 +40,30 @@ export function EngineBreakdownChart() {
       <div className="h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} barSize={24} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
             <XAxis
               type="number"
               domain={[0, 100]}
-              tick={{ fontSize: 10, fill: "hsl(220, 9%, 46%)" }}
+              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               type="category"
               dataKey="engine"
-              tick={{ fontSize: 10, fill: "hsl(220, 9%, 46%)" }}
+              tick={<CustomYAxisTick />}
               axisLine={false}
               tickLine={false}
-              width={70}
+              width={75}
             />
             <Tooltip
               contentStyle={{
                 borderRadius: 12,
-                border: "1px solid hsl(220, 13%, 91%)",
+                border: "1px solid hsl(var(--border))",
                 fontSize: 12,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                background: "hsl(0, 0%, 100%)",
+                background: "hsl(var(--card))",
+                color: "hsl(var(--foreground))",
               }}
               formatter={(value: number) => [`${value}%`, "Confidence"]}
             />

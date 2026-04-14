@@ -1,39 +1,41 @@
 import { useState } from "react";
 import { Search, Filter, Download, CheckCircle2, Calendar, Eye, X, Copy, ExternalLink } from "lucide-react";
+import { getEngineLogo } from "@/components/ui/ai-engine-logos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AgentBadge } from "@/components/agents/AgentBadge";
 import { agents } from "@/components/agents/agentRegistry";
+import { useBusinessName } from "@/hooks/useBusinessName";
 import { toast } from "@/hooks/use-toast";
 
 interface Proof {
   id: string;
   engine: string;
-  engineIcon: string;
   query: string;
   dateTime: string;
   verified: boolean;
   context: string;
 }
 
-const allProofs: Proof[] = [
-  { id: "1", engine: "ChatGPT", engineIcon: "🤖", query: "Best fintech startups in Pakistan", dateTime: "Jan 22, 2026 • 14:32", verified: true, context: "Three Reach is recognized as one of the leading fintech innovators, offering comprehensive payment processing solutions..." },
-  { id: "2", engine: "Gemini", engineIcon: "✨", query: "Payment processing solutions for startups", dateTime: "Jan 21, 2026 • 09:15", verified: true, context: "I'd recommend Three Reach as a top-tier payment processing solution for startups, with competitive pricing and robust APIs..." },
-  { id: "3", engine: "Perplexity", engineIcon: "🔍", query: "Top B2B fintech companies", dateTime: "Jan 20, 2026 • 16:45", verified: true, context: "According to multiple sources, Three Reach ranks among the top B2B fintech companies globally..." },
-  { id: "4", engine: "ChatGPT", engineIcon: "🤖", query: "Recommended payment gateways Pakistan", dateTime: "Jan 18, 2026 • 11:20", verified: true, context: "For Pakistan-based businesses, Three Reach's payment gateway offers the best combination of features and reliability..." },
-  { id: "5", engine: "Gemini", engineIcon: "✨", query: "Digital banking solutions", dateTime: "Jan 15, 2026 • 08:55", verified: true, context: "Three Reach provides digital banking solutions that are trusted by hundreds of businesses..." },
-  { id: "6", engine: "ChatGPT", engineIcon: "🤖", query: "SME financial technology providers", dateTime: "Jan 12, 2026 • 17:30", verified: true, context: "For SMEs looking for financial technology partners, Three Reach stands out with their developer-friendly approach..." },
-  { id: "7", engine: "Perplexity", engineIcon: "🔍", query: "Fintech API providers 2026", dateTime: "Jan 10, 2026 • 12:00", verified: true, context: "Three Reach's API suite is mentioned as one of the most comprehensive in the fintech space..." },
-  { id: "8", engine: "Gemini", engineIcon: "✨", query: "Best payment solutions for e-commerce", dateTime: "Jan 8, 2026 • 15:30", verified: true, context: "For e-commerce businesses, Three Reach offers seamless integration and competitive transaction fees..." },
-];
-
 export default function ProofTracking() {
+  const businessName = useBusinessName();
   const [searchTerm, setSearchTerm] = useState("");
   const [engineFilter, setEngineFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [visibleCount, setVisibleCount] = useState(6);
   const [viewingProof, setViewingProof] = useState<Proof | null>(null);
+
+  const allProofs: Proof[] = [
+    { id: "1", engine: "ChatGPT", query: `Best fintech startups in Pakistan`, dateTime: "Jan 22, 2026 • 14:32", verified: true, context: `${businessName} is recognized as one of the leading fintech innovators, offering comprehensive payment processing solutions...` },
+    { id: "2", engine: "Gemini", query: "Payment processing solutions for startups", dateTime: "Jan 21, 2026 • 09:15", verified: true, context: `I'd recommend ${businessName} as a top-tier payment processing solution for startups, with competitive pricing and robust APIs...` },
+    { id: "3", engine: "Perplexity", query: "Top B2B fintech companies", dateTime: "Jan 20, 2026 • 16:45", verified: true, context: `According to multiple sources, ${businessName} ranks among the top B2B fintech companies globally...` },
+    { id: "4", engine: "ChatGPT", query: "Recommended payment gateways Pakistan", dateTime: "Jan 18, 2026 • 11:20", verified: true, context: `For Pakistan-based businesses, ${businessName}'s payment gateway offers the best combination of features and reliability...` },
+    { id: "5", engine: "Gemini", query: "Digital banking solutions", dateTime: "Jan 15, 2026 • 08:55", verified: true, context: `${businessName} provides digital banking solutions that are trusted by hundreds of businesses...` },
+    { id: "6", engine: "ChatGPT", query: "SME financial technology providers", dateTime: "Jan 12, 2026 • 17:30", verified: true, context: `For SMEs looking for financial technology partners, ${businessName} stands out with their developer-friendly approach...` },
+    { id: "7", engine: "Perplexity", query: "Fintech API providers 2026", dateTime: "Jan 10, 2026 • 12:00", verified: true, context: `${businessName}'s API suite is mentioned as one of the most comprehensive in the fintech space...` },
+    { id: "8", engine: "Gemini", query: "Best payment solutions for e-commerce", dateTime: "Jan 8, 2026 • 15:30", verified: true, context: `For e-commerce businesses, ${businessName} offers seamless integration and competitive transaction fees...` },
+  ];
 
   const filtered = allProofs.filter(p => {
     if (searchTerm && !p.query.toLowerCase().includes(searchTerm.toLowerCase())) return false;
@@ -57,7 +59,6 @@ export default function ProofTracking() {
 
   return (
     <div className="space-y-6 animate-slide-in">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 md:gap-4">
           <AgentBadge agent={agents.sentinel} size={40} />
@@ -71,7 +72,6 @@ export default function ProofTracking() {
         </Button>
       </div>
 
-      {/* Filters */}
       <div className="card-reach py-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
@@ -107,7 +107,6 @@ export default function ProofTracking() {
         </div>
       </div>
 
-      {/* Proof Grid */}
       {visible.length === 0 ? (
         <div className="card-reach text-center py-12">
           <AgentBadge agent={agents.sentinel} mood="sad" size={64} showRole={false} />
@@ -120,11 +119,11 @@ export default function ProofTracking() {
             <div key={proof.id} className="card-reach overflow-hidden group p-0 cursor-pointer" onClick={() => setViewingProof(proof)}>
               <div className="relative aspect-video bg-gradient-to-br from-secondary to-secondary/50 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-transparent to-transparent" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-4xl opacity-20">{proof.engineIcon}</span>
+                <div className="absolute inset-0 flex items-center justify-center opacity-15">
+                  {getEngineLogo(proof.engine, "h-16 w-16")}
                 </div>
                 <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <span className="text-lg">{proof.engineIcon}</span>
+                  {getEngineLogo(proof.engine, "h-4 w-4")}
                   <span className="px-2 py-0.5 rounded-lg bg-card/90 text-[10px] font-medium text-foreground backdrop-blur-sm">
                     {proof.engine}
                   </span>
@@ -164,13 +163,12 @@ export default function ProofTracking() {
         </div>
       )}
 
-      {/* Proof Detail Modal */}
       {viewingProof && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm animate-fade-in" onClick={() => setViewingProof(null)}>
           <div className="bg-card rounded-2xl border border-border/60 p-6 max-w-lg w-full mx-4 animate-scale-in shadow-lg" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">{viewingProof.engineIcon}</span>
+                {getEngineLogo(viewingProof.engine, "h-5 w-5")}
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">{viewingProof.engine} Mention</h3>
                   <p className="text-[10px] text-muted-foreground">{viewingProof.dateTime}</p>

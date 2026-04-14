@@ -1,4 +1,5 @@
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
 import { MetaCard } from "./UIComponents";
 import { Brain } from "lucide-react";
 
@@ -34,7 +35,7 @@ export function AnalyzingPhase({ progress, analysisStep, competitors }: Analyzin
 
           <div className="relative z-10">
             <div className="mb-8">
-              <StarAgent mood="scanning" size={110} animate={true} />
+              <AgentBadge agent={agents.oracle} isWorking={true} size={110} />
             </div>
 
             <h2 className="text-lg font-bold text-foreground mb-1.5">Scanning AI Engines</h2>

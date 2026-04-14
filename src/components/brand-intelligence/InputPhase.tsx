@@ -3,7 +3,8 @@ import { Brain, Search, Eye, BarChart3, Target, Plus, X, Globe, Users, ArrowRigh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
 import { MetaCard } from "./UIComponents";
 import { ScanRecord } from "./types";
 import { getScanHistory } from "./scanHistory";
@@ -55,7 +56,7 @@ export function InputPhase({
               </p>
             </div>
           </div>
-          <StarAgent mood="waving" size={80} message="Tell me about your brand! ✨" />
+          <AgentBadge agent={agents.oracle} mood="waving" size={80} showRole={true} />
         </div>
       </div>
 

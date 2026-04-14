@@ -1,6 +1,8 @@
 import { Eye, EyeOff, AlertTriangle, Activity, Sparkles, RefreshCw, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StarAgent, StarMood } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { agents } from "@/components/agents/agentRegistry";
+import type { StarMood } from "@/components/StarAgent";
 import { MetaCard, SentimentPill, PriorityDot, statusStyles } from "./UIComponents";
 import { CompetitorBenchmark } from "./CompetitorBenchmark";
 import { HistoryChart } from "./HistoryChart";
@@ -31,7 +33,7 @@ export function ResultsPhase({ brandName, website, data, competitors, onReset }:
       <div className="card-premium gradient-hero">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
-            <StarAgent mood={resultMood} size={60} animate={true} />
+            <AgentBadge agent={agents.oracle} mood={resultMood} size={60} />
             <div>
               <h1 className="text-xl font-bold text-foreground tracking-tight">AI Brand Intelligence</h1>
               <p className="text-sm text-muted-foreground mt-0.5">
@@ -177,7 +179,7 @@ export function ResultsPhase({ brandName, website, data, competitors, onReset }:
       <MetaCard>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <StarAgent mood="superhero" size={44} animate={false} />
+            <AgentBadge agent={agents.oracle} mood="superhero" size={44} showRole={false} />
             <div>
               <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                 Improvement Plan

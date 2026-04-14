@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { StarAgent } from "@/components/StarAgent";
+import { getAgentForRoute } from "@/components/agents/agentRegistry";
 import logo from "@/assets/logo.png";
 
 const navigation = [
@@ -44,6 +45,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const location = useLocation();
+  const currentAgent = getAgentForRoute(location.pathname);
   const currentMood = moodForRoute[location.pathname] || "happy";
 
   const handleClick = () => {
@@ -132,18 +134,23 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       {/* Star Agent Companion */}
       <div className="px-3 py-3 border-t border-sidebar-border shrink-0">
         <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-sidebar-accent/80 to-sidebar-accent/40 p-3 border border-sidebar-border/50">
-          <StarAgent mood={currentMood} size={38} animate={true} />
+          <div className="relative">
+            <StarAgent mood={currentMood} size={38} animate={true} />
+            <span className="absolute -bottom-0.5 -right-0.5 text-[9px] bg-sidebar-accent border border-sidebar-border rounded-full w-4 h-4 flex items-center justify-center">
+              {currentAgent.emoji}
+            </span>
+          </div>
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-semibold text-sidebar-accent-foreground flex items-center gap-1">
-              Star Agent <Zap className="h-2.5 w-2.5 text-primary" />
+              {currentAgent.name} <Zap className="h-2.5 w-2.5 text-primary" />
             </p>
             <p className="text-[10px] text-sidebar-muted truncate">
-              {currentMood === "scanning" ? "Analyzing data..." : currentMood === "excited" ? "Content mode! 🔥" : currentMood === "superhero" ? "Protecting proofs!" : "Ready to help ✨"}
+              {currentAgent.statusMessages.idle}
             </p>
           </div>
         </div>
         <p className="text-[9px] text-sidebar-muted/60 text-center mt-2.5 leading-relaxed px-2">
-          We build a dedicated website with regularly updated content to keep AI informed.
+          7 AI agents working to keep you visible.
         </p>
       </div>
     </aside>

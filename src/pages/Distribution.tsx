@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Share2, Sparkles, Send, Eye, Clock, CheckCircle2, 
   ExternalLink, RefreshCw, Plus, FileText, MessageSquare,
@@ -84,7 +85,7 @@ export default function Distribution() {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [showGenerator, setShowGenerator] = useState(false);
 
-  const generateContent = (platform: Platform) => {
+  const generateContent = async (platform: Platform) => {
     if (!topic.trim()) {
       toast({ title: "Enter a topic", description: "Provide a topic for AI to generate content", variant: "destructive" });
       return;
@@ -100,27 +101,30 @@ export default function Distribution() {
     setPosts(prev => [newPost, ...prev]);
     setGeneratingId(newId);
 
-    // Simulate AI generation
-    setTimeout(() => {
-      const generatedContents: Record<Platform, string> = {
-        reddit: `🚀 ${topic}\n\nHey r/technology! I've been researching how AI search engines are changing the game for ${topic.toLowerCase()}. Here's what I found:\n\n1. **AI-First Discovery** - 73% of B2B buyers now start with AI assistants\n2. **Structured Data Matters** - Businesses with proper schema markup get 3x more AI mentions\n3. **Content Authority** - Regular, high-quality content significantly boosts AI visibility\n\nWhat's your experience with AI discovery? Has it changed how you find tools and services?\n\n---\n*Disclaimer: I work in the AI visibility space*`,
-        quora: `Great question about ${topic}!\n\nBased on my experience working with businesses on their AI visibility strategies, here are the key things to consider:\n\n**1. AI engines prioritize authoritative sources**\nUnlike traditional SEO, AI engines weigh authority signals differently. They look for comprehensive, well-structured information that directly answers user queries.\n\n**2. Presence across platforms matters**\nBeing mentioned consistently across trusted directories, review sites, and industry publications increases your chances of being recommended by AI.\n\n**3. Regular content updates signal relevance**\nAI models favor brands that consistently publish fresh, valuable content.\n\nHope this helps! Happy to share more specifics.`,
-        linkedin: `🤖 The Future of Business Discovery: Why ${topic} Matters\n\nThe landscape of how businesses are found is shifting dramatically.\n\nHere's what our data shows:\n\n📊 73% of B2B decision-makers now use AI assistants during evaluation\n🔍 Brands with strong AI footprints see 2.4x more qualified leads\n💡 AI Engine Optimization (AEO) is becoming as critical as SEO\n\n3 things every business should do today:\n\n1️⃣ Audit your AI visibility across ChatGPT, Gemini, and Perplexity\n2️⃣ Ensure your structured data is comprehensive and up-to-date\n3️⃣ Build authority through consistent, platform-diverse content\n\nThe businesses that act now will own the AI discovery layer.\n\n#AI #Business #Marketing #AEO #Innovation`,
-        medium: `# ${topic}: A Comprehensive Guide\n\nThe way businesses are discovered is undergoing a fundamental transformation. As AI assistants become the primary interface for information discovery, the concept of AI Engine Optimization (AEO) has emerged as a critical strategy.\n\n## Understanding AI Discovery\n\nTraditional search engines rank pages. AI engines recommend solutions. This distinction matters because it changes what you optimize for...\n\n## The Three Pillars of AI Visibility\n\n### 1. Authority Building\nAI models are trained on vast datasets and learn to associate certain brands with authority in specific domains...\n\n### 2. Content Distribution\nBeing present across multiple trusted platforms signals legitimacy to AI systems...\n\n### 3. Structured Information\nClear, well-organized business information helps AI engines accurately represent your brand...`,
-        hackernews: `${topic} - How AI Search is Disrupting Traditional Discovery\n\nI've been working on measuring how AI engines (ChatGPT, Gemini, Perplexity) recommend businesses vs traditional Google search results. Some interesting findings:\n\n- AI engines tend to recommend fewer options (3-5 vs 10+ in search)\n- Authority signals are weighted differently than PageRank\n- Structured data and API accessibility play a bigger role\n- Fresh content gets picked up faster in AI models\n\nWould love to hear the HN community's thoughts on this shift.`,
-        twitter: `🧵 Thread: ${topic}\n\n1/ AI assistants are becoming the new front door for business discovery. 73% of B2B buyers now start their research with AI.\n\n2/ Unlike Google, AI engines RECOMMEND rather than rank. Being in the top 3 recommendations = 5x more visibility.\n\n3/ The key factors:\n- Authority signals\n- Cross-platform presence\n- Structured data\n- Fresh content\n\n4/ We call this AI Engine Optimization (AEO) - and it's the next big shift in marketing.\n\n5/ Start by auditing: Ask ChatGPT and Gemini about your industry. Are you mentioned? That's your baseline.`,
-      };
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { topic, platform, brandName: "Your Brand", industry: "" },
+      });
+
+      if (error) throw error;
 
       setPosts(prev => prev.map(p => 
         p.id === newId 
-          ? { ...p, content: generatedContents[platform], status: "ready" as ContentStatus, title: `${topic} - ${platformConfig.name}` }
+          ? { ...p, content: data.content || "", status: "ready" as ContentStatus, title: data.title || `${topic} - ${platformConfig.name}` }
           : p
       ));
+      toast({ title: "✨ AI Content generated!", description: `Real AI-optimized post ready for ${platformConfig.name}` });
+    } catch (err: any) {
+      console.error("Content generation error:", err);
+      setPosts(prev => prev.map(p => 
+        p.id === newId ? { ...p, status: "failed" as ContentStatus } : p
+      ));
+      toast({ title: "Generation failed", description: err?.message || "Could not generate content", variant: "destructive" });
+    } finally {
       setGeneratingId(null);
       setTopic("");
       setShowGenerator(false);
-      toast({ title: "Content generated!", description: `AI-optimized post ready for ${platformConfig.name}` });
-    }, 2500);
+    }
   };
 
   const publishPost = (postId: string) => {

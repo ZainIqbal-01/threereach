@@ -45,6 +45,8 @@ export default function BuildFootprint() {
     { name: "Awards & Recognition", completed: false },
   ]);
 
+  const defaultContent = getDefaultContent(businessName);
+
   const [contentAssets, setContentAssets] = useState<ContentAsset[]>([
     { id: "landing", title: "AI Landing Page", description: "Optimized page for AI engine discovery", icon: <FileText className="h-5 w-5" />, status: "published", lastUpdated: "Jan 15, 2026", content: defaultContent.landing },
     { id: "knowledge", title: "Knowledge Base Page", description: "Structured business information", icon: <FileText className="h-5 w-5" />, status: "draft", content: "" },

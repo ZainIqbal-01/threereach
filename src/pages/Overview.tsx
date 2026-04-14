@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Download, ArrowRight, Sparkles, TrendingUp, Brain, Share2, Shield, Zap, X, Eye, Clock } from "lucide-react";
+import { useBusinessName } from "@/hooks/useBusinessName";
 import { Button } from "@/components/ui/button";
 import { ScoreCard } from "@/components/dashboard/ScoreCard";
 import { ProgressTimeline } from "@/components/dashboard/ProgressTimeline";
@@ -35,6 +36,7 @@ const PerplexityLogo = () => (
 
 export default function Overview() {
   const navigate = useNavigate();
+  const businessName = useBusinessName();
   const [showBoost, setShowBoost] = useState(false);
 
   const exportDashboard = () => {
@@ -58,7 +60,7 @@ export default function Overview() {
             <AgentBadge agent={agents.nova} size={48} showRole={false} />
             <div>
               <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
-                Welcome back <span className="gradient-text">Three Reach</span>
+                Welcome back <span className="gradient-text">{businessName}</span>
               </h1>
               <p className="text-xs md:text-sm text-muted-foreground mt-1">Here's your AI visibility snapshot for today</p>
             </div>

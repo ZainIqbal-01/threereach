@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useBusinessName } from "@/hooks/useBusinessName";
 import {
   LayoutDashboard,
   Search,
@@ -45,6 +46,8 @@ interface AppSidebarProps {
 
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const location = useLocation();
+  const businessName = useBusinessName();
+  const initials = businessName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const currentAgent = getAgentForRoute(location.pathname);
   const currentMood = moodForRoute[location.pathname] || "happy";
 
@@ -64,10 +67,10 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         <button className="flex w-full items-center justify-between rounded-xl bg-sidebar-accent px-3 py-2.5 text-sm text-sidebar-foreground hover:bg-sidebar-accent/80 transition-all duration-200 group">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-[hsl(var(--accent))] text-primary-foreground text-xs font-bold shadow-sm">
-              AC
+              {initials}
             </div>
             <div className="text-left">
-              <div className="font-medium text-sidebar-accent-foreground text-[13px]">Three Reach</div>
+              <div className="font-medium text-sidebar-accent-foreground text-[13px]">{businessName}</div>
               <div className="text-[11px] text-sidebar-muted flex items-center gap-1">
                 <Sparkles className="h-2.5 w-2.5" /> Pro Plan
               </div>

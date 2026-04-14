@@ -1,4 +1,5 @@
-import { Download, ArrowRight, Sparkles, TrendingUp, Brain, Share2, Shield, Zap } from "lucide-react";
+import { useState } from "react";
+import { Download, ArrowRight, Sparkles, TrendingUp, Brain, Share2, Shield, Zap, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScoreCard } from "@/components/dashboard/ScoreCard";
 import { ProgressTimeline } from "@/components/dashboard/ProgressTimeline";
@@ -6,7 +7,8 @@ import { EngineCard } from "@/components/dashboard/EngineCard";
 import { ModuleProgress } from "@/components/dashboard/ModuleProgress";
 import { ProofCount } from "@/components/dashboard/ProofCount";
 import { StarAgent } from "@/components/StarAgent";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 const ChatGPTLogo = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
@@ -27,6 +29,21 @@ const PerplexityLogo = () => (
 );
 
 export default function Overview() {
+  const navigate = useNavigate();
+  const [showBoost, setShowBoost] = useState(false);
+
+  const exportDashboard = () => {
+    const data = `Three Reach AI - Dashboard Export\nDate: ${new Date().toLocaleDateString()}\n\nVisibility Score: 42/100\nStatus: Weak\n\nEngine Status:\n- ChatGPT: Weak (34% confidence)\n- Gemini: Mentioned (67% confidence)\n- Perplexity: Not Found\n\nFootprint Progress: 40%\nDistribution: 18/60 sources live\nProof Records: 3 verified mentions`;
+    const blob = new Blob([data], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dashboard-export.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "📥 Dashboard exported!", description: "Summary has been downloaded" });
+  };
+
   return (
     <div className="space-y-6 animate-slide-in">
       {/* Header */}
@@ -39,16 +56,47 @@ export default function Overview() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2 rounded-xl h-9 text-xs">
+          <Button variant="outline" size="sm" onClick={exportDashboard} className="gap-2 rounded-xl h-9 text-xs">
             <Download className="h-3.5 w-3.5" />
             Export
           </Button>
-          <Button size="sm" className="gap-2 rounded-xl h-9 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow text-xs">
+          <Button size="sm" onClick={() => setShowBoost(true)} className="gap-2 rounded-xl h-9 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow text-xs">
             <Sparkles className="h-3.5 w-3.5" />
             Boost Visibility
           </Button>
         </div>
       </div>
+
+      {/* Boost Modal */}
+      {showBoost && (
+        <div className="card-reach gradient-border animate-scale-in">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <StarAgent mood="excited" size={40} animate={true} />
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Visibility Boost Plan</h3>
+                <p className="text-[11px] text-muted-foreground">Quick actions to improve your AI visibility</p>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setShowBoost(false)}><X className="h-4 w-4" /></Button>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: "Complete Footprint", desc: "Finish your business profile", href: "/dashboard/footprint", icon: "🏗️" },
+              { label: "Run Full Scan", desc: "Check all AI engines", href: "/dashboard/scan", icon: "🔍" },
+              { label: "Distribute Content", desc: "Post to 6 platforms", href: "/dashboard/distribution", icon: "📢" },
+            ].map(item => (
+              <button key={item.label} onClick={() => { setShowBoost(false); navigate(item.href); }}
+                className="p-4 rounded-xl border border-border/60 hover:border-primary/30 hover:bg-primary/5 transition-all text-left group">
+                <span className="text-2xl mb-2 block">{item.icon}</span>
+                <p className="text-xs font-semibold text-foreground">{item.label}</p>
+                <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                <ArrowRight className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary mt-2 transition-colors" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-4 gap-3">
@@ -104,16 +152,17 @@ export default function Overview() {
         <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Recent Activity</h3>
         <div className="space-y-3">
           {[
-            { icon: "🤖", text: "ChatGPT mentioned your brand in a fintech query", time: "2 hours ago", type: "success" },
-            { icon: "📢", text: "AI-generated Reddit post published to r/technology", time: "5 hours ago", type: "info" },
-            { icon: "📊", text: "Visibility score increased by +4 points", time: "1 day ago", type: "success" },
-            { icon: "⚡", text: "New improvement plan generated based on scan results", time: "2 days ago", type: "info" },
+            { icon: "🤖", text: "ChatGPT mentioned your brand in a fintech query", time: "2 hours ago", href: "/dashboard/proof" },
+            { icon: "📢", text: "AI-generated Reddit post published to r/technology", time: "5 hours ago", href: "/dashboard/distribution" },
+            { icon: "📊", text: "Visibility score increased by +4 points", time: "1 day ago", href: "/dashboard/brand-intelligence" },
+            { icon: "⚡", text: "New improvement plan generated based on scan results", time: "2 days ago", href: "/dashboard/scan" },
           ].map((activity, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors">
+            <Link key={i} to={activity.href} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors group">
               <span className="text-lg">{activity.icon}</span>
               <p className="text-xs text-foreground flex-1">{activity.text}</p>
               <span className="text-[10px] text-muted-foreground shrink-0">{activity.time}</span>
-            </div>
+              <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-primary transition-colors" />
+            </Link>
           ))}
         </div>
       </div>

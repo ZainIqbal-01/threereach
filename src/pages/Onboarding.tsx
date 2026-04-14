@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Globe, Building2, FileText, ArrowRight, Sparkles, Eye, Brain,
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StarAgent } from "@/components/StarAgent";
+import { sanitize, validateOnboardingForm } from "@/lib/validation";
 import logo from "@/assets/logo.png";
 
 const features = [
@@ -44,14 +45,29 @@ export default function Onboarding() {
     description: "",
     services: "",
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    // Sanitize input on change (OWASP A03 - Injection prevention)
+    const sanitized = sanitize(value);
+    setFormData((prev) => ({ ...prev, [name]: sanitized }));
+    // Clear error for this field when user starts typing
+    setFormErrors((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  }, []);
 
   const handleAnalyze = async () => {
-    if (!formData.websiteUrl && !formData.businessName) return;
+    // Validate all inputs before proceeding
+    const validation = validateOnboardingForm(formData);
+    if (!validation.valid) {
+      setFormErrors(validation.errors);
+      return;
+    }
+    setFormErrors({});
     setIsAnalyzing(true);
     localStorage.setItem("businessProfile", JSON.stringify(formData));
     localStorage.setItem("onboardingComplete", "true");
@@ -249,8 +265,10 @@ export default function Onboarding() {
                           placeholder="https://yourwebsite.com"
                           value={formData.websiteUrl}
                           onChange={handleInputChange}
-                          className="h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm"
+                          maxLength={500}
+                          className={`h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm ${formErrors.websiteUrl ? "border-destructive" : ""}`}
                         />
+                        {formErrors.websiteUrl && <p className="text-[10px] text-destructive mt-1">{formErrors.websiteUrl}</p>}
                       </div>
                       <div>
                         <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
@@ -261,8 +279,10 @@ export default function Onboarding() {
                           placeholder="Your Company Name"
                           value={formData.businessName}
                           onChange={handleInputChange}
-                          className="h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm"
+                          maxLength={200}
+                          className={`h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm ${formErrors.businessName ? "border-destructive" : ""}`}
                         />
+                        {formErrors.businessName && <p className="text-[10px] text-destructive mt-1">{formErrors.businessName}</p>}
                       </div>
                     </div>
 
@@ -275,8 +295,10 @@ export default function Onboarding() {
                         placeholder="Describe your business, products, and target audience..."
                         value={formData.description}
                         onChange={handleInputChange}
-                        className="min-h-[80px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none transition-colors focus-glow text-sm"
+                        maxLength={1000}
+                        className={`min-h-[80px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none transition-colors focus-glow text-sm ${formErrors.description ? "border-destructive" : ""}`}
                       />
+                      {formErrors.description && <p className="text-[10px] text-destructive mt-1">{formErrors.description}</p>}
                     </div>
 
                     <div>
@@ -288,7 +310,8 @@ export default function Onboarding() {
                         placeholder="e.g., Web Dev, Marketing, AI Solutions"
                         value={formData.services}
                         onChange={handleInputChange}
-                        className="h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm"
+                        maxLength={500}
+                        className={`h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm ${formErrors.services ? "border-destructive" : ""}`}
                       />
                     </div>
 

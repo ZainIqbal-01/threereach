@@ -1,33 +1,69 @@
+/**
+ * Generate Content Edge Function — Hardened
+ *
+ * Security measures:
+ * - IP-based rate limiting (10 req/min)
+ * - Platform allowlist validation
+ * - Input length limits on all fields
+ * - No client-side key exposure
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import {
+  corsResponse,
+  jsonResponse,
+  errorResponse,
+  checkRateLimit,
+  sanitizeString,
+  enforceLength,
+  safeParseBody,
+} from "../_shared/security.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+const ALLOWED_PLATFORMS = ["reddit", "quora", "linkedin", "medium", "hackernews", "twitter"];
+
+const platformGuides: Record<string, string> = {
+  reddit: "Write a Reddit post. Use markdown, be authentic and community-friendly. Include a disclaimer. Add engaging questions. Format with bullet points and bold text.",
+  quora: "Write a Quora answer. Be helpful, authoritative, and detailed. Use numbered points. Sound like a knowledgeable professional sharing genuine advice.",
+  linkedin: "Write a LinkedIn post. Use emojis sparingly, include stats, use line breaks for readability. Add relevant hashtags. Professional but engaging tone.",
+  medium: "Write a Medium article with markdown headers, intro paragraph, multiple sections with h2/h3 headers, and a conclusion. Long-form, authoritative, SEO-friendly.",
+  hackernews: "Write a Hacker News post. Technical, concise, data-driven. No marketing fluff. Appeal to developers and tech founders. Include technical details.",
+  twitter: "Write a Twitter/X thread (5-7 tweets). Start with a hook. Use 🧵 emoji. Number each tweet. Include stats and actionable takeaways. End with a CTA.",
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return corsResponse();
+
+  // ── Rate limit: 10 requests per minute per IP ──
+  const rateLimited = checkRateLimit(req, { maxRequests: 10, windowMs: 60_000 });
+  if (rateLimited) return rateLimited;
+
+  if (req.method !== "POST") {
+    return errorResponse("Method not allowed", 405);
+  }
 
   try {
-    const { topic, platform, brandName, industry } = await req.json();
-    
-    if (!topic || !platform) {
-      return new Response(JSON.stringify({ error: "topic and platform are required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // ── Parse & validate body ──
+    const body = await safeParseBody(req);
+    if (!body) {
+      return errorResponse("Invalid or oversized request body", 400);
+    }
+
+    const topic = enforceLength(sanitizeString(body.topic), 500);
+    const platform = sanitizeString(body.platform).toLowerCase();
+    const brandName = enforceLength(sanitizeString(body.brandName), 200);
+    const industry = enforceLength(sanitizeString(body.industry), 100);
+
+    if (!topic) {
+      return errorResponse("topic is required (max 500 chars)", 400);
+    }
+    if (!ALLOWED_PLATFORMS.includes(platform)) {
+      return errorResponse(`platform must be one of: ${ALLOWED_PLATFORMS.join(", ")}`, 400);
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
-    const platformGuides: Record<string, string> = {
-      reddit: "Write a Reddit post. Use markdown, be authentic and community-friendly. Include a disclaimer. Add engaging questions. Format with bullet points and bold text.",
-      quora: "Write a Quora answer. Be helpful, authoritative, and detailed. Use numbered points. Sound like a knowledgeable professional sharing genuine advice.",
-      linkedin: "Write a LinkedIn post. Use emojis sparingly, include stats, use line breaks for readability. Add relevant hashtags. Professional but engaging tone.",
-      medium: "Write a Medium article with markdown headers, intro paragraph, multiple sections with h2/h3 headers, and a conclusion. Long-form, authoritative, SEO-friendly.",
-      hackernews: "Write a Hacker News post. Technical, concise, data-driven. No marketing fluff. Appeal to developers and tech founders. Include technical details.",
-      twitter: "Write a Twitter/X thread (5-7 tweets). Start with a hook. Use 🧵 emoji. Number each tweet. Include stats and actionable takeaways. End with a CTA.",
-    };
+    if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY not configured");
+      return errorResponse("Service configuration error", 503);
+    }
 
     const systemPrompt = `You are an expert content strategist specializing in AI Engine Optimization (AEO) and brand visibility. Generate platform-optimized content that naturally promotes a brand while providing genuine value. ${platformGuides[platform] || "Write engaging content."}`;
 
@@ -57,48 +93,38 @@ Make it authentic, valuable, and optimized for the platform's audience. The cont
             parameters: {
               type: "object",
               properties: {
-                title: { type: "string", description: "Post/article title" },
-                content: { type: "string", description: "Full post content" },
-                hashtags: { type: "array", items: { type: "string" }, description: "Relevant hashtags" },
-                estimatedEngagement: { type: "string", description: "Expected engagement level: low/medium/high" },
+                title: { type: "string" },
+                content: { type: "string" },
+                hashtags: { type: "array", items: { type: "string" } },
+                estimatedEngagement: { type: "string" },
               },
               required: ["title", "content"],
               additionalProperties: false,
-            }
-          }
+            },
+          },
         }],
         tool_choice: { type: "function", function: { name: "generated_content" } },
       }),
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited. Please try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const text = await response.text();
-      console.error("AI error:", response.status, text);
-      throw new Error("AI gateway error");
+      if (response.status === 429) return errorResponse("Rate limited by AI provider. Try again shortly.", 429);
+      if (response.status === 402) return errorResponse("AI credits exhausted.", 402);
+      console.error("AI gateway error:", response.status);
+      return errorResponse("AI service temporarily unavailable", 502);
     }
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No tool call response");
+    if (!toolCall) {
+      console.error("No tool call in AI response");
+      return errorResponse("Unexpected AI response format", 502);
+    }
 
     const result = JSON.parse(toolCall.function.arguments);
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse(result);
   } catch (e) {
     console.error("generate-content error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return errorResponse("An internal error occurred. Please try again.", 500);
   }
 });

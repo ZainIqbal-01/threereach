@@ -146,26 +146,26 @@ export default function Distribution() {
   const totalEngagement = posts.reduce((sum, p) => sum + (p.engagement?.views || 0), 0);
 
   return (
-    <div className="space-y-6 animate-slide-in">
+    <div className="space-y-4 md:space-y-6 animate-slide-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <StarAgent mood="excited" size={48} animate={true} />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 md:gap-4">
+          <StarAgent mood="excited" size={40} animate={true} />
           <div>
-            <h1 className="text-xl font-bold text-foreground">Content Distribution Engine</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              AI-powered content creation & distribution across platforms
+            <h1 className="text-lg md:text-xl font-bold text-foreground">Content Distribution Engine</h1>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              AI-powered content creation & distribution
             </p>
           </div>
         </div>
-        <Button onClick={() => setShowGenerator(true)} className="rounded-xl gap-2 h-10 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow">
+        <Button onClick={() => setShowGenerator(true)} className="rounded-xl gap-2 h-10 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow w-full sm:w-auto">
           <Sparkles className="h-4 w-4" />
           Generate Content
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <div className="metric-card">
           <div className="metric-value">{platforms.length}</div>
           <div className="metric-label">Platforms</div>
@@ -214,7 +214,7 @@ export default function Distribution() {
             
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Select Platform</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {platforms.map((p) => (
                   <button
                     key={p.id}
@@ -253,7 +253,7 @@ export default function Distribution() {
       )}
 
       {/* Platform Overview */}
-      <div className="grid grid-cols-6 gap-3">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         {platforms.map((p) => {
           const platformPosts = posts.filter(post => post.platform === p.id);
           const posted = platformPosts.filter(post => post.status === "posted").length;
@@ -389,7 +389,7 @@ export default function Distribution() {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {platforms.slice(0, 3).map((p) => (
             <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
               <div className="flex items-center gap-2">

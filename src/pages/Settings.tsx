@@ -112,13 +112,13 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-5">
-        <TabsList className="bg-secondary p-1 rounded-xl">
-          <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><User className="h-3.5 w-3.5" />Profile</TabsTrigger>
-          <TabsTrigger value="engines" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Bot className="h-3.5 w-3.5" />Engines</TabsTrigger>
-          <TabsTrigger value="competitors" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Users className="h-3.5 w-3.5" />Competitors</TabsTrigger>
-          <TabsTrigger value="team" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Users className="h-3.5 w-3.5" />Team</TabsTrigger>
-          <TabsTrigger value="api" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Key className="h-3.5 w-3.5" />API</TabsTrigger>
-          <TabsTrigger value="security" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Shield className="h-3.5 w-3.5" />Security</TabsTrigger>
+        <TabsList className="bg-secondary p-1 rounded-xl flex-wrap h-auto gap-1">
+          <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><User className="h-3.5 w-3.5" /><span className="hidden sm:inline">Profile</span></TabsTrigger>
+          <TabsTrigger value="engines" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Bot className="h-3.5 w-3.5" /><span className="hidden sm:inline">Engines</span></TabsTrigger>
+          <TabsTrigger value="competitors" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Users className="h-3.5 w-3.5" /><span className="hidden sm:inline">Competitors</span></TabsTrigger>
+          <TabsTrigger value="team" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Users className="h-3.5 w-3.5" /><span className="hidden sm:inline">Team</span></TabsTrigger>
+          <TabsTrigger value="api" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Key className="h-3.5 w-3.5" /><span className="hidden sm:inline">API</span></TabsTrigger>
+          <TabsTrigger value="security" className="gap-1.5 data-[state=active]:bg-card rounded-lg text-xs"><Shield className="h-3.5 w-3.5" /><span className="hidden sm:inline">Security</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">

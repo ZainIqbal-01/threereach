@@ -63,9 +63,9 @@ export default function Billing() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Current Plan */}
-        <div className="col-span-5">
+        <div className="lg:col-span-5">
           <div className="card-reach h-full">
             <div className="flex items-start justify-between mb-5">
               <div>
@@ -104,7 +104,7 @@ export default function Billing() {
         </div>
 
         {/* Usage & Invoices */}
-        <div className="col-span-7 space-y-5">
+        <div className="lg:col-span-7 space-y-5">
           <div className="card-reach">
             <h3 className="text-sm font-semibold text-foreground mb-5">Monthly Usage</h3>
             <div className="space-y-4">

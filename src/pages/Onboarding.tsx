@@ -265,8 +265,10 @@ export default function Onboarding() {
                           placeholder="https://yourwebsite.com"
                           value={formData.websiteUrl}
                           onChange={handleInputChange}
-                          className="h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm"
+                          maxLength={500}
+                          className={`h-10 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow text-sm ${formErrors.websiteUrl ? "border-destructive" : ""}`}
                         />
+                        {formErrors.websiteUrl && <p className="text-[10px] text-destructive mt-1">{formErrors.websiteUrl}</p>}
                       </div>
                       <div>
                         <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">

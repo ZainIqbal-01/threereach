@@ -56,7 +56,7 @@ export function InputPhase({
               </p>
             </div>
           </div>
-          <StarAgent mood="waving" size={80} message="Tell me about your brand! ✨" />
+          <AgentBadge agent={agents.oracle} mood="waving" size={80} showRole={true} />
         </div>
       </div>
 

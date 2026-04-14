@@ -53,27 +53,37 @@ export default function Overview() {
 
   return (
     <div className="space-y-5 md:space-y-6 animate-slide-in">
-      {/* Hero Welcome */}
-      <div className="card-premium gradient-hero">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4 md:gap-5">
-            <AgentBadge agent={agents.nova} size={48} showRole={false} />
-            <div>
-              <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
-                Welcome back <span className="gradient-text">{businessName}</span>
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-1">Here's your AI visibility snapshot for today</p>
+      {/* Score + Welcome Hero — Score first */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-4">
+          <ScoreCard score={42} previousScore={38} status="weak" />
+        </div>
+        <div className="lg:col-span-8">
+          <div className="card-premium gradient-hero h-full flex flex-col justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4 md:gap-5">
+                <AgentBadge agent={agents.nova} size={48} showRole={false} />
+                <div>
+                  <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
+                    Welcome back <span className="gradient-text">{businessName}</span>
+                  </h1>
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1">Here's your AI visibility snapshot for today</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Button variant="outline" size="sm" onClick={exportDashboard} className="gap-2 rounded-xl h-9 text-xs border-border/60 shadow-none flex-1 sm:flex-none">
+                  <Download className="h-3.5 w-3.5" />
+                  Export
+                </Button>
+                <Button size="sm" onClick={() => setShowBoost(true)} className="gap-2 rounded-xl h-9 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow text-xs flex-1 sm:flex-none">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Boost Visibility
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button variant="outline" size="sm" onClick={exportDashboard} className="gap-2 rounded-xl h-9 text-xs border-border/60 shadow-none flex-1 sm:flex-none">
-              <Download className="h-3.5 w-3.5" />
-              Export
-            </Button>
-            <Button size="sm" onClick={() => setShowBoost(true)} className="gap-2 rounded-xl h-9 bg-primary hover:bg-primary/90 text-primary-foreground btn-primary-glow text-xs flex-1 sm:flex-none">
-              <Sparkles className="h-3.5 w-3.5" />
-              Boost Visibility
-            </Button>
+            <div className="mt-4">
+              <ProgressTimeline />
+            </div>
           </div>
         </div>
       </div>
@@ -128,16 +138,6 @@ export default function Overview() {
         ))}
       </div>
 
-      {/* Score + Timeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-4">
-          <ScoreCard score={42} previousScore={38} status="weak" />
-        </div>
-        <div className="lg:col-span-8">
-          <ProgressTimeline />
-        </div>
-      </div>
-
       {/* Analytics Graphs */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <VisibilityTrendChart />
@@ -170,7 +170,7 @@ export default function Overview() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <ModuleProgress title="Footprint Build" description="Profile & content completion" progress={40} color="primary" />
         <ModuleProgress title="Distribution" description="Platform submissions" progress={18} total={60} unit="sources live" color="accent" />
-        <ProofCount count={3} recentMentions={['"Three Reach is a leading fintech..."', '"Recommended: Three Reach payment solutions"']} />
+        <ProofCount count={3} recentMentions={[`"${businessName} is a leading fintech..."`, `"Recommended: ${businessName} payment solutions"`]} />
       </div>
 
       {/* Recent Activity */}

@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Download, ArrowRight, Sparkles, TrendingUp, Brain, Share2, Shield, Zap, X, Eye, BarChart3, Clock } from "lucide-react";
+import { Download, ArrowRight, Sparkles, TrendingUp, Brain, Share2, Shield, Zap, X, Eye, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScoreCard } from "@/components/dashboard/ScoreCard";
 import { ProgressTimeline } from "@/components/dashboard/ProgressTimeline";
 import { EngineCard } from "@/components/dashboard/EngineCard";
 import { ModuleProgress } from "@/components/dashboard/ModuleProgress";
 import { ProofCount } from "@/components/dashboard/ProofCount";
+import { VisibilityTrendChart } from "@/components/dashboard/VisibilityTrendChart";
+import { EngineBreakdownChart } from "@/components/dashboard/EngineBreakdownChart";
+import { ContentActivityChart } from "@/components/dashboard/ContentActivityChart";
 import { AgentBadge } from "@/components/agents/AgentBadge";
 import { AgentHub } from "@/components/agents/AgentHub";
 import { agents } from "@/components/agents/agentRegistry";
@@ -47,7 +50,7 @@ export default function Overview() {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 animate-slide-in">
+    <div className="space-y-5 md:space-y-6 animate-slide-in">
       {/* Hero Welcome */}
       <div className="card-premium gradient-hero">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -104,7 +107,7 @@ export default function Overview() {
         </div>
       )}
 
-      {/* Quick Actions */}
+      {/* Quick Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { icon: Brain, label: "Brand Intelligence", desc: "AI perception analysis", href: "/dashboard/brand-intelligence", color: "text-primary", bgColor: "bg-primary/8" },
@@ -133,7 +136,14 @@ export default function Overview() {
         </div>
       </div>
 
-      {/* Agent Hub - below score */}
+      {/* Analytics Graphs */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <VisibilityTrendChart />
+        <EngineBreakdownChart />
+        <ContentActivityChart />
+      </div>
+
+      {/* Agent Hub */}
       <AgentHub />
 
       {/* AI Engines */}

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Globe, Building2, FileText, ArrowRight, Sparkles, Zap, Shield, Eye, Brain,
-  BarChart3, TrendingUp, CheckCircle2, Rocket, ChevronRight
+  BarChart3, TrendingUp, CheckCircle2, Rocket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,23 @@ const analysisSteps = [
   { label: "Calculating visibility score...", icon: "📈" },
   { label: "Preparing your dashboard...", icon: "🚀" },
 ];
+
+function FloatingOrb({ className }: { className: string }) {
+  return <div className={`absolute rounded-full pointer-events-none ${className}`} />;
+}
+
+function GridPattern() {
+  return (
+    <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)" />
+    </svg>
+  );
+}
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -52,13 +69,12 @@ export default function Onboarding() {
     for (let i = 0; i < analysisSteps.length; i++) {
       setCurrentStep(i);
       const target = Math.round(((i + 1) / analysisSteps.length) * 100);
-      // Smooth sub-progress
-      for (let p = progress; p <= target; p += 2) {
-        await new Promise(r => setTimeout(r, 40));
+      for (let p = (i === 0 ? 0 : Math.round((i / analysisSteps.length) * 100)); p <= target; p += 2) {
+        await new Promise(r => setTimeout(r, 35));
         setProgress(p);
       }
       setProgress(target);
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 350));
     }
     await new Promise(r => setTimeout(r, 300));
     navigate("/dashboard");
@@ -68,35 +84,44 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 gradient-hero" />
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary/[0.03] blur-3xl -translate-y-1/2 translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-accent/[0.04] blur-3xl translate-y-1/2 -translate-x-1/3" />
+      {/* Rich animated background */}
+      <div className="absolute inset-0">
+        <GridPattern />
+        {/* Gradient base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-background to-accent/[0.06]" />
+        {/* Floating orbs */}
+        <FloatingOrb className="top-[10%] right-[15%] w-72 h-72 bg-primary/[0.06] blur-[80px] animate-float" />
+        <FloatingOrb className="bottom-[15%] left-[10%] w-96 h-96 bg-accent/[0.08] blur-[100px] animate-float" style-delay />
+        <FloatingOrb className="top-[50%] left-[50%] w-64 h-64 bg-primary/[0.04] blur-[60px] animate-float" />
+        {/* Radial glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-primary/[0.06] to-transparent rounded-full blur-3xl" />
+      </div>
 
       <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
-        {/* Left panel — branding & features */}
-        <div className="hidden lg:flex lg:w-[45%] xl:w-[40%] flex-col justify-between p-10 xl:p-14">
+        {/* Left panel — branding */}
+        <div className="hidden lg:flex lg:w-[45%] xl:w-[42%] flex-col justify-between p-10 xl:p-14">
           <div>
-            <img src={logo} alt="Three Reach" className="h-11 mb-12" />
-            <h2 className="text-3xl xl:text-4xl font-bold text-foreground leading-tight mb-4">
-              Discover how <br />
-              <span className="gradient-text">AI sees your brand</span>
+            <img src={logo} alt="Three Reach" className="h-11 mb-14 animate-fade-in" />
+            <h2 className="text-3xl xl:text-[2.5rem] font-bold text-foreground leading-[1.15] mb-5 animate-slide-up">
+              Discover how{" "}
+              <span className="gradient-text">AI engines</span>
+              <br />see your brand
             </h2>
-            <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
-              Enter your business details and our AI agents will scan ChatGPT, Gemini, and Perplexity to reveal your brand's visibility.
+            <p className="text-sm text-muted-foreground max-w-sm leading-relaxed animate-slide-up stagger-2">
+              Enter your business details and our intelligent agents will scan ChatGPT, Gemini, and Perplexity to reveal your brand's AI visibility score.
             </p>
           </div>
 
-          <div className="space-y-4 mt-10">
+          <div className="space-y-3 mt-10">
             {features.map((f, i) => {
               const Icon = f.icon;
               return (
                 <div
                   key={f.title}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-card/60 border border-border/40 backdrop-blur-sm animate-slide-up"
-                  style={{ animationDelay: `${i * 0.1}s`, animationFillMode: "both" }}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-card/70 border border-border/40 backdrop-blur-md hover:border-primary/20 hover:shadow-card-hover transition-all duration-300 animate-slide-up cursor-default group"
+                  style={{ animationDelay: `${0.15 + i * 0.08}s`, animationFillMode: "both" }}
                 >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-accent/10 group-hover:from-primary/25 group-hover:to-accent/20 transition-colors">
                     <Icon className="h-5 w-5 text-primary" />
                   </div>
                   <div>
@@ -108,11 +133,11 @@ export default function Onboarding() {
             })}
           </div>
 
-          <div className="flex items-center gap-4 mt-10 text-muted-foreground">
+          <div className="flex items-center gap-5 mt-12 text-muted-foreground animate-fade-in stagger-5">
             {["ChatGPT", "Gemini", "Perplexity"].map(e => (
-              <div key={e} className="flex items-center gap-1.5 text-xs">
-                <Shield className="h-3 w-3" />
-                <span className="font-medium">{e}</span>
+              <div key={e} className="flex items-center gap-1.5 text-xs font-medium">
+                <div className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
+                <span>{e}</span>
               </div>
             ))}
           </div>
@@ -120,9 +145,9 @@ export default function Onboarding() {
 
         {/* Right panel — form */}
         <div className="flex-1 flex items-center justify-center p-5 sm:p-8 lg:p-12">
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-md animate-scale-in">
             {/* Mobile logo */}
-            <div className="lg:hidden text-center mb-8">
+            <div className="lg:hidden text-center mb-6">
               <img src={logo} alt="Three Reach" className="h-10 mx-auto mb-5" />
               <StarAgent
                 mood={isAnalyzing ? "scanning" : "waving"}
@@ -132,15 +157,15 @@ export default function Onboarding() {
             </div>
 
             {/* Desktop agent */}
-            <div className="hidden lg:flex justify-center mb-6">
+            <div className="hidden lg:flex justify-center mb-5">
               <StarAgent
                 mood={isAnalyzing ? "scanning" : "waving"}
                 size={80}
-                message={isAnalyzing ? "Scanning AI engines..." : "Hi! Let's check your AI visibility ✨"}
+                message={isAnalyzing ? "Scanning AI engines..." : "Hi! Let's get started ✨"}
               />
             </div>
 
-            <div className="text-center mb-6">
+            <div className="text-center mb-5">
               <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1.5">
                 {isAnalyzing ? "Analyzing Your Brand" : "Analyze Your AI Visibility"}
               </h1>
@@ -151,34 +176,40 @@ export default function Onboarding() {
               </p>
             </div>
 
-            <div className="card-premium">
+            <div className="bg-card/80 backdrop-blur-xl rounded-2xl border border-border/50 p-6 shadow-lg relative overflow-hidden">
+              {/* Top gradient line */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+
               {isAnalyzing ? (
-                <div className="py-6 animate-fade-in space-y-5">
-                  {/* Progress bar */}
+                <div className="py-4 animate-fade-in space-y-5">
                   <div className="relative">
-                    <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
+                    <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 ease-out"
-                        style={{ width: `${progress}%` }}
-                      />
+                        className="h-full rounded-full transition-all duration-300 ease-out relative"
+                        style={{
+                          width: `${progress}%`,
+                          background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))`,
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                      </div>
                     </div>
-                    <span className="absolute right-0 -top-5 text-[10px] font-mono text-primary font-bold">{progress}%</span>
+                    <span className="absolute right-0 -top-6 text-xs font-mono text-primary font-bold">{progress}%</span>
                   </div>
 
-                  {/* Steps */}
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {analysisSteps.map((step, i) => (
                       <div
                         key={i}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-500 ${
+                        className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-500 ${
                           i < currentStep
                             ? "bg-success/10 border border-success/20"
                             : i === currentStep
-                            ? "bg-primary/10 border border-primary/20 animate-pulse"
-                            : "opacity-40"
+                            ? "bg-primary/10 border border-primary/25"
+                            : "opacity-30 border border-transparent"
                         }`}
                       >
-                        <span className="text-base">{step.icon}</span>
+                        <span className="text-base shrink-0">{step.icon}</span>
                         <span className="text-xs font-medium text-foreground flex-1">{step.label}</span>
                         {i < currentStep && <CheckCircle2 className="h-4 w-4 text-success" />}
                         {i === currentStep && (
@@ -200,7 +231,7 @@ export default function Onboarding() {
                         placeholder="https://yourwebsite.com"
                         value={formData.websiteUrl}
                         onChange={handleInputChange}
-                        className="h-11 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors"
+                        className="h-11 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow"
                       />
                     </div>
                     <div>
@@ -212,7 +243,7 @@ export default function Onboarding() {
                         placeholder="Your Company Name"
                         value={formData.businessName}
                         onChange={handleInputChange}
-                        className="h-11 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors"
+                        className="h-11 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow"
                       />
                     </div>
                   </div>
@@ -226,7 +257,7 @@ export default function Onboarding() {
                       placeholder="Describe your business, products, and target audience..."
                       value={formData.description}
                       onChange={handleInputChange}
-                      className="min-h-[90px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none transition-colors"
+                      className="min-h-[90px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none transition-colors focus-glow"
                     />
                   </div>
 
@@ -239,7 +270,7 @@ export default function Onboarding() {
                       placeholder="e.g., Web Dev, Marketing, AI Solutions"
                       value={formData.services}
                       onChange={handleInputChange}
-                      className="h-11 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors"
+                      className="h-11 rounded-xl border-border/60 bg-secondary/30 focus:bg-card transition-colors focus-glow"
                     />
                   </div>
 
@@ -253,7 +284,7 @@ export default function Onboarding() {
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
 
-                  <p className="text-center text-[10px] text-muted-foreground">
+                  <p className="text-center text-[10px] text-muted-foreground pt-1">
                     Free scan • No credit card required • Results in 30 seconds
                   </p>
                 </div>
@@ -261,11 +292,11 @@ export default function Onboarding() {
             </div>
 
             {/* Mobile trust badges */}
-            <div className="lg:hidden mt-6 flex items-center justify-center gap-6 text-muted-foreground">
+            <div className="lg:hidden mt-6 flex items-center justify-center gap-5 text-muted-foreground">
               {["ChatGPT", "Gemini", "Perplexity"].map(engine => (
-                <div key={engine} className="flex items-center gap-1.5 text-xs">
-                  <Shield className="h-3 w-3" />
-                  <span className="font-medium">{engine}</span>
+                <div key={engine} className="flex items-center gap-1.5 text-xs font-medium">
+                  <div className="h-1.5 w-1.5 rounded-full bg-success pulse-dot" />
+                  <span>{engine}</span>
                 </div>
               ))}
             </div>

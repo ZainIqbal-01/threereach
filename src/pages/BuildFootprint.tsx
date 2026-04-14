@@ -135,9 +135,9 @@ export default function BuildFootprint() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Knowledge Identity */}
-        <div className="col-span-5">
+        <div className="lg:col-span-5">
           <div className="card-reach h-full">
             <h3 className="text-sm font-semibold text-foreground mb-1">Knowledge Identity</h3>
             <p className="text-[11px] text-muted-foreground mb-5">Complete your business profile for AI optimization</p>
@@ -205,7 +205,7 @@ export default function BuildFootprint() {
         </div>
 
         {/* Content Assets */}
-        <div className="col-span-7">
+        <div className="lg:col-span-7">
           <div className="card-reach">
             <div className="flex items-center justify-between mb-4">
               <div>

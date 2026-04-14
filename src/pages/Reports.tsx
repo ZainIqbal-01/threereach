@@ -83,9 +83,9 @@ export default function Reports() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Report Builder */}
-        <div className="col-span-4">
+        <div className="lg:col-span-4">
           <div className="card-reach h-full">
             <h3 className="text-sm font-semibold text-foreground mb-1">Report Builder</h3>
             <p className="text-[11px] text-muted-foreground mb-5">Select sections to include:</p>
@@ -127,11 +127,11 @@ export default function Reports() {
         </div>
 
         {/* Preview */}
-        <div className="col-span-8">
+        <div className="lg:col-span-8">
           <div className="card-reach h-full">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-foreground">Report Preview</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)} className="gap-1 h-8 rounded-xl text-xs">
                   <Eye className="h-3.5 w-3.5" />
                   {showPreview ? "Compact" : "Full Preview"}

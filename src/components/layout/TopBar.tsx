@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Bell, User, ChevronDown, Activity, Settings, LogOut, CreditCard, X, Search, Command } from "lucide-react";
+import { Bell, User, ChevronDown, Settings, LogOut, CreditCard, X, Search, Menu } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
 interface TopBarProps {
   workspaceName?: string;
   status?: "invisible" | "weak" | "visible" | "strong";
+  onMenuClick?: () => void;
 }
 
 const statusConfig = {
@@ -33,7 +34,7 @@ const pageTitles: Record<string, string> = {
   "/dashboard/settings": "Settings",
 };
 
-export function TopBar({ workspaceName = "Acme Corp", status = "weak" }: TopBarProps) {
+export function TopBar({ workspaceName = "Acme Corp", status = "weak", onMenuClick }: TopBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const statusInfo = statusConfig[status];
@@ -65,15 +66,18 @@ export function TopBar({ workspaceName = "Acme Corp", status = "weak" }: TopBarP
   };
 
   return (
-    <header className="fixed top-0 left-64 right-0 z-30 h-14 border-b border-border/60 bg-card/80 backdrop-blur-xl">
-      <div className="flex h-full items-center justify-between px-6">
-        {/* Left: Page context */}
-        <div className="flex items-center gap-4">
+    <header className="fixed top-0 left-0 lg:left-64 right-0 z-30 h-14 border-b border-border/60 bg-card/80 backdrop-blur-xl">
+      <div className="flex h-full items-center justify-between px-3 md:px-6">
+        {/* Left: Menu + Page context */}
+        <div className="flex items-center gap-3">
+          <button onClick={onMenuClick} className="lg:hidden flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
+            <Menu className="h-5 w-5" />
+          </button>
           <div>
             <h1 className="text-sm font-semibold text-foreground leading-none">{pageTitle}</h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[11px] text-muted-foreground">{workspaceName}</span>
-              <span className="text-border">·</span>
+              <span className="text-[11px] text-muted-foreground hidden sm:inline">{workspaceName}</span>
+              <span className="text-border hidden sm:inline">·</span>
               <span className={`status-badge ${statusInfo.className} !py-0.5 !px-2 !text-[10px]`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${statusInfo.dot} pulse-dot`} />
                 {statusInfo.label}
@@ -104,7 +108,7 @@ export function TopBar({ workspaceName = "Acme Corp", status = "weak" }: TopBarP
             </button>
 
             {showNotifs && (
-              <div className="absolute right-0 top-11 w-80 bg-card rounded-2xl border border-border/60 shadow-lg animate-scale-in z-50 overflow-hidden">
+              <div className="absolute right-0 top-11 w-72 sm:w-80 bg-card rounded-2xl border border-border/60 shadow-lg animate-scale-in z-50 overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-border/40">
                   <span className="text-sm font-semibold text-foreground">Notifications</span>
                   {unreadCount > 0 && (
@@ -142,7 +146,7 @@ export function TopBar({ workspaceName = "Acme Corp", status = "weak" }: TopBarP
                 <div className="text-xs font-medium text-foreground leading-none">John Doe</div>
                 <div className="text-[10px] text-muted-foreground mt-0.5">Admin</div>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors hidden sm:block" />
             </button>
 
             {showUserMenu && (

@@ -57,22 +57,22 @@ export default function ProofTracking() {
   return (
     <div className="space-y-6 animate-slide-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <StarAgent mood="superhero" size={48} animate={true} />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 md:gap-4">
+          <StarAgent mood="superhero" size={40} animate={true} />
           <div>
-            <h1 className="text-xl font-bold text-foreground">Proof & Tracking</h1>
-            <p className="text-sm text-muted-foreground">Verified AI mentions with evidence — {filtered.length} records</p>
+            <h1 className="text-lg md:text-xl font-bold text-foreground">Proof & Tracking</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">Verified AI mentions — {filtered.length} records</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={exportAll} className="gap-2 rounded-xl h-9 text-xs">
+        <Button variant="outline" size="sm" onClick={exportAll} className="gap-2 rounded-xl h-9 text-xs w-full sm:w-auto">
           <Download className="h-3.5 w-3.5" /> Export All
         </Button>
       </div>
 
       {/* Filters */}
       <div className="card-reach py-4">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input 
@@ -114,7 +114,7 @@ export default function ProofTracking() {
           <Button variant="outline" size="sm" onClick={() => { setSearchTerm(""); setEngineFilter("all"); }} className="mt-3 rounded-xl text-xs">Clear Filters</Button>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visible.map((proof) => (
             <div key={proof.id} className="card-reach overflow-hidden group p-0 cursor-pointer" onClick={() => setViewingProof(proof)}>
               <div className="relative aspect-video bg-gradient-to-br from-secondary to-secondary/50 overflow-hidden">

@@ -6,7 +6,9 @@ import { ProgressTimeline } from "@/components/dashboard/ProgressTimeline";
 import { EngineCard } from "@/components/dashboard/EngineCard";
 import { ModuleProgress } from "@/components/dashboard/ModuleProgress";
 import { ProofCount } from "@/components/dashboard/ProofCount";
-import { StarAgent } from "@/components/StarAgent";
+import { AgentBadge } from "@/components/agents/AgentBadge";
+import { AgentHub } from "@/components/agents/AgentHub";
+import { agents } from "@/components/agents/agentRegistry";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
@@ -50,7 +52,7 @@ export default function Overview() {
       <div className="card-premium gradient-hero">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 md:gap-5">
-            <StarAgent mood="happy" size={48} animate={true} />
+            <AgentBadge agent={agents.nova} size={48} showRole={false} />
             <div>
               <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
                 Welcome back <span className="gradient-text">Acme Corp</span>
@@ -76,7 +78,7 @@ export default function Overview() {
         <div className="card-premium animate-scale-in">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <StarAgent mood="excited" size={42} animate={true} />
+              <AgentBadge agent={agents.nova} mood="excited" size={42} showRole={false} />
               <div>
                 <h3 className="text-sm font-bold text-foreground">Quick Boost Actions</h3>
                 <p className="text-[11px] text-muted-foreground">Pick an action to improve your visibility now</p>
@@ -120,6 +122,9 @@ export default function Overview() {
           </Link>
         ))}
       </div>
+
+      {/* Agent Hub */}
+      <AgentHub />
 
       {/* Score + Timeline */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Globe, Building2, FileText, ArrowRight, Sparkles, Eye, Brain,
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StarAgent } from "@/components/StarAgent";
+import { sanitize, validateOnboardingForm } from "@/lib/validation";
 import logo from "@/assets/logo.png";
 
 const features = [
@@ -44,14 +45,29 @@ export default function Onboarding() {
     description: "",
     services: "",
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    // Sanitize input on change (OWASP A03 - Injection prevention)
+    const sanitized = sanitize(value);
+    setFormData((prev) => ({ ...prev, [name]: sanitized }));
+    // Clear error for this field when user starts typing
+    setFormErrors((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  }, []);
 
   const handleAnalyze = async () => {
-    if (!formData.websiteUrl && !formData.businessName) return;
+    // Validate all inputs before proceeding
+    const validation = validateOnboardingForm(formData);
+    if (!validation.valid) {
+      setFormErrors(validation.errors);
+      return;
+    }
+    setFormErrors({});
     setIsAnalyzing(true);
     localStorage.setItem("businessProfile", JSON.stringify(formData));
     localStorage.setItem("onboardingComplete", "true");

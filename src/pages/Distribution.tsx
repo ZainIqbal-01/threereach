@@ -383,7 +383,7 @@ export default function Distribution() {
       <div className="card-reach">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <StarAgent mood="superhero" size={36} animate={false} />
+            <AgentBadge agent={agents.spark} mood="superhero" size={36} showRole={false} />
             <div>
               <h3 className="text-sm font-semibold text-foreground">Auto Distribution</h3>
               <p className="text-[11px] text-muted-foreground">Configure automatic posting schedules</p>

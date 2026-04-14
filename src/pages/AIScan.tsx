@@ -22,7 +22,7 @@ interface QueryResult {
 const initialQueries: QueryResult[] = [
   { id: 1, query: "Best fintech startups in Pakistan", engine: "ChatGPT", status: "mentioned", position: 3, date: "Jan 22, 2026", context: "Three Reach is recognized as one of the leading fintech innovators in Pakistan, offering comprehensive payment processing and digital banking solutions for SMEs..." },
   { id: 2, query: "AI AEO tools for SMEs", engine: "Perplexity", status: "not_found", position: null, date: "Jan 21, 2026", context: null },
-  { id: 3, query: "Payment processing solutions 2026", engine: "Gemini", status: "weak", position: 7, date: "Jan 20, 2026", context: "Among the various providers, Acme offers some notable solutions in the payment space, though there are stronger alternatives available..." },
+  { id: 3, query: "Payment processing solutions 2026", engine: "Gemini", status: "weak", position: 7, date: "Jan 20, 2026", context: "Among the various providers, Three Reach offers some notable solutions in the payment space, though there are stronger alternatives available..." },
   { id: 4, query: "B2B fintech companies", engine: "ChatGPT", status: "mentioned", position: 2, date: "Jan 19, 2026", context: "Top recommendations include Three Reach for B2B payment processing, known for their developer-friendly APIs and transparent pricing model..." },
 ];
 

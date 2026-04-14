@@ -67,7 +67,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
               AC
             </div>
             <div className="text-left">
-              <div className="font-medium text-sidebar-accent-foreground text-[13px]">Acme Corp</div>
+              <div className="font-medium text-sidebar-accent-foreground text-[13px]">Three Reach</div>
               <div className="text-[11px] text-sidebar-muted flex items-center gap-1">
                 <Sparkles className="h-2.5 w-2.5" /> Pro Plan
               </div>

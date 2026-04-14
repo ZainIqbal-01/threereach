@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { AgentBadge } from "@/components/agents/AgentBadge";
 import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
+import { useBusinessName } from "@/hooks/useBusinessName";
 
 type Platform = "reddit" | "quora" | "linkedin" | "medium" | "hackernews" | "twitter";
 type ContentStatus = "draft" | "generating" | "ready" | "posted" | "failed";
@@ -80,6 +81,7 @@ const statusConfig: Record<ContentStatus, { label: string; className: string; ic
 };
 
 export default function Distribution() {
+  const businessName = useBusinessName();
   const [posts, setPosts] = useState<ContentPost[]>(initialPosts);
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
   const [topic, setTopic] = useState("");
@@ -104,7 +106,7 @@ export default function Distribution() {
 
     try {
       const { data, error } = await supabase.functions.invoke("generate-content", {
-        body: { topic, platform, brandName: "Your Brand", industry: "" },
+        body: { topic, platform, brandName: businessName, industry: "" },
       });
 
       if (error) throw error;

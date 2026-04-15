@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   ArrowRight, Eye, Brain, BarChart3, TrendingUp, Shield, Zap, 
   Globe, CheckCircle2, Star, Sparkles, ChevronRight, Play,
-  Bot, Search, FileText, Share2, Award, LineChart
+  Bot, Search, Share2, Award, LineChart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getEngineLogo } from "@/components/ui/ai-engine-logos";

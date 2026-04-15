@@ -52,6 +52,19 @@ export const CopilotLogo: React.FC<LogoProps> = ({ className = "h-5 w-5", size }
   </svg>
 );
 
+export const MetaAILogo: React.FC<LogoProps> = ({ className = "h-5 w-5", size }) => (
+  <svg viewBox="0 0 24 24" className={className} width={size} height={size} fill="none">
+    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="url(#meta-grad)"/>
+    <path d="M7 15C7 15 8.5 9 10.5 9C12 9 12.5 12 12.5 12C12.5 12 13 9 14.5 9C16.5 9 17 15 17 15" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <defs>
+      <linearGradient id="meta-grad" x1="2" y1="2" x2="22" y2="22">
+        <stop stopColor="#0081FB"/>
+        <stop offset="1" stopColor="#0064E0"/>
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
 /** Helper to get the right logo component by engine name */
 export function getEngineLogo(engine: string, className?: string): React.ReactNode {
   const name = engine.toLowerCase().replace(/\s/g, "");
@@ -62,6 +75,8 @@ export function getEngineLogo(engine: string, className?: string): React.ReactNo
     case "perplexity": return <PerplexityLogo className={className} />;
     case "claude": return <ClaudeLogo className={className} />;
     case "copilot": return <CopilotLogo className={className} />;
+    case "meta":
+    case "metaai": return <MetaAILogo className={className} />;
     default: return <ChatGPTLogo className={className} />;
   }
 }

@@ -154,7 +154,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 opacity-60">
             {engines.map(e => (
               <div key={e.key} className="flex items-center gap-2">
-                <img src={getEngineLogo(e.key)} alt={e.name} className="w-6 h-6 object-contain" />
+                {getEngineLogo(e.key, "w-6 h-6")}
                 <span className="text-sm font-medium text-muted-foreground hidden sm:inline">{e.name}</span>
               </div>
             ))}
@@ -187,7 +187,7 @@ export default function LandingPage() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f, i) => (
+            {features.map((f) => (
               <div key={f.title} className="card-premium group hover:border-primary/30 transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                   <f.icon className="w-6 h-6 text-primary-foreground" />
@@ -245,7 +245,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {engines.map(e => (
               <div key={e.key} className="card-premium text-center py-8 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 hover:shadow-card-hover">
-                <img src={getEngineLogo(e.key)} alt={e.name} className="w-12 h-12 mx-auto mb-3 object-contain" />
+                <div className="flex justify-center mb-3">{getEngineLogo(e.key, "w-12 h-12")}</div>
                 <div className="font-semibold text-sm">{e.name}</div>
                 <div className="text-xs text-muted-foreground mt-1">{e.desc}</div>
               </div>
@@ -391,7 +391,7 @@ export default function LandingPage() {
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Three Reach AI. All rights reserved.</p>
             <div className="flex items-center gap-4 opacity-50">
               {engines.slice(0, 4).map(e => (
-                <img key={e.key} src={getEngineLogo(e.key)} alt={e.name} className="w-5 h-5 object-contain" />
+                <span key={e.key}>{getEngineLogo(e.key, "w-5 h-5")}</span>
               ))}
             </div>
           </div>

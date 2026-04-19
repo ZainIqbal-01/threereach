@@ -37,9 +37,9 @@ export function EngineBreakdownChart() {
         <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">5 engines</span>
       </div>
 
-      <div className="h-[200px]">
+      <div className="h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} barSize={24} layout="vertical">
+          <BarChart data={data} barSize={22} layout="vertical" margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
             <XAxis
               type="number"
@@ -57,19 +57,14 @@ export function EngineBreakdownChart() {
               width={75}
             />
             <Tooltip
-              contentStyle={{
-                borderRadius: 12,
-                border: "1px solid hsl(var(--border))",
-                fontSize: 12,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                background: "hsl(var(--card))",
-                color: "hsl(var(--foreground))",
-              }}
+              cursor={{ fill: "hsl(var(--primary) / 0.06)" }}
+              wrapperStyle={{ outline: "none" }}
               formatter={(value: number) => [`${value}%`, "Confidence"]}
+              {...({ contentClassName: "chart-tooltip" } as any)}
             />
             <Bar dataKey="confidence" radius={[0, 6, 6, 0]}>
               {data.map((entry, index) => (
-                <Cell key={index} fill={entry.color} fillOpacity={0.85} />
+                <Cell key={index} fill={entry.color} fillOpacity={0.9} />
               ))}
             </Bar>
           </BarChart>

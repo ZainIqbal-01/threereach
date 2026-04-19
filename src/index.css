@@ -328,6 +328,72 @@
     100% { transform: translateX(100%); }
   }
 
+  /* ─── Progress bar shimmer (overlays a filled gradient bar) ─── */
+  .progress-shimmer::after {
+    content: '';
+    @apply absolute inset-y-0 left-0 right-0;
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.35), transparent);
+    animation: progress-shimmer 2.4s ease-in-out infinite;
+  }
+  @keyframes progress-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ─── Mesh background for hero/main scroll ─── */
+  .mesh-bg {
+    background-image:
+      radial-gradient(at 12% 18%, hsl(var(--primary) / 0.08) 0px, transparent 45%),
+      radial-gradient(at 88% 12%, hsl(var(--accent) / 0.07) 0px, transparent 45%),
+      radial-gradient(at 78% 92%, hsl(var(--primary) / 0.05) 0px, transparent 50%);
+  }
+
+  /* ─── Glassmorphic chart tooltip ─── */
+  .chart-tooltip {
+    border-radius: 12px !important;
+    border: 1px solid hsl(var(--border)) !important;
+    background: hsl(var(--card) / 0.92) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px -8px hsl(222 47% 11% / 0.18) !important;
+    font-size: 12px !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* ─── Soft pulsing glow halo (for active nodes / live dots) ─── */
+  @keyframes halo-pulse {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 0.95; transform: scale(1.15); }
+  }
+  .halo-pulse {
+    animation: halo-pulse 2.4s ease-in-out infinite;
+  }
+
+  /* ─── Live mini dot used inside engine cards ─── */
+  @keyframes live-dot {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--success) / 0.5); }
+    70% { box-shadow: 0 0 0 6px hsl(var(--success) / 0); }
+  }
+  .live-dot {
+    animation: live-dot 1.8s ease-out infinite;
+  }
+
+  /* ─── Button shimmer sweep (used on Boost CTA) ─── */
+  .btn-shimmer {
+    @apply relative overflow-hidden;
+  }
+  .btn-shimmer::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(120deg, transparent 30%, hsl(0 0% 100% / 0.25) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: btn-shimmer 3.2s ease-in-out infinite;
+  }
+  @keyframes btn-shimmer {
+    0% { transform: translateX(-100%); }
+    60%, 100% { transform: translateX(100%); }
+  }
+
   /* ─── Glow ring on focus ─── */
   .focus-glow:focus-within {
     box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);

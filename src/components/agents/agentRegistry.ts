@@ -1,5 +1,12 @@
 import type { StarMood } from "@/components/StarAgent";
 
+export interface AgentMission {
+  id: string;
+  label: string;
+  description: string;
+  durationSec: number;
+}
+
 export interface AgentConfig {
   id: string;
   name: string;
@@ -16,6 +23,7 @@ export interface AgentConfig {
     working: string;
     done: string;
   };
+  missions: AgentMission[];
 }
 
 export const agents: Record<string, AgentConfig> = {
@@ -35,6 +43,11 @@ export const agents: Record<string, AgentConfig> = {
       working: "Coordinating agents...",
       done: "Dashboard synced!",
     },
+    missions: [
+      { id: "nova-sync", label: "Sync all dashboards", description: "Refresh KPIs across modules", durationSec: 18 },
+      { id: "nova-health", label: "Run health check", description: "Audit every agent's status", durationSec: 24 },
+      { id: "nova-brief", label: "Generate daily brief", description: "Compile executive summary", durationSec: 30 },
+    ],
   },
   scout: {
     id: "scout",
@@ -52,6 +65,11 @@ export const agents: Record<string, AgentConfig> = {
       working: "Scanning all engines...",
       done: "Scan complete!",
     },
+    missions: [
+      { id: "scout-chatgpt", label: "Scan ChatGPT", description: "Probe top 25 prompts", durationSec: 22 },
+      { id: "scout-all", label: "Scan all engines", description: "Full sweep of 5 AI engines", durationSec: 45 },
+      { id: "scout-deep", label: "Deep crawl", description: "Long-tail prompt expansion", durationSec: 60 },
+    ],
   },
   oracle: {
     id: "oracle",
@@ -69,6 +87,11 @@ export const agents: Record<string, AgentConfig> = {
       working: "Deep analysis in progress...",
       done: "Intelligence report ready!",
     },
+    missions: [
+      { id: "oracle-sentiment", label: "Sentiment sweep", description: "Score brand tone across engines", durationSec: 28 },
+      { id: "oracle-compete", label: "Competitor benchmark", description: "Side-by-side positioning", durationSec: 40 },
+      { id: "oracle-narrative", label: "Narrative audit", description: "Detect drifting brand stories", durationSec: 35 },
+    ],
   },
   spark: {
     id: "spark",
@@ -86,6 +109,11 @@ export const agents: Record<string, AgentConfig> = {
       working: "Generating content...",
       done: "Content published!",
     },
+    missions: [
+      { id: "spark-linkedin", label: "Generate 3 LinkedIn posts", description: "Thought-leadership angle", durationSec: 25 },
+      { id: "spark-reddit", label: "Draft Reddit answers", description: "Helpful, non-promo replies", durationSec: 32 },
+      { id: "spark-quora", label: "Answer Quora questions", description: "Brand-aligned long-form", durationSec: 38 },
+    ],
   },
   atlas: {
     id: "atlas",
@@ -103,6 +131,11 @@ export const agents: Record<string, AgentConfig> = {
       working: "Constructing assets...",
       done: "Footprint updated!",
     },
+    missions: [
+      { id: "atlas-schema", label: "Update schema markup", description: "JSON-LD across pages", durationSec: 20 },
+      { id: "atlas-profiles", label: "Refresh profile syndication", description: "Sync 12 directories", durationSec: 36 },
+      { id: "atlas-kb", label: "Expand knowledge base", description: "Add 5 entity pages", durationSec: 48 },
+    ],
   },
   sentinel: {
     id: "sentinel",
@@ -120,6 +153,11 @@ export const agents: Record<string, AgentConfig> = {
       working: "Verifying proofs...",
       done: "All proofs verified!",
     },
+    missions: [
+      { id: "sentinel-verify", label: "Verify new mentions", description: "Screenshot + hash proofs", durationSec: 26 },
+      { id: "sentinel-monitor", label: "Run anomaly check", description: "Flag suspicious citations", durationSec: 30 },
+      { id: "sentinel-archive", label: "Archive weekly proofs", description: "Push to immutable store", durationSec: 22 },
+    ],
   },
   sage: {
     id: "sage",
@@ -137,6 +175,11 @@ export const agents: Record<string, AgentConfig> = {
       working: "Compiling report...",
       done: "Report generated!",
     },
+    missions: [
+      { id: "sage-weekly", label: "Build weekly report", description: "Stakeholder-ready PDF", durationSec: 34 },
+      { id: "sage-exec", label: "Generate exec summary", description: "1-page TL;DR", durationSec: 20 },
+      { id: "sage-trend", label: "Forecast trend deltas", description: "30-day projection", durationSec: 42 },
+    ],
   },
 };
 

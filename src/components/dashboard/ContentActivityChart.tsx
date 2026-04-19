@@ -41,7 +41,18 @@ export function ContentActivityChart() {
             <Tooltip
               cursor={{ stroke: "hsl(var(--primary) / 0.35)", strokeWidth: 1, strokeDasharray: "3 3" }}
               wrapperStyle={{ outline: "none" }}
-              {...({ contentClassName: "chart-tooltip" } as any)}
+              contentStyle={{
+                borderRadius: 12,
+                border: "1px solid hsl(var(--border))",
+                background: "hsl(var(--card) / 0.92)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+                boxShadow: "0 10px 30px -8px hsl(222 47% 11% / 0.18)",
+                fontSize: 12,
+                color: "hsl(var(--foreground))",
+              }}
+              labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
+              itemStyle={{ color: "hsl(var(--foreground))" }}
             />
             <Area type="monotone" dataKey="posts" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#postsGrad)" dot={{ r: 3, fill: "hsl(var(--accent))", strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))" }} />
             <Area type="monotone" dataKey="mentions" stroke="hsl(var(--success))" strokeWidth={2} fill="url(#mentionsGrad)" dot={{ r: 3, fill: "hsl(var(--success))", strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))" }} />

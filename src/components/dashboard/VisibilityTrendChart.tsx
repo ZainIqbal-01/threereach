@@ -49,14 +49,20 @@ export function VisibilityTrendChart() {
             />
             <Tooltip
               cursor={{ stroke: "hsl(var(--primary) / 0.35)", strokeWidth: 1, strokeDasharray: "3 3" }}
-              wrapperClassName="!outline-none"
-              contentStyle={{}}
               wrapperStyle={{ outline: "none" }}
-              formatter={(value: number) => [`${value}/100`, "Score"]}
-              labelClassName="text-foreground font-semibold"
+              contentStyle={{
+                borderRadius: 12,
+                border: "1px solid hsl(var(--border))",
+                background: "hsl(var(--card) / 0.92)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+                boxShadow: "0 10px 30px -8px hsl(222 47% 11% / 0.18)",
+                fontSize: 12,
+                color: "hsl(var(--foreground))",
+              }}
+              labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
               itemStyle={{ color: "hsl(var(--foreground))" }}
-              // glassmorphic styling via CSS class
-              {...({ contentClassName: "chart-tooltip" } as any)}
+              formatter={(value: number) => [`${value}/100`, "Score"]}
             />
             <Area
               type="monotone"

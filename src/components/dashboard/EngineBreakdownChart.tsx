@@ -59,8 +59,19 @@ export function EngineBreakdownChart() {
             <Tooltip
               cursor={{ fill: "hsl(var(--primary) / 0.06)" }}
               wrapperStyle={{ outline: "none" }}
+              contentStyle={{
+                borderRadius: 12,
+                border: "1px solid hsl(var(--border))",
+                background: "hsl(var(--card) / 0.92)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+                boxShadow: "0 10px 30px -8px hsl(222 47% 11% / 0.18)",
+                fontSize: 12,
+                color: "hsl(var(--foreground))",
+              }}
+              labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
+              itemStyle={{ color: "hsl(var(--foreground))" }}
               formatter={(value: number) => [`${value}%`, "Confidence"]}
-              {...({ contentClassName: "chart-tooltip" } as any)}
             />
             <Bar dataKey="confidence" radius={[0, 6, 6, 0]}>
               {data.map((entry, index) => (

@@ -25,7 +25,7 @@ export const WalkthroughVideo: React.FC = () => {
       <BG />
       <TransitionSeries>
         {/* Intro */}
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <TransitionSeries.Sequence durationInFrames={210}>
           <TitleScene />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition presentation={fade()} timing={t(14)} />

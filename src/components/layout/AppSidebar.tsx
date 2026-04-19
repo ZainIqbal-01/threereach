@@ -1,35 +1,89 @@
 import { Link, useLocation } from "react-router-dom";
 import { useBusinessName } from "@/hooks/useBusinessName";
+import { useGEOMaturity } from "@/hooks/useGEOMaturity";
 import {
-  LayoutDashboard,
-  Search,
-  Brain,
-  Building2,
-  Share2,
-  Shield,
-  FileText,
-  CreditCard,
-  Settings,
-  ChevronDown,
-  Zap,
-  Sparkles,
-  Bot,
+  LayoutDashboard, Search, Brain, Building2, Share2, Shield, FileText,
+  CreditCard, Settings, ChevronDown, Zap, Sparkles, Bot, BookOpen,
+  Wrench, Wand2, Layers, Linkedin, TrendingUp,
 } from "lucide-react";
 import { StarAgent } from "@/components/StarAgent";
 import { getAgentForRoute } from "@/components/agents/agentRegistry";
 import logo from "@/assets/logo.png";
 
-const navigation = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Agent Command", href: "/dashboard/agents", icon: Bot },
-  { name: "AI Brand Intelligence", href: "/dashboard/brand-intelligence", icon: Brain },
-  { name: "AI Visibility Scan", href: "/dashboard/scan", icon: Search },
-  { name: "Build AI Footprint", href: "/dashboard/footprint", icon: Building2 },
-  { name: "Distribution", href: "/dashboard/distribution", icon: Share2 },
-  { name: "Proof & Tracking", href: "/dashboard/proof", icon: Shield },
-  { name: "Reports", href: "/dashboard/reports", icon: FileText },
-  { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+interface NavItem {
+  name: string;
+  href: string;
+  icon: any;
+  level?: number;
+}
+
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const sections: NavSection[] = [
+  {
+    label: "Command",
+    items: [
+      { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+      { name: "GEO Playbook", href: "/dashboard/playbook", icon: BookOpen },
+      { name: "Agent Command", href: "/dashboard/agents", icon: Bot },
+    ],
+  },
+  {
+    label: "L1 · Audit",
+    items: [
+      { name: "AI Brand Intelligence", href: "/dashboard/brand-intelligence", icon: Brain, level: 1 },
+      { name: "AI Visibility Scan", href: "/dashboard/scan", icon: Search, level: 1 },
+    ],
+  },
+  {
+    label: "L2 · Foundations",
+    items: [
+      { name: "Technical Foundations", href: "/dashboard/foundations", icon: Wrench, level: 2 },
+    ],
+  },
+  {
+    label: "L3 · Optimise",
+    items: [
+      { name: "AEO Page Optimizer", href: "/dashboard/aeo-optimizer", icon: Wand2, level: 3 },
+    ],
+  },
+  {
+    label: "L4 · Authority",
+    items: [
+      { name: "Build AI Footprint", href: "/dashboard/footprint", icon: Building2, level: 4 },
+    ],
+  },
+  {
+    label: "L5 · Formats",
+    items: [
+      { name: "Content Studio", href: "/dashboard/content-studio", icon: Layers, level: 5 },
+      { name: "Distribution", href: "/dashboard/distribution", icon: Share2, level: 5 },
+    ],
+  },
+  {
+    label: "L6 · Entity Signals",
+    items: [
+      { name: "LinkedIn Optimizer", href: "/dashboard/linkedin", icon: Linkedin, level: 6 },
+    ],
+  },
+  {
+    label: "L7 · Monitor & Scale",
+    items: [
+      { name: "Citations", href: "/dashboard/citations", icon: TrendingUp, level: 7 },
+      { name: "Proof & Tracking", href: "/dashboard/proof", icon: Shield, level: 7 },
+      { name: "Reports", href: "/dashboard/reports", icon: FileText, level: 7 },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
+      { name: "Settings", href: "/dashboard/settings", icon: Settings },
+    ],
+  },
 ];
 
 const moodForRoute: Record<string, "happy" | "scanning" | "thinking" | "excited" | "superhero" | "waving"> = {
@@ -40,22 +94,23 @@ const moodForRoute: Record<string, "happy" | "scanning" | "thinking" | "excited"
   "/dashboard/distribution": "excited",
   "/dashboard/proof": "superhero",
   "/dashboard/reports": "thinking",
+  "/dashboard/playbook": "excited",
+  "/dashboard/foundations": "thinking",
+  "/dashboard/aeo-optimizer": "excited",
+  "/dashboard/content-studio": "excited",
+  "/dashboard/linkedin": "waving",
+  "/dashboard/citations": "superhero",
 };
 
-interface AppSidebarProps {
-  onNavigate?: () => void;
-}
+interface AppSidebarProps { onNavigate?: () => void; }
 
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const location = useLocation();
   const businessName = useBusinessName();
+  const { score, completedLevels, currentLevel } = useGEOMaturity();
   const initials = businessName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const currentAgent = getAgentForRoute(location.pathname);
   const currentMood = moodForRoute[location.pathname] || "happy";
-
-  const handleClick = () => {
-    onNavigate?.();
-  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
@@ -64,7 +119,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         <img src={logo} alt="Three Reach" className="h-11 w-auto" />
       </div>
 
-      {/* Workspace Selector */}
+      {/* Workspace */}
       <div className="px-3 py-3 shrink-0">
         <button className="flex w-full items-center justify-between rounded-xl bg-sidebar-accent px-3 py-2.5 text-sm text-sidebar-foreground hover:bg-sidebar-accent/80 transition-all duration-200 group">
           <div className="flex items-center gap-3">
@@ -82,61 +137,51 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         </button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-0.5 px-3 py-1 overflow-y-auto">
-        <p className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest px-3 mb-2">Platform</p>
-        {navigation.slice(0, 7).map((item) => {
-          const isActive = location.pathname === item.href;
-          return (
-            <Link
-              key={item.name}
-              to={item.href}
-              onClick={handleClick}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 group relative ${
-                isActive
-                  ? "bg-primary/15 text-primary"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              }`}
-            >
-              {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
-              )}
-              <item.icon className={`h-[18px] w-[18px] transition-colors ${isActive ? "text-primary" : "text-sidebar-muted group-hover:text-sidebar-foreground"}`} />
-              <span className="truncate">{item.name}</span>
-              {isActive && (
-                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary pulse-dot" />
-              )}
-            </Link>
-          );
-        })}
-
-        <div className="pt-3 pb-1">
-          <p className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest px-3 mb-2">Account</p>
+      {/* GEO Maturity Mini-Widget */}
+      <Link to="/dashboard/playbook" onClick={onNavigate} className="mx-3 mb-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 p-2.5 hover:border-primary/50 transition-colors group">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-sidebar-foreground/80">GEO Maturity</span>
+          <span className="text-[10px] font-bold text-sidebar-accent-foreground tabular-nums">{score}/100</span>
         </div>
-        {navigation.slice(7).map((item) => {
-          const isActive = location.pathname === item.href;
-          return (
-            <Link
-              key={item.name}
-              to={item.href}
-              onClick={handleClick}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 group relative ${
-                isActive
-                  ? "bg-primary/15 text-primary"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              }`}
-            >
-              {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
-              )}
-              <item.icon className={`h-[18px] w-[18px] transition-colors ${isActive ? "text-primary" : "text-sidebar-muted group-hover:text-sidebar-foreground"}`} />
-              <span className="truncate">{item.name}</span>
-            </Link>
-          );
-        })}
+        <div className="h-1 rounded-full bg-sidebar-accent overflow-hidden mb-1.5">
+          <div className="h-full bg-gradient-to-r from-primary to-accent" style={{ width: `${score}%` }} />
+        </div>
+        <div className="flex items-center justify-between text-[9px] text-sidebar-muted">
+          <span>L{currentLevel.number} · {currentLevel.title}</span>
+          <span>{completedLevels}/7 done</span>
+        </div>
+      </Link>
+
+      {/* Navigation */}
+      <nav className="flex-1 space-y-2 px-3 py-1 overflow-y-auto">
+        {sections.map((section) => (
+          <div key={section.label}>
+            <p className="text-[9px] font-semibold text-sidebar-muted uppercase tracking-widest px-3 mt-2 mb-1">{section.label}</p>
+            {section.items.map((item) => {
+              const isActive = location.pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={onNavigate}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2 text-[12.5px] font-medium transition-all duration-200 group relative ${
+                    isActive
+                      ? "bg-primary/15 text-primary"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  }`}
+                >
+                  {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />}
+                  <item.icon className={`h-[16px] w-[16px] transition-colors shrink-0 ${isActive ? "text-primary" : "text-sidebar-muted group-hover:text-sidebar-foreground"}`} />
+                  <span className="truncate">{item.name}</span>
+                  {isActive && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary pulse-dot" />}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
-      {/* Star Agent Companion */}
+      {/* Star Agent */}
       <div className="px-3 py-3 border-t border-sidebar-border shrink-0">
         <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-sidebar-accent/80 to-sidebar-accent/40 p-3 border border-sidebar-border/50">
           <div className="relative">
@@ -154,9 +199,6 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             </p>
           </div>
         </div>
-        <p className="text-[9px] text-sidebar-muted/60 text-center mt-2.5 leading-relaxed px-2">
-          7 AI agents working to keep you visible.
-        </p>
       </div>
     </aside>
   );

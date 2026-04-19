@@ -15,6 +15,12 @@ import Reports from "./pages/Reports";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
 import AgentCommandCenter from "./pages/AgentCommandCenter";
+import Playbook from "./pages/Playbook";
+import Foundations from "./pages/Foundations";
+import AEOOptimizer from "./pages/AEOOptimizer";
+import ContentStudio from "./pages/ContentStudio";
+import LinkedInOptimizer from "./pages/LinkedInOptimizer";
+import Citations from "./pages/Citations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,7 +37,13 @@ function ProtectedRoutes() {
     <AppLayout>
       <Routes>
         <Route path="/" element={<Overview />} />
+        <Route path="/playbook" element={<Playbook />} />
         <Route path="/agents" element={<AgentCommandCenter />} />
+        <Route path="/foundations" element={<Foundations />} />
+        <Route path="/aeo-optimizer" element={<AEOOptimizer />} />
+        <Route path="/content-studio" element={<ContentStudio />} />
+        <Route path="/linkedin" element={<LinkedInOptimizer />} />
+        <Route path="/citations" element={<Citations />} />
         <Route path="/scan" element={<AIScan />} />
         <Route path="/brand-intelligence" element={<BrandIntelligence />} />
         <Route path="/footprint" element={<BuildFootprint />} />

@@ -1,1 +1,4 @@
 project_id = "uwenlivkepoavlyuryya"
+
+[functions.elevenlabs-audio]
+verify_jwt = false

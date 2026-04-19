@@ -1,6 +1,7 @@
 import { Composition } from "remotion";
 import { MainVideo } from "./MainVideo";
 import { ReelVideo } from "./ReelVideo";
+import { WalkthroughVideo } from "./WalkthroughVideo";
 
 export const RemotionRoot = () => (
   <>
@@ -20,5 +21,14 @@ export const RemotionRoot = () => (
       width={1080}
       height={1920}
     />
+    <Composition
+      id="walkthrough"
+      component={WalkthroughVideo}
+      durationInFrames={5500}
+      fps={30}
+      width={1920}
+      height={1080}
+    />
   </>
 );
+

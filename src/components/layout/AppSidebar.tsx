@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Zap,
   Sparkles,
+  Bot,
 } from "lucide-react";
 import { StarAgent } from "@/components/StarAgent";
 import { getAgentForRoute } from "@/components/agents/agentRegistry";
@@ -20,6 +21,7 @@ import logo from "@/assets/logo.png";
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Agent Command", href: "/dashboard/agents", icon: Bot },
   { name: "AI Brand Intelligence", href: "/dashboard/brand-intelligence", icon: Brain },
   { name: "AI Visibility Scan", href: "/dashboard/scan", icon: Search },
   { name: "Build AI Footprint", href: "/dashboard/footprint", icon: Building2 },

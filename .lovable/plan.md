@@ -1,48 +1,91 @@
 
 
-## Improve Dashboard (Overview Page)
+The user wants a dedicated **Agent Operations** experience where they can:
+1. Deploy agents (turn them on/off, assign missions)
+2. See real-time progress of what each agent is doing
+3. Watch agents work live (activity stream)
+4. See what each agent will do next (queued/upcoming actions)
 
-The user is on `/dashboard` and wants improvements. Based on what I see, the dashboard is functional but can feel denser and less premium than the rest of the platform. Here's the plan:
+Looking at the codebase: there's already an `AgentHub` component on the dashboard with basic working/idle states, plus a 7-agent registry (`agentRegistry.ts`) — Nova, Scout, Oracle, Spark, Atlas, Sentinel, Sage. We should build a dedicated **Agent Command Center** page that goes much deeper than the current hub card.
 
-### Hero Section Refinement
-- **ScoreCard**: Add a subtle radial glow behind the gauge that pulses with the status color, refine typography hierarchy, add a tiny "vs last week" inline sparkline beneath the score for instant context.
-- **Welcome card**: Add a layered gradient mesh background (currently uses a flat `gradient-hero`), introduce an animated shimmer on the "Boost Visibility" button, and tighten Nova agent + greeting alignment so it reads as a single composed unit.
-- **ProgressTimeline**: Increase spacing, add a soft glow on the active node, and animate the progress bar fill on mount.
+## Plan: Agent Command Center
 
-### Quick Stats Row
-- Add subtle gradient backgrounds per card (currently flat), micro-icon animations on hover, and a "trend chip" (e.g., "+12% this week") to make each stat feel alive instead of static.
-- Increase touch targets and improve dark-mode contrast.
+### New Route
+- `/dashboard/agents` — full-page Agent Command Center
+- Add to `AppSidebar.tsx` with `Bot` icon, between Overview and AI Scan
+- Add route in `App.tsx`
 
-### Analytics Charts Row
-- Unify card heights, add chart titles with mini-legends, and a shared "Last 7 days" range pill at the top of the row.
-- Add hover-state crosshair lines and refined tooltips that match the platform's glassmorphic style.
+### Page Structure (`src/pages/AgentCommandCenter.tsx`)
 
-### AI Engine Status Panel
-- Replace flat secondary-bg logo containers with brand-tinted circular wells (e.g., ChatGPT green tint, Gemini blue tint, Perplexity teal tint).
-- Add a live "pulse" dot for engines being actively monitored, plus a confidence mini-bar under the badge.
+**1. Hero Strip — Fleet Status**
+- Headline "Agent Command Center" + Nova mascot
+- Live counters: Active / Idle / Tasks completed today / Queue depth
+- Global "Deploy All" / "Pause All" controls
+- Animated mesh background
 
-### Module Progress + Proof Grid
-- Add gradient progress fills with shimmer, percentage counter that animates up on mount, and a "next milestone" hint below each bar.
-- ProofCount: rotate through recent mentions with a gentle fade transition.
+**2. Agent Roster Grid (7 cards)**
+Each card shows:
+- Star Agent avatar with mood + brand-tinted halo
+- Name, role, current mission status (Active / Idle / Paused)
+- **Deploy toggle** (switch) — turns agent on/off
+- Live progress bar with shimmer (current task %)
+- "Now doing" line with spinner + live action text
+- "Up next" mini queue (2–3 upcoming actions with ETA)
+- Quick-deploy menu: pick a mission preset (e.g., for Scout: "Scan ChatGPT", "Scan all engines", "Deep crawl")
+- Stats row: tasks/day, success rate, last run
 
-### Recent Activity Feed
-- Replace emojis with branded engine logos and category icons (lucide), add timestamps with relative + tooltip absolute time, and a "View all" link.
-- Group by day with subtle dividers ("Today", "Yesterday", "Earlier").
+**3. Live Activity Stream (right rail or bottom)**
+- Real-time scrolling feed: `[10:42] Scout → completed scan on Perplexity (12 mentions found)`
+- Color-coded by agent (using `accentHue`)
+- Auto-scroll with pause-on-hover
+- Filter chips by agent
 
-### Global Polish
-- Stagger entry animations more elegantly (60ms intervals instead of all at once).
-- Add a subtle gradient mesh background to the main scroll area to lift the page off the flat bg.
-- Ensure all cards use consistent border-radius (`rounded-2xl`) and shadow tokens.
-- Verify dark mode contrast on every new gradient.
+**4. Mission Queue Panel**
+- Kanban-style: "In Progress | Queued | Completed (today)"
+- Drag-free, just visual columns with task cards
+- Each task shows assigned agent badge + ETA + progress
 
-### Files to edit
-- `src/pages/Overview.tsx` — restructure hero, stats row spacing, activity feed
-- `src/components/dashboard/ScoreCard.tsx` — radial glow, typography
-- `src/components/dashboard/ProgressTimeline.tsx` — animated fill, glow
-- `src/components/dashboard/EngineCard.tsx` — branded tints, pulse dot
-- `src/components/dashboard/ModuleProgress.tsx` — animated counter, shimmer
-- `src/components/dashboard/ProofCount.tsx` — rotating mentions
-- `src/components/dashboard/VisibilityTrendChart.tsx`, `EngineBreakdownChart.tsx`, `ContentActivityChart.tsx` — unified styling, tooltips
+**5. Agent Detail Drawer (on card click)**
+- Slide-in sheet with: full mission history, performance chart (last 7 days), task log, manual command input ("Run a custom scan…")
 
-No backend changes. Pure frontend visual + interaction polish, preserving all existing functionality and routes.
+### Supporting Components (new)
+- `src/components/agents/AgentControlCard.tsx` — the main grid card with deploy toggle, progress, up-next queue
+- `src/components/agents/LiveActivityStream.tsx` — scrolling feed with agent-color rows
+- `src/components/agents/MissionQueue.tsx` — 3-column kanban
+- `src/components/agents/AgentDetailDrawer.tsx` — slide-in sheet
+- `src/components/agents/FleetStatusBar.tsx` — top metrics strip
+- `src/hooks/useAgentSimulation.ts` — central state hook simulating live agent activity (deploys, progress ticks, completions, queue advancement) so all panels stay in sync
+
+### Mission Presets (in `agentRegistry.ts` extension)
+Add a `missions: { id, label, description, durationSec }[]` array per agent so deploy menus have real options (Scout → "Scan ChatGPT", Oracle → "Sentiment sweep", Spark → "Generate 3 LinkedIn posts", etc.).
+
+### Animations & Polish
+- Cards stagger in (60ms intervals)
+- Active agents pulse with their accent halo
+- Progress bars use `progress-shimmer` from `index.css`
+- Activity stream rows fade-in from top
+- Toast on deploy/pause actions
+- Glassmorphic styling, `rounded-2xl`, mesh background
+
+### Dashboard Integration
+- Update existing `AgentHub.tsx` on `/dashboard` to add a "Open Command Center →" link in the header
+- Keep AgentHub as the compact summary; Command Center is the deep view
+
+### Files to create/edit
+**Create:**
+- `src/pages/AgentCommandCenter.tsx`
+- `src/components/agents/AgentControlCard.tsx`
+- `src/components/agents/LiveActivityStream.tsx`
+- `src/components/agents/MissionQueue.tsx`
+- `src/components/agents/AgentDetailDrawer.tsx`
+- `src/components/agents/FleetStatusBar.tsx`
+- `src/hooks/useAgentSimulation.ts`
+
+**Edit:**
+- `src/components/agents/agentRegistry.ts` — add `missions` array per agent
+- `src/components/layout/AppSidebar.tsx` — add "Agents" nav item
+- `src/App.tsx` — add `/dashboard/agents` route
+- `src/components/agents/AgentHub.tsx` — add "Open Command Center" link
+
+No backend changes — uses simulated real-time state via the `useAgentSimulation` hook (consistent with existing `AgentHub` pattern). When real data is wired later, only the hook needs to swap to Supabase realtime.
 

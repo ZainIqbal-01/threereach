@@ -210,6 +210,7 @@ export function useAgentSimulation() {
     const agent = agentList.find(a => a.id === agentId);
     if (!agent) return;
     const m = mission || agent.missions[0];
+    let queued = false;
     setRuntimes(prev => {
       const r = prev[agentId];
       const newTask: InProgressTask = {
@@ -225,8 +226,8 @@ export function useAgentSimulation() {
           [agentId]: { ...r, status: "active", current: newTask, lastRun: Date.now() },
         };
       }
-      // queue it
-      const queued: QueuedTask = {
+      queued = true;
+      const q: QueuedTask = {
         id: `${agentId}-q-${Date.now()}`,
         agentId,
         mission: m,
@@ -234,10 +235,14 @@ export function useAgentSimulation() {
       };
       return {
         ...prev,
-        [agentId]: { ...r, status: "active", queue: [...r.queue, queued] },
+        [agentId]: { ...r, status: "active", queue: [...r.queue, q] },
       };
     });
-    pushActivity({ agentId, type: r => r === "active" ? "queue" : "deploy", message: `Queued: ${m.label}` } as any);
+    pushActivity({
+      agentId,
+      type: queued ? "queue" : "deploy",
+      message: queued ? `Queued: ${m.label}` : `Deployed: ${m.label}`,
+    });
   }, [pushActivity]);
 
   const setStatus = useCallback((agentId: string, status: AgentRuntimeStatus) => {

@@ -85,7 +85,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 px-3 py-1 overflow-y-auto">
         <p className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest px-3 mb-2">Platform</p>
-        {navigation.slice(0, 6).map((item) => {
+        {navigation.slice(0, 7).map((item) => {
           const isActive = location.pathname === item.href;
           return (
             <Link
@@ -113,7 +113,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         <div className="pt-3 pb-1">
           <p className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest px-3 mb-2">Account</p>
         </div>
-        {navigation.slice(6).map((item) => {
+        {navigation.slice(7).map((item) => {
           const isActive = location.pathname === item.href;
           return (
             <Link

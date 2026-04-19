@@ -14,6 +14,7 @@ import ProofTracking from "./pages/ProofTracking";
 import Reports from "./pages/Reports";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
+import AgentCommandCenter from "./pages/AgentCommandCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function ProtectedRoutes() {
     <AppLayout>
       <Routes>
         <Route path="/" element={<Overview />} />
+        <Route path="/agents" element={<AgentCommandCenter />} />
         <Route path="/scan" element={<AIScan />} />
         <Route path="/brand-intelligence" element={<BrandIntelligence />} />
         <Route path="/footprint" element={<BuildFootprint />} />

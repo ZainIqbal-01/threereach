@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { agentList, type AgentConfig } from "./agentRegistry";
 import { StarAgent } from "@/components/StarAgent";
-import { ArrowRight, Zap, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, Zap, CheckCircle2, Loader2, ExternalLink } from "lucide-react";
 
 interface AgentStatus {
   id: string;
@@ -74,7 +74,13 @@ export function AgentHub() {
           }`}>
             {workingCount > 0 ? `${workingCount} Active` : "Idle"}
           </span>
-          <span className="text-[10px] text-muted-foreground hidden sm:inline">{agentList.length} deployed</span>
+          <Link
+            to="/dashboard/agents"
+            className="text-[10px] font-semibold text-primary hover:text-primary/80 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-primary/10 transition-colors"
+          >
+            Command Center
+            <ExternalLink className="h-3 w-3" />
+          </Link>
         </div>
       </div>
 

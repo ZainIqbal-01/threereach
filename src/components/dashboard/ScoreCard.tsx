@@ -1,10 +1,12 @@
-import { TrendingUp, TrendingDown, Zap, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ScoreCardProps {
   score: number;
   previousScore?: number;
   status: "invisible" | "weak" | "visible" | "strong";
+  /** Optional weekly trail for the inline sparkline (most recent last). */
+  trend?: number[];
 }
 
 const statusConfig = {
@@ -42,7 +44,12 @@ const statusConfig = {
   },
 };
 
-export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) {
+export function ScoreCard({
+  score,
+  previousScore = 0,
+  status,
+  trend = [12, 18, 24, 28, 32, 38, 42],
+}: ScoreCardProps) {
   const [animatedScore, setAnimatedScore] = useState(0);
   const change = score - previousScore;
   const config = statusConfig[status];
@@ -70,7 +77,7 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
     return () => cancelAnimationFrame(frame);
   }, [score]);
 
-  // Segment marks
+  // 60-segment tick marks
   const segments = Array.from({ length: 60 }, (_, i) => {
     const angle = (i / 60) * 360 - 90;
     const rad = (angle * Math.PI) / 180;
@@ -88,13 +95,38 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
     };
   });
 
+  // Sparkline path generation (80x20 viewbox)
+  const sparkW = 80;
+  const sparkH = 20;
+  const min = Math.min(...trend);
+  const max = Math.max(...trend);
+  const range = max - min || 1;
+  const sparkPath = trend
+    .map((v, i) => {
+      const x = (i / (trend.length - 1)) * sparkW;
+      const y = sparkH - ((v - min) / range) * sparkH;
+      return `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .join(" ");
+
   return (
-    <div className="card-premium flex flex-col items-center justify-center py-5 sm:py-6">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="card-premium flex flex-col items-center justify-center py-5 sm:py-6 relative overflow-hidden">
+      {/* Soft pulsing radial glow tinted by status */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none halo-pulse"
+        style={{
+          background: `radial-gradient(circle at 50% 45%, ${config.glow}26 0%, transparent 60%)`,
+        }}
+      />
+
+      <div className="relative flex items-center gap-2 mb-4">
         <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
           <Activity className="h-3.5 w-3.5 text-primary" />
         </div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Visibility Score</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          AI Visibility Score
+        </p>
       </div>
 
       <div className="relative">
@@ -117,29 +149,37 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
             </linearGradient>
           </defs>
 
-          {/* Segment marks */}
           {segments.map((t, i) => (
             <line
               key={i}
-              x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}
+              x1={t.x1}
+              y1={t.y1}
+              x2={t.x2}
+              y2={t.y2}
               stroke="hsl(var(--border))"
               strokeWidth={t.isMajor ? 1.5 : t.isMid ? 1 : 0.5}
               opacity={t.isMajor ? 0.5 : t.isMid ? 0.35 : 0.15}
             />
           ))}
 
-          {/* Background ring */}
           <circle
-            cx={center} cy={center} r={radius}
-            fill="none" stroke="url(#bgRing)" strokeWidth={strokeWidth}
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="none"
+            stroke="url(#bgRing)"
+            strokeWidth={strokeWidth}
             className="opacity-30"
             style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
           />
 
-          {/* Progress arc */}
           <circle
-            cx={center} cy={center} r={radius}
-            fill="none" stroke="url(#scoreGradient)" strokeWidth={strokeWidth}
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="none"
+            stroke="url(#scoreGradient)"
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={`${progress} ${circumference}`}
             style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
@@ -147,46 +187,83 @@ export function ScoreCard({ score, previousScore = 0, status }: ScoreCardProps) 
             filter="url(#scoreGlow)"
           />
 
-          {/* Inner ring */}
           <circle
-            cx={center} cy={center} r={radius - strokeWidth / 2 - 4}
-            fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.2"
+            cx={center}
+            cy={center}
+            r={radius - strokeWidth / 2 - 4}
+            fill="none"
+            stroke="hsl(var(--border))"
+            strokeWidth="0.5"
+            opacity="0.2"
           />
-          
-          {/* Outer ring */}
           <circle
-            cx={center} cy={center} r={radius + strokeWidth / 2 + 1}
-            fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.15"
+            cx={center}
+            cy={center}
+            r={radius + strokeWidth / 2 + 1}
+            fill="none"
+            stroke="hsl(var(--border))"
+            strokeWidth="0.5"
+            opacity="0.15"
           />
         </svg>
 
-        {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`text-4xl sm:text-5xl font-bold tabular-nums ${config.text} counter-up`}>
+          <span
+            className={`text-4xl sm:text-5xl font-bold tabular-nums ${config.text} counter-up`}
+          >
             {animatedScore}
           </span>
           <span className="text-[10px] text-muted-foreground font-medium -mt-0.5">/100</span>
-          <span className={`mt-1.5 text-[9px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${config.bg} ${config.text} ${config.border} border`}>
+          <span
+            className={`mt-1.5 text-[9px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${config.bg} ${config.text} ${config.border} border`}
+          >
             {config.label}
           </span>
         </div>
       </div>
 
-      {change !== 0 && (
-        <div className="mt-4 flex items-center gap-2 text-xs">
-          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${change > 0 ? "bg-success/10 border border-success/20" : "bg-destructive/10 border border-destructive/20"}`}>
+      {/* Inline sparkline + change chip */}
+      <div className="relative mt-4 flex items-center gap-3">
+        <svg width={sparkW} height={sparkH} viewBox={`0 0 ${sparkW} ${sparkH}`} className="opacity-90">
+          <defs>
+            <linearGradient id="sparkLine" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={config.gradient[0]} />
+              <stop offset="100%" stopColor={config.gradient[1]} />
+            </linearGradient>
+          </defs>
+          <path
+            d={sparkPath}
+            fill="none"
+            stroke="url(#sparkLine)"
+            strokeWidth={1.75}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+
+        {change !== 0 && (
+          <div
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] ${
+              change > 0
+                ? "bg-success/10 border border-success/20"
+                : "bg-destructive/10 border border-destructive/20"
+            }`}
+          >
             {change > 0 ? (
               <TrendingUp className="h-3 w-3 text-success" />
             ) : (
               <TrendingDown className="h-3 w-3 text-destructive" />
             )}
-            <span className={`font-semibold ${change > 0 ? "text-success" : "text-destructive"}`}>
-              {change > 0 ? "+" : ""}{change} pts
+            <span
+              className={`font-semibold ${change > 0 ? "text-success" : "text-destructive"}`}
+            >
+              {change > 0 ? "+" : ""}
+              {change}
             </span>
+            <span className="text-muted-foreground">vs last week</span>
           </div>
-          <span className="text-muted-foreground text-[11px]">this week</span>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

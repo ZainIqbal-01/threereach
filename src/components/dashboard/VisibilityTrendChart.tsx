@@ -24,47 +24,54 @@ export function VisibilityTrendChart() {
         <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">Last 7 weeks</span>
       </div>
 
-      <div className="h-[200px]">
+      <div className="h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
+          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="visGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.25} />
-                <stop offset="100%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0} />
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.28} />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis
               dataKey="week"
-              tick={{ fontSize: 10, fill: "hsl(220, 9%, 46%)" }}
+              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               domain={[0, 100]}
-              tick={{ fontSize: 10, fill: "hsl(220, 9%, 46%)" }}
+              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
               width={28}
             />
             <Tooltip
+              cursor={{ stroke: "hsl(var(--primary) / 0.35)", strokeWidth: 1, strokeDasharray: "3 3" }}
+              wrapperStyle={{ outline: "none" }}
               contentStyle={{
                 borderRadius: 12,
-                border: "1px solid hsl(220, 13%, 91%)",
+                border: "1px solid hsl(var(--border))",
+                background: "hsl(var(--card) / 0.92)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+                boxShadow: "0 10px 30px -8px hsl(222 47% 11% / 0.18)",
                 fontSize: 12,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                background: "hsl(0, 0%, 100%)",
+                color: "hsl(var(--foreground))",
               }}
+              labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
+              itemStyle={{ color: "hsl(var(--foreground))" }}
               formatter={(value: number) => [`${value}/100`, "Score"]}
             />
             <Area
               type="monotone"
               dataKey="score"
-              stroke="hsl(217, 91%, 60%)"
+              stroke="hsl(var(--primary))"
               strokeWidth={2.5}
               fill="url(#visGrad)"
-              dot={{ fill: "hsl(217, 91%, 60%)", r: 3, strokeWidth: 0 }}
-              activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(0, 0%, 100%)" }}
+              dot={{ fill: "hsl(var(--primary))", r: 3, strokeWidth: 0 }}
+              activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))" }}
             />
           </AreaChart>
         </ResponsiveContainer>

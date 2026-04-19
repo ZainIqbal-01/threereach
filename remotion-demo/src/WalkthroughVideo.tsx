@@ -15,10 +15,10 @@ loadFont("normal", { weights: ["400", "500", "700", "800", "900"], subsets: ["la
 const t = (d = 14) => springTiming({ config: { damping: 200 }, durationInFrames: d });
 
 export const WalkthroughVideo: React.FC = () => {
-  // Module duration: 9s = 270 frames each
-  const M = 270;
-  // Chapter cards: 3s = 90 frames
-  const C = 90;
+  // Module duration: 14s = 420 frames each (longer = readable for beginners)
+  const M = 420;
+  // Chapter cards: 4s = 120 frames
+  const C = 120;
 
   return (
     <AbsoluteFill style={{ background: "#05070F" }}>

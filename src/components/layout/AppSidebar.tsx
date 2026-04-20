@@ -60,8 +60,13 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
       {/* Logo */}
-      <div className="flex h-[72px] items-center px-5 border-b border-sidebar-border shrink-0">
-        <img src={logo} alt="Three Reach" className="h-11 w-auto" />
+      <div className="flex h-[88px] items-center px-5 border-b border-sidebar-border shrink-0">
+        <img
+          src={logo}
+          alt="Three Reach"
+          className="h-16 w-auto object-contain select-none"
+          draggable={false}
+        />
       </div>
 
       {/* Workspace Selector */}

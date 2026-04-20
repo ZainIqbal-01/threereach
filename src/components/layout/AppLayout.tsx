@@ -3,6 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { TopBar } from "./TopBar";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { EnrichmentBanner } from "@/components/enrichment/EnrichmentBanner";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -32,6 +33,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </div>
       </main>
+      <EnrichmentBanner />
     </div>
   );
 }

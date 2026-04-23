@@ -1,82 +1,103 @@
 
-The user wants an Apple-keynote-style product demo video — not static screenshots with Ken Burns. They want real product motion (clicks, typing, hovers, scrolls, animated UI states), cinematic pacing, premium typography, and a story-driven flow that explains Three Reach AI end-to-end.
 
-Current problem: `WalkthroughVideo.tsx` just pans/zooms PNG screenshots inside a fake browser frame. That's why it feels like a slideshow.
+# What to Improve in Three Reach AI
 
-The fix: replace static screenshots with **animated UI recreations** — rebuild key product moments as actual React components inside Remotion, so cursors move, fields type, scores count up, charts draw in, agents activate, posts publish. Then layer cinematic camera moves, parallax, and Apple-style typography reveals over them.
+Based on a review of your codebase, here are the most impactful improvements grouped by priority. You can approve any combination and I'll implement them.
 
-## The Vision — "Three Reach AI Keynote"
+---
 
-A 3-minute cinematic product film modeled after Apple Event product reveals:
-- **Cold open hook** (0–8s): Black screen → single line of light → "What if AI never mentioned you?" → Three Reach mark ignites
-- **The Problem** (8–25s): Animated stat counters, ChatGPT/Gemini logos pulse, "your brand" notably absent
-- **The System reveal** (25–40s): "Introducing Three Reach AI" — logo lockup, tagline, 4-pillar reveal (Scan · Build · Distribute · Prove)
-- **Module showcases** (40s–2:30s): 7 chapters, each with a live animated UI mock + voiceover-style caption
-- **Agent fleet** (2:30–2:45s): 7 agents activate in sequence around a central core
-- **Closing** (2:45–3:00s): "Get cited. Get chosen." → CTA → mark out
+## 1. Critical: No Real Authentication
 
-## The Motion Direction — "Tech Product / Cinematic Minimal"
+**Problem:** "Login" is just a `localStorage.setItem("onboardingComplete", "true")` flag in `App.tsx`. Anyone can bypass it by opening DevTools. All "user" data (business profile, scan history, resources) lives in `localStorage` only — it's lost when switching devices/browsers and not actually private.
 
-- **Palette**: Deep navy `#05070F` → `#0A1226`, electric blue `#1E6BFF`, cyan `#00E5FF`, white `#FFFFFF`, muted `#9AB0D8`
-- **Typography**: Inter Display (900 for hero, 500 for body), tight tracking, massive sizes
-- **Default entrance**: Blur-to-sharp + spring-up (`damping: 18, stiffness: 110`)
-- **Accent motion**: Per-character text reveal with stagger (8 frames apart)
-- **Scene transitions**: Mostly invisible cross-fades + occasional cinematic wipes; one signature "shape-morph" between hero scenes
-- **Camera**: Subtle parallax on every scene (3 layers moving at different rates), slow push-in on hero shots
+**Fix:** Add real Lovable Cloud auth (email + Google), a `profiles` table, and migrate `businessProfile`, `scanHistory`, and uploaded resources to the database with RLS policies.
 
-## Animated UI Mocks (the key change)
+---
 
-Instead of importing PNGs, build these as Remotion React components with frame-driven animation:
+## 2. High: Mock Data Everywhere
 
-1. **OnboardingMock** — cursor enters → field auto-types "threereach.ai" character-by-character → button glows → "Brand identity built" toast slides in
-2. **ScoreMock** — gauge needle springs from 0 → 84, large number counts up, 5 engine bars fill in stagger, "+12 this week" delta pops
-3. **ScanMock** — query text types in → "Scanning ChatGPT…" with rotating spinner → result rows drop in one by one with checkmarks → mention highlight pulses
-4. **BrandIntelMock** — competitor bar chart races, sentiment dial swings, "Top Gap" card flies in
-5. **FootprintMock** — JSON-LD schema lines stream in like a code editor (typewriter), GEO landing wireframe assembles block by block, E-E-A-T meter fills
-6. **DistributionMock** — 6 platform tiles arrange in a grid, posts compose with typing animation, "Published" stamps hit each tile in sequence
-7. **ProofMock** — screenshot capture flash, timestamp ticks live, citations stack into a pile with a counter
-8. **AgentFleetMock** — 7 agent orbs orbit a central core, each lights up + pulses when "active", connection lines draw between them, mission cards fly through
+Most "live" numbers are hardcoded:
+- `Overview.tsx`: score `42`, `+12%`, `3 verified mentions`, `18/60 sources` — all static
+- `recentActivity` array — fake entries with fake timestamps
+- Engine cards: ChatGPT `34%`, Gemini `67%` — hardcoded
+- `ProgressTimeline`, `ModuleProgress`, `ProofCount` — placeholder values
 
-Each mock is a self-contained `<AbsoluteFill>` scene with its own internal frame choreography — these ARE the product, animated.
+**Fix:** Wire dashboard widgets to actual scan results from the `analyze-brand` / `ai-scan` edge functions, store results in DB, compute trends from history.
 
-## Plan — what to build
+---
 
-### New files
-- `remotion-demo/src/keynote/KeynoteVideo.tsx` — root composition, all scenes wired with `<TransitionSeries>`
-- `remotion-demo/src/keynote/ui/Cursor.tsx` — animated SVG cursor with click pulse
-- `remotion-demo/src/keynote/ui/TypewriterText.tsx` — frame-driven character typing
-- `remotion-demo/src/keynote/ui/CountUp.tsx` — number that animates 0→target on a spring
-- `remotion-demo/src/keynote/ui/Gauge.tsx` — animated arc gauge with needle
-- `remotion-demo/src/keynote/ui/AppFrame.tsx` — premium browser/app chrome wrapper with parallax
-- `remotion-demo/src/keynote/ui/KineticHeadline.tsx` — Apple-style per-word reveal with blur
+## 3. High: Enrichment Data Is Collected But Never Used
 
-- `remotion-demo/src/keynote/scenes/00-ColdOpen.tsx`
-- `remotion-demo/src/keynote/scenes/01-Problem.tsx`
-- `remotion-demo/src/keynote/scenes/02-Introducing.tsx`
-- `remotion-demo/src/keynote/scenes/03-FourPillars.tsx`
-- `remotion-demo/src/keynote/scenes/04-Onboarding.tsx`
-- `remotion-demo/src/keynote/scenes/05-Score.tsx`
-- `remotion-demo/src/keynote/scenes/06-Scan.tsx`
-- `remotion-demo/src/keynote/scenes/07-BrandIntel.tsx`
-- `remotion-demo/src/keynote/scenes/08-Footprint.tsx`
-- `remotion-demo/src/keynote/scenes/09-Distribution.tsx`
-- `remotion-demo/src/keynote/scenes/10-Proof.tsx`
-- `remotion-demo/src/keynote/scenes/11-AgentFleet.tsx`
-- `remotion-demo/src/keynote/scenes/12-Closing.tsx`
+The new `EnrichmentBanner` + `EnrichmentDialog` collect detailed info, PDFs, and links — but nothing reads them. The `analyze-brand` and `generate-content` edge functions don't receive the enrichment payload, so uploads have zero effect on AI output.
 
-### Edited files
-- `remotion-demo/src/Root.tsx` — register new `keynote` composition (1920×1080 @ 30fps, ~5400 frames = 3 min)
+**Fix:** Pass `businessProfile.detailedInfo`, `resources`, and links into the edge function prompts so Gemini actually grounds responses in user-provided context.
 
-### Render strategy
-- Same proven 3-segment approach via `scripts/render-range.mjs` (frames 0–1799, 1800–3599, 3600–5399)
-- Stitch with ffmpeg concat → final `ThreeReachAI-Keynote.mp4` to `/mnt/documents/`
+---
 
-## Trade-offs
+## 4. Medium: Storage & Scale Issues
 
-- This is a real lift — ~13 new scene files + ~6 reusable UI primitives. But it's the only way to escape "slideshow" feel.
-- I'm NOT using your live screenshots anymore — they become animated recreations. The visual fidelity to the actual product will be ~85% (same colors, layout, typography), but every element moves.
-- Total render time is similar to before (~3 segments, ffmpeg stitch at the end).
+- PDFs are stored as **base64 in localStorage** (5MB limit per file, ~5–10MB total quota for the whole origin) — will silently fail on the 2nd or 3rd upload.
+- `scanHistory` also in localStorage — no cross-device sync.
 
-## Outcome
+**Fix:** Move file uploads to Lovable Cloud Storage (signed URLs), keep only metadata in DB.
 
-A genuinely cinematic 3-minute keynote where every UI shown is alive — cursors clicking, scores counting, posts publishing, agents activating — set against Apple-style typography and pacing. Final deliverable: `ThreeReachAI-Keynote.mp4` in `/mnt/documents/`.
+---
+
+## 5. Medium: UX & Polish Gaps
+
+- **No loading skeletons** on dashboard widgets — feels jumpy on slow connections.
+- **No empty states** — new users with 0 scans see fake "3 verified mentions."
+- **`Export` button** dumps a plain `.txt` file — should be PDF or branded CSV.
+- **Mobile sidebar** opens but no swipe-to-close gesture.
+- **No error boundaries** — one component crash blanks the whole page.
+- **Toast spam**: several actions fire toasts that overlap; needs a queue/dedupe.
+
+---
+
+## 6. Medium: Agent Command Center Is Visual-Only
+
+The 7 agents in `AgentHub` / `AgentCommandCenter` show animations and "missions" but don't actually do anything — schedules, workflows, and the activity stream are all simulated by `useAgentSimulation`. Either label it clearly as a "preview" or wire one or two agents (e.g., Oracle for scans, Echo for distribution) to real edge functions.
+
+---
+
+## 7. Low: Code Health
+
+- `supabase/functions/elevenlabs-audio/` is dead code (you abandoned the narration feature).
+- `remotion-demo/` directory ships with the project repo — should be moved to a separate repo or `.gitignored` from the build.
+- Several files exceed 400 lines (`Overview.tsx` = 463, `AgentCommandCenter`, `BuildFootprint`) — split into smaller components for maintainability.
+- No tests beyond `example.test.ts`.
+
+---
+
+## 8. Low: SEO & Marketing
+
+- `index.html` likely missing per-page meta tags (only the OG image is set).
+- No `sitemap.xml` or structured data — ironic for an "AI visibility" tool.
+- Robots.txt is default.
+
+---
+
+## Recommended Sequencing
+
+| Order | Theme | Effort |
+|-------|-------|--------|
+| 1 | Real auth + DB migration of profile/history | L |
+| 2 | Wire enrichment into AI prompts | S |
+| 3 | Replace mock dashboard data with real scans | M |
+| 4 | File uploads → Cloud Storage | S |
+| 5 | UX polish (skeletons, empty states, error boundaries) | M |
+| 6 | Wire 1–2 agents to real actions | M |
+| 7 | Code cleanup & SEO | S |
+
+---
+
+## Technical Notes
+
+- Auth: `supabase.auth` with email/password + Google OAuth, redirect URL set to `https://threereach.lovable.app`. Auto-confirm OFF.
+- New tables: `profiles`, `business_profiles`, `business_resources`, `scan_history`, `agent_runs` — all with `user_id uuid` + RLS `auth.uid() = user_id`.
+- Storage bucket: `business-resources` (private, signed URL access).
+- Roles handled via separate `user_roles` table + `has_role()` security-definer function (per project standard).
+- Migrate existing localStorage data on first login via a one-time client-side migration helper.
+
+**Tell me which sections (1–8) to implement, or say "do all priority 1–4" and I'll start.**
+

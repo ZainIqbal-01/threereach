@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Brain, Search, Eye, BarChart3, Target, Plus, X, Globe, Users, ArrowRight, Sparkles, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Brain, Eye, BarChart3, Target, Plus, X, Globe, Users, ArrowRight, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,7 +30,11 @@ export function InputPhase({
   competitors, setCompetitors, onStartAnalysis, onLoadScan,
 }: InputPhaseProps) {
   const [competitorInput, setCompetitorInput] = useState("");
-  const history = getScanHistory();
+  const [history, setHistory] = useState<ScanRecord[]>([]);
+
+  useEffect(() => {
+    getScanHistory().then(setHistory);
+  }, []);
 
   const addCompetitor = () => {
     const name = competitorInput.trim();

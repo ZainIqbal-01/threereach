@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { RequireOnboarding } from "@/components/layout/RequireOnboarding";
 import { Loader2 } from "lucide-react";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
@@ -50,6 +51,7 @@ function ProtectedRoutes() {
     <RequireAuth>
       <AppLayout>
         <ErrorBoundary>
+          <RequireOnboarding>
           <Routes>
             <Route path="/" element={<Overview />} />
             <Route path="/onboarding" element={<Onboarding />} />
@@ -64,6 +66,7 @@ function ProtectedRoutes() {
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </RequireOnboarding>
         </ErrorBoundary>
       </AppLayout>
     </RequireAuth>

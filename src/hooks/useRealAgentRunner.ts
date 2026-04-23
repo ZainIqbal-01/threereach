@@ -56,7 +56,7 @@ export function useRealAgentRunner() {
       toast.error("Sign in required to run live analysis");
       return;
     }
-    if (!profile.website) {
+    if (!profile.websiteUrl) {
       toast.error("Add a business website first", { description: "Oracle needs a URL to analyze" });
       return;
     }
@@ -65,10 +65,10 @@ export function useRealAgentRunner() {
       const { data, error } = await supabase.functions.invoke("analyze-brand", {
         body: {
           brandName: businessName,
-          website: profile.website,
+          website: profile.websiteUrl,
           description: profile.description ?? "",
           industry: profile.industry ?? "",
-          competitors: profile.competitors ?? [],
+          competitors: [],
           detailedInfo: profile.detailedInfo ?? "",
           targetAudience: profile.audience ?? "",
           resources: (profile.resources ?? []).map((r) => ({
@@ -82,7 +82,7 @@ export function useRealAgentRunner() {
       const record: ScanRecord = {
         id: crypto.randomUUID(),
         brandName: businessName,
-        website: profile.website,
+        website: profile.websiteUrl,
         date: new Date().toISOString(),
         score: data?.overallScore ?? 0,
         status: data?.status ?? "weak",

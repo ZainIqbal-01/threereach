@@ -13,7 +13,7 @@ import { AgentBadge } from "@/components/agents/AgentBadge";
 import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
 import { useBusinessName } from "@/hooks/useBusinessName";
-import { getPlatformLogo } from "@/components/ui/platform-logos";
+import { getPlatformLogo, getPlatformBrand } from "@/components/ui/platform-logos";
 
 type Platform = "reddit" | "quora" | "linkedin" | "medium" | "hackernews" | "twitter";
 type ContentStatus = "draft" | "generating" | "ready" | "posted" | "failed";
@@ -21,9 +21,6 @@ type ContentStatus = "draft" | "generating" | "ready" | "posted" | "failed";
 interface PlatformConfig {
   id: Platform;
   name: string;
-  color: string;
-  bgColor: string;
-  borderColor: string;
   description: string;
   autoPost: boolean;
 }

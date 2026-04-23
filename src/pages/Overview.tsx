@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RedditLogo } from "@/components/ui/platform-logos";
 import {
   Download,
   ArrowRight,

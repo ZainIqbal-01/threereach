@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@/hooks/useTheme";
 import { useBusinessName } from "@/hooks/useBusinessName";
 import { SearchDialog } from "./SearchDialog";
+import { RedditLogo } from "@/components/ui/platform-logos";
 
 interface TopBarProps {
   workspaceName?: string;
@@ -19,10 +20,10 @@ const statusConfig = {
 };
 
 const notifications = [
-  { id: 1, text: "ChatGPT mentioned your brand in fintech query", time: "2h ago", read: false, icon: "🤖" },
-  { id: 2, text: "Reddit post got 45 upvotes", time: "5h ago", read: false, icon: "📢" },
-  { id: 3, text: "Visibility score increased +4", time: "1d ago", read: true, icon: "📊" },
-  { id: 4, text: "Weekly report is ready", time: "2d ago", read: true, icon: "📄" },
+  { id: 1, text: "ChatGPT mentioned your brand in fintech query", time: "2h ago", read: false, icon: "🤖" as const },
+  { id: 2, text: "Reddit post got 45 upvotes", time: "5h ago", read: false, icon: "reddit" as const },
+  { id: 3, text: "Visibility score increased +4", time: "1d ago", read: true, icon: "📊" as const },
+  { id: 4, text: "Weekly report is ready", time: "2d ago", read: true, icon: "📄" as const },
 ];
 
 const pageTitles: Record<string, string> = {
@@ -159,7 +160,9 @@ export function TopBar({ status = "weak", onMenuClick }: TopBarProps) {
                       <div key={n.id} className={`flex items-start gap-3 p-3.5 hover:bg-secondary/50 cursor-pointer transition-colors border-b border-border/20 last:border-0 ${!n.read ? "bg-primary/5" : ""}`}
                         onClick={() => setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x))}
                       >
-                        <span className="text-base mt-0.5 shrink-0">{n.icon}</span>
+                        <span className="text-base mt-0.5 shrink-0">
+                          {n.icon === "reddit" ? <RedditLogo className="h-4 w-4" style={{ color: "#FF4500" }} /> : n.icon}
+                        </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-foreground leading-snug">{n.text}</p>
                           <p className="text-[10px] text-muted-foreground mt-1">{n.time}</p>

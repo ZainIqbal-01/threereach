@@ -2,11 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { RequireOnboarding } from "@/components/layout/RequireOnboarding";
+import { useBusinessProfile } from "@/hooks/useBusinessProfile";
 import { Loader2 } from "lucide-react";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
@@ -46,29 +46,61 @@ function RootRedirect() {
   return <Navigate to={user ? "/dashboard" : "/auth"} replace />;
 }
 
+/**
+ * Decides what an authenticated user should see:
+ *  - If profile is still loading → spinner
+ *  - If onboarding NOT complete → standalone full-screen Onboarding (no sidebar/topbar)
+ *  - Otherwise → the full Dashboard with AppLayout
+ */
+function AuthenticatedShell() {
+  const { profile, loading } = useBusinessProfile();
+  const location = useLocation();
+
+  if (loading) return <FullPageLoader />;
+
+  // Brand-new user: take their data first, no dashboard chrome.
+  if (!profile.onboardingComplete) {
+    // Allow only the onboarding route; anything else redirects there.
+    if (location.pathname !== "/dashboard/onboarding") {
+      return <Navigate to="/dashboard/onboarding" replace />;
+    }
+    return (
+      <ErrorBoundary>
+        <Onboarding />
+      </ErrorBoundary>
+    );
+  }
+
+  // Onboarded users should never see the standalone onboarding page again.
+  if (location.pathname === "/dashboard/onboarding") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
+    <AppLayout>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={<Overview />} />
+          <Route path="/agents" element={<AgentCommandCenter />} />
+          <Route path="/scan" element={<AIScan />} />
+          <Route path="/brand-intelligence" element={<BrandIntelligence />} />
+          <Route path="/footprint" element={<BuildFootprint />} />
+          <Route path="/distribution" element={<Distribution />} />
+          <Route path="/proof" element={<ProofTracking />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/billing" element={<Billing />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </ErrorBoundary>
+    </AppLayout>
+  );
+}
+
 function ProtectedRoutes() {
   return (
     <RequireAuth>
-      <AppLayout>
-        <ErrorBoundary>
-          <RequireOnboarding>
-          <Routes>
-            <Route path="/" element={<Overview />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/agents" element={<AgentCommandCenter />} />
-            <Route path="/scan" element={<AIScan />} />
-            <Route path="/brand-intelligence" element={<BrandIntelligence />} />
-            <Route path="/footprint" element={<BuildFootprint />} />
-            <Route path="/distribution" element={<Distribution />} />
-            <Route path="/proof" element={<ProofTracking />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/billing" element={<Billing />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          </RequireOnboarding>
-        </ErrorBoundary>
-      </AppLayout>
+      <AuthenticatedShell />
     </RequireAuth>
   );
 }

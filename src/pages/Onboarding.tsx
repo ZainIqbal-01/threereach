@@ -12,6 +12,9 @@ import { StarAgent } from "@/components/StarAgent";
 import { sanitize, validateOnboardingForm } from "@/lib/validation";
 import { useAuth } from "@/hooks/useAuth";
 import { useBusinessProfile } from "@/hooks/useBusinessProfile";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
 const features = [
@@ -38,8 +41,9 @@ const stats = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
-  const { profile, update } = useBusinessProfile();
+  const { profile, update, refresh } = useBusinessProfile();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
@@ -74,36 +78,149 @@ export default function Onboarding() {
     });
   }, []);
 
+  /** Smoothly walk the visible progress bar up to a target percentage. */
+  const animateProgressTo = useCallback(async (target: number) => {
+    return new Promise<void>((resolve) => {
+      setProgress((start) => {
+        let cur = start;
+        const tick = () => {
+          if (cur >= target) {
+            resolve();
+            return;
+          }
+          cur = Math.min(target, cur + 1);
+          setProgress(cur);
+          setTimeout(tick, 25);
+        };
+        tick();
+        return start;
+      });
+    });
+  }, []);
+
   const handleAnalyze = async () => {
     const validation = validateOnboardingForm(formData);
     if (!validation.valid) {
       setFormErrors(validation.errors);
       return;
     }
+    if (!user) return;
     setFormErrors({});
     setIsAnalyzing(true);
-    await update({
-      businessName: formData.businessName,
-      websiteUrl: formData.websiteUrl,
-      description: formData.description,
-      onboardingComplete: true,
+    setProgress(0);
+    setCurrentStep(0);
+
+    // 1) Persist the brand details first (without flipping onboarding flag yet)
+    try {
+      await update({
+        businessName: formData.businessName,
+        websiteUrl: formData.websiteUrl,
+        description: formData.description,
+      });
+    } catch (e) {
+      console.error("Failed to save profile:", e);
+    }
+
+    setCurrentStep(0);
+    await animateProgressTo(15);
+
+    // 2) Kick off the real brand-analysis edge function in parallel with the
+    //    visual progress walk-through. We don't block the UI on it.
+    setCurrentStep(1);
+    const analysisPromise = supabase.functions.invoke("analyze-brand", {
+      body: {
+        brandName: formData.businessName,
+        website: formData.websiteUrl,
+        description: formData.description,
+        industry: "",
+        detailedInfo: formData.services,
+        targetAudience: "",
+        competitors: [],
+        resources: [],
+      },
     });
 
-    for (let i = 0; i < analysisSteps.length; i++) {
+    // Walk through the remaining visual steps while the AI is working.
+    const stepTargets = [30, 50, 70, 85, 95];
+    for (let i = 1; i < analysisSteps.length; i++) {
       setCurrentStep(i);
-      const target = Math.round(((i + 1) / analysisSteps.length) * 100);
-      for (let p = (i === 0 ? 0 : Math.round((i / analysisSteps.length) * 100)); p <= target; p += 2) {
-        await new Promise(r => setTimeout(r, 35));
-        setProgress(p);
-      }
-      setProgress(target);
-      await new Promise(r => setTimeout(r, 350));
+      await animateProgressTo(stepTargets[i - 1] ?? 95);
+      await new Promise((r) => setTimeout(r, 200));
     }
-    await new Promise(r => setTimeout(r, 300));
+
+    // 3) Wait for the real analysis result.
+    let scanSucceeded = false;
+    try {
+      const { data, error } = await analysisPromise;
+      if (error) throw error;
+      if (data && typeof data === "object") {
+        const rec = data as {
+          overallScore?: number;
+          status?: string;
+          engines?: Array<{
+            engine: string;
+            mentioned: boolean;
+            sentiment: string;
+            snippet: string;
+          }>;
+        };
+        const { data: prof } = await supabase
+          .from("business_profiles")
+          .select("id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const profileId = prof?.id ?? null;
+
+        const rows = (rec.engines ?? []).map((eng) => ({
+          user_id: user.id,
+          business_profile_id: profileId,
+          engine: eng.engine,
+          status: eng.mentioned ? "mentioned" : "not_found",
+          score: rec.overallScore ?? null,
+          query: formData.businessName,
+          response_text: eng.snippet ?? null,
+          raw_results: eng as unknown as Json,
+        }));
+        if (rows.length) {
+          await supabase.from("scan_history").insert(rows);
+        }
+        scanSucceeded = true;
+      }
+    } catch (e) {
+      console.error("Brand analysis failed during onboarding:", e);
+      toast({
+        title: "Scan partially completed",
+        description:
+          "We couldn't reach the AI engines right now, but your profile is saved. You can run a full scan from the dashboard.",
+        variant: "destructive",
+      });
+    }
+
+    // 4) Finalize — mark onboarding complete and head to the dashboard.
+    setCurrentStep(analysisSteps.length - 1);
+    await animateProgressTo(100);
+    try {
+      await update({ onboardingComplete: true });
+      await refresh();
+    } catch (e) {
+      console.error("Failed to finalize onboarding:", e);
+    }
+
+    if (scanSucceeded) {
+      toast({
+        title: "Analysis complete ✨",
+        description: "Your AI visibility report is ready.",
+      });
+    }
+
+    await new Promise((r) => setTimeout(r, 400));
     navigate("/dashboard");
   };
 
-  const isFormValid = formData.websiteUrl.trim() !== "" || formData.businessName.trim() !== "";
+  const isFormValid =
+    formData.websiteUrl.trim() !== "" && formData.businessName.trim() !== "";
   void user; // referenced via guard
 
   return (

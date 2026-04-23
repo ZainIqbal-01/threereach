@@ -3,6 +3,35 @@ import { supabase } from "@/integrations/supabase/client";
 
 const LEGACY_KEY = "three-reach-scan-history";
 
+interface ScanRow {
+  id: string;
+  created_at: string;
+  status: string | null;
+  score: number | null;
+  query: string | null;
+  raw_results: unknown;
+}
+
+function rowToRecord(row: ScanRow): ScanRecord {
+  const raw = (row.raw_results ?? {}) as Partial<ScanRecord>;
+  return {
+    id: row.id,
+    brandName: raw.brandName ?? row.query ?? "",
+    website: raw.website ?? "",
+    date: row.created_at,
+    score: Number(row.score ?? raw.score ?? 0),
+    status: row.status ?? raw.status ?? "weak",
+    competitors: raw.competitors ?? [],
+    data: raw.data ?? {
+      overallScore: Number(row.score ?? 0),
+      status: (row.status as "invisible" | "weak" | "visible" | "strong") ?? "weak",
+      engines: [],
+      gaps: [],
+      improvementPlan: [],
+    },
+  };
+}
+
 /** Read scans for the current user from the database. Falls back to localStorage when signed out. */
 export async function getScanHistory(): Promise<ScanRecord[]> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,19 +52,7 @@ export async function getScanHistory(): Promise<ScanRecord[]> {
     .limit(20);
 
   if (error || !data) return [];
-
-  return data.map((row) => ({
-    id: row.id,
-    timestamp: row.created_at,
-    brandName: (row.raw_results as Record<string, unknown>)?.brandName as string ?? "",
-    industry: (row.raw_results as Record<string, unknown>)?.industry as string ?? "",
-    overallScore: Number(row.score ?? 0),
-    status: (row.status ?? "weak") as ScanRecord["status"],
-    engines: ((row.raw_results as Record<string, unknown>)?.engines as ScanRecord["engines"]) ?? [],
-    gaps: ((row.raw_results as Record<string, unknown>)?.gaps as string[]) ?? [],
-    improvementPlan: ((row.raw_results as Record<string, unknown>)?.improvementPlan as ScanRecord["improvementPlan"]) ?? [],
-    competitors: ((row.raw_results as Record<string, unknown>)?.competitors as ScanRecord["competitors"]) ?? [],
-  }));
+  return data.map((r) => rowToRecord(r as ScanRow));
 }
 
 export async function saveScan(record: ScanRecord): Promise<void> {
@@ -47,10 +64,9 @@ export async function saveScan(record: ScanRecord): Promise<void> {
     engine: "aggregate",
     query: record.brandName,
     status: record.status,
-    score: record.overallScore,
-    confidence: record.overallScore,
-    response_text: null,
-    raw_results: record as unknown as Record<string, unknown>,
+    score: record.score,
+    confidence: record.score,
+    raw_results: record as unknown as never,
   });
 }
 
@@ -75,10 +91,10 @@ export async function migrateLegacyScans(): Promise<void> {
       engine: "aggregate",
       query: r.brandName,
       status: r.status,
-      score: r.overallScore,
-      confidence: r.overallScore,
-      raw_results: r as unknown as Record<string, unknown>,
-      created_at: r.timestamp,
+      score: r.score,
+      confidence: r.score,
+      raw_results: r as unknown as never,
+      created_at: r.date,
     }));
     await supabase.from("scan_history").insert(rows);
     localStorage.removeItem(LEGACY_KEY);

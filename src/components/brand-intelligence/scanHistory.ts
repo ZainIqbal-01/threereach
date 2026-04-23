@@ -59,6 +59,7 @@ export async function saveScan(record: ScanRecord): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
+  // 1) Aggregate row (powers dashboard score, trend, history)
   await supabase.from("scan_history").insert({
     user_id: user.id,
     engine: "aggregate",
@@ -68,6 +69,29 @@ export async function saveScan(record: ScanRecord): Promise<void> {
     confidence: record.score,
     raw_results: record as unknown as never,
   });
+
+  // 2) Per-engine rows (powers AI Engine Status cards + Recent Activity)
+  const engineRows = (record.data.engines ?? []).map((e) => {
+    const status = e.mentioned
+      ? (e.sentiment === "negative" ? "weak" : "mentioned")
+      : "not_found";
+    const confidence = e.mentioned
+      ? Math.max(40, Math.round(100 - (e.position ?? 5) * 10))
+      : 0;
+    return {
+      user_id: user.id,
+      engine: e.engine,
+      query: record.brandName,
+      status,
+      score: confidence,
+      confidence,
+      response_text: e.snippet ?? null,
+      raw_results: { context: e.snippet, reasons: e.reasons } as unknown as never,
+    };
+  });
+  if (engineRows.length > 0) {
+    await supabase.from("scan_history").insert(engineRows);
+  }
 }
 
 export async function deleteScan(id: string): Promise<void> {

@@ -6,6 +6,7 @@ import { agentList, agents, type AgentMission } from "@/components/agents/agentR
 import { useAgentSimulation } from "@/hooks/useAgentSimulation";
 import { useAgentSchedules } from "@/hooks/useAgentSchedules";
 import { useAgentWorkflows } from "@/hooks/useAgentWorkflows";
+import { useRealAgentRunner } from "@/hooks/useRealAgentRunner";
 import { FleetStatusBar } from "@/components/agents/FleetStatusBar";
 import { AgentControlCard } from "@/components/agents/AgentControlCard";
 import { LiveActivityStream } from "@/components/agents/LiveActivityStream";
@@ -14,9 +15,11 @@ import { AgentDetailDrawer } from "@/components/agents/AgentDetailDrawer";
 import { AgentScheduler } from "@/components/agents/AgentScheduler";
 import { WorkflowBuilder } from "@/components/agents/WorkflowBuilder";
 import { FleetAnalytics } from "@/components/agents/FleetAnalytics";
+import { SEO } from "@/components/SEO";
 
 export default function AgentCommandCenter() {
   const { runtimes, activity, completedToday, stats, deploy, setStatus, deployAll, pauseAll } = useAgentSimulation();
+  const { tryRunReal } = useRealAgentRunner();
   const [drawerAgentId, setDrawerAgentId] = useState<string | null>(null);
 
   // Schedules: trigger a deploy when a schedule fires
@@ -62,12 +65,14 @@ export default function AgentCommandCenter() {
     toast.success(`${agents[agentId].name} ${active ? "deployed" : "paused"}`);
   };
 
-  const handleDeployMission = (agentId: string, missionId: string) => {
+  const handleDeployMission = async (agentId: string, missionId: string) => {
     const agent = agents[agentId];
     const mission = agent.missions.find(m => m.id === missionId);
     if (!mission) return;
     deploy(agentId, mission);
     toast.success(`${agent.name}: ${mission.label}`, { description: mission.description });
+    // Fire real backend for wired agents (Scout, Oracle)
+    await tryRunReal(agentId);
   };
 
   const handleCustomDeploy = (agentId: string, label: string) => {
@@ -97,6 +102,7 @@ export default function AgentCommandCenter() {
 
   return (
     <div className="space-y-5 p-4 sm:p-6 lg:p-8 mesh-bg min-h-screen">
+      <SEO title="Agent Command Center" description="Deploy, schedule and monitor your 7 AI visibility agents." />
       <div className="animate-slide-up">
         <FleetStatusBar
           active={stats.active}

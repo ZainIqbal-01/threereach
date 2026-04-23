@@ -19,6 +19,7 @@ import { SEO } from "@/components/SEO";
 
 export default function AgentCommandCenter() {
   const { runtimes, activity, completedToday, stats, deploy, setStatus, deployAll, pauseAll } = useAgentSimulation();
+  const { tryRunReal } = useRealAgentRunner();
   const [drawerAgentId, setDrawerAgentId] = useState<string | null>(null);
 
   // Schedules: trigger a deploy when a schedule fires

@@ -55,17 +55,20 @@ export default function Onboarding() {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Redirect to /auth if signed out, or to /dashboard if onboarding already complete
+  // Redirect to /auth if signed out, or to /dashboard if onboarding already complete.
+  // IMPORTANT: don't redirect while the scan animation is running — otherwise the
+  // moment we flip `onboardingComplete` in the DB the parent shell unmounts this
+  // page mid-animation, which looks like a blink/flicker.
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
       navigate("/auth", { replace: true });
       return;
     }
-    if (profile.onboardingComplete) {
+    if (profile.onboardingComplete && !isAnalyzing) {
       navigate("/dashboard", { replace: true });
     }
-  }, [user, authLoading, profile.onboardingComplete, navigate]);
+  }, [user, authLoading, profile.onboardingComplete, isAnalyzing, navigate]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

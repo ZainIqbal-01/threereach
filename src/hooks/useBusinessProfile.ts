@@ -177,24 +177,36 @@ export function useBusinessProfile() {
   const update = useCallback(
     async (patch: Partial<BusinessProfile>) => {
       if (!user) return;
-      const fields: Record<string, unknown> = {};
+      const fields: {
+        name?: string;
+        website?: string | null;
+        industry?: string | null;
+        description?: string | null;
+        detailed_info?: string | null;
+        target_audience?: string | null;
+        onboarding_complete?: boolean;
+      } = {};
       if (patch.businessName !== undefined) fields.name = patch.businessName;
-      if (patch.websiteUrl !== undefined) fields.website = patch.websiteUrl;
-      if (patch.industry !== undefined) fields.industry = patch.industry;
-      if (patch.description !== undefined) fields.description = patch.description;
-      if (patch.detailedInfo !== undefined) fields.detailed_info = patch.detailedInfo;
-      if (patch.audience !== undefined) fields.target_audience = patch.audience;
+      if (patch.websiteUrl !== undefined) fields.website = patch.websiteUrl || null;
+      if (patch.industry !== undefined) fields.industry = patch.industry || null;
+      if (patch.description !== undefined) fields.description = patch.description || null;
+      if (patch.detailedInfo !== undefined) fields.detailed_info = patch.detailedInfo || null;
+      if (patch.audience !== undefined) fields.target_audience = patch.audience || null;
       if (patch.onboardingComplete !== undefined) fields.onboarding_complete = patch.onboardingComplete;
 
       if (profile.id) {
         await supabase.from("business_profiles").update(fields).eq("id", profile.id);
       } else {
-        const insertRow = {
+        await supabase.from("business_profiles").insert({
           user_id: user.id,
-          name: (patch.businessName as string) || "My Business",
-          ...fields,
-        };
-        await supabase.from("business_profiles").insert(insertRow);
+          name: fields.name ?? "My Business",
+          website: fields.website ?? null,
+          industry: fields.industry ?? null,
+          description: fields.description ?? null,
+          detailed_info: fields.detailed_info ?? null,
+          target_audience: fields.target_audience ?? null,
+          onboarding_complete: fields.onboarding_complete ?? false,
+        });
       }
       await refresh();
     },

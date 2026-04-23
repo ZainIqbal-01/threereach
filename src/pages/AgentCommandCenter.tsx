@@ -6,6 +6,7 @@ import { agentList, agents, type AgentMission } from "@/components/agents/agentR
 import { useAgentSimulation } from "@/hooks/useAgentSimulation";
 import { useAgentSchedules } from "@/hooks/useAgentSchedules";
 import { useAgentWorkflows } from "@/hooks/useAgentWorkflows";
+import { useRealAgentRunner } from "@/hooks/useRealAgentRunner";
 import { FleetStatusBar } from "@/components/agents/FleetStatusBar";
 import { AgentControlCard } from "@/components/agents/AgentControlCard";
 import { LiveActivityStream } from "@/components/agents/LiveActivityStream";
@@ -14,6 +15,7 @@ import { AgentDetailDrawer } from "@/components/agents/AgentDetailDrawer";
 import { AgentScheduler } from "@/components/agents/AgentScheduler";
 import { WorkflowBuilder } from "@/components/agents/WorkflowBuilder";
 import { FleetAnalytics } from "@/components/agents/FleetAnalytics";
+import { SEO } from "@/components/SEO";
 
 export default function AgentCommandCenter() {
   const { runtimes, activity, completedToday, stats, deploy, setStatus, deployAll, pauseAll } = useAgentSimulation();

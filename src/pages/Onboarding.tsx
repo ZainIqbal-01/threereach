@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Globe, Building2, FileText, ArrowRight, Sparkles, Eye, Brain,
-  BarChart3, TrendingUp, CheckCircle2, Rocket, Star, Layers
+  BarChart3, TrendingUp, CheckCircle2, Rocket, Star
 } from "lucide-react";
 import { EngineStatusBadge, getEngineLogo } from "@/components/ui/ai-engine-logos";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StarAgent } from "@/components/StarAgent";
 import { sanitize, validateOnboardingForm } from "@/lib/validation";
+import { useAuth } from "@/hooks/useAuth";
+import { useBusinessProfile } from "@/hooks/useBusinessProfile";
 import logo from "@/assets/logo.png";
 
 const features = [
@@ -36,6 +38,8 @@ const stats = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, update } = useBusinessProfile();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
@@ -47,12 +51,22 @@ export default function Onboarding() {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  // Redirect to /auth if signed out, or to /dashboard if onboarding already complete
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+    if (profile.onboardingComplete) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, authLoading, profile.onboardingComplete, navigate]);
+
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    // Sanitize input on change (OWASP A03 - Injection prevention)
     const sanitized = sanitize(value);
     setFormData((prev) => ({ ...prev, [name]: sanitized }));
-    // Clear error for this field when user starts typing
     setFormErrors((prev) => {
       const next = { ...prev };
       delete next[name];
@@ -61,7 +75,6 @@ export default function Onboarding() {
   }, []);
 
   const handleAnalyze = async () => {
-    // Validate all inputs before proceeding
     const validation = validateOnboardingForm(formData);
     if (!validation.valid) {
       setFormErrors(validation.errors);
@@ -69,8 +82,12 @@ export default function Onboarding() {
     }
     setFormErrors({});
     setIsAnalyzing(true);
-    localStorage.setItem("businessProfile", JSON.stringify(formData));
-    localStorage.setItem("onboardingComplete", "true");
+    await update({
+      businessName: formData.businessName,
+      websiteUrl: formData.websiteUrl,
+      description: formData.description,
+      onboardingComplete: true,
+    });
 
     for (let i = 0; i < analysisSteps.length; i++) {
       setCurrentStep(i);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Brain, Search, Eye, BarChart3, Target, Plus, X, Globe, Users, ArrowRight, Sparkles, Zap } from "lucide-react";
+import { Brain, Eye, BarChart3, Target, Plus, X, Globe, Users, ArrowRight, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

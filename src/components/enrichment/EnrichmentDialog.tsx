@@ -160,11 +160,16 @@ export function EnrichmentDialog({ open, onOpenChange, missing }: Props) {
           <TabsContent value="documents" className="space-y-3 pt-4">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-colors p-6 text-center group"
+              disabled={uploading}
+              className="w-full rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-colors p-6 text-center group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
-              <p className="text-sm font-semibold text-foreground">Upload documents</p>
-              <p className="text-xs text-muted-foreground mt-0.5">PDF, DOC, DOCX, TXT, MD, CSV — up to 5MB each</p>
+              {uploading ? (
+                <Loader2 className="h-8 w-8 mx-auto mb-2 text-primary animate-spin" />
+              ) : (
+                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
+              )}
+              <p className="text-sm font-semibold text-foreground">{uploading ? "Uploading…" : "Upload documents"}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">PDF, DOC, DOCX, TXT, MD, CSV — up to 10MB each</p>
             </button>
             <input
               ref={fileInputRef}

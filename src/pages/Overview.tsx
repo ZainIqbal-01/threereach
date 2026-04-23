@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RedditLogo } from "@/components/ui/platform-logos";
 import {
   Download,
   ArrowRight,
@@ -211,7 +212,7 @@ export default function Overview() {
                 label: "Distribute Content",
                 desc: "AI-generate & post",
                 href: "/dashboard/distribution",
-                icon: "📢",
+                icon: "reddit" as const,
                 color: "from-success/10 to-success/5",
               },
             ].map((item) => (
@@ -223,7 +224,9 @@ export default function Overview() {
                 }}
                 className={`p-5 rounded-2xl bg-gradient-to-br ${item.color} border border-border/40 hover:border-primary/30 transition-all text-left group hover:shadow-md`}
               >
-                <span className="text-2xl mb-3 block">{item.icon}</span>
+                <span className="text-2xl mb-3 block">
+                  {item.icon === "reddit" ? <RedditLogo className="h-7 w-7" style={{ color: "#FF4500" }} /> : item.icon}
+                </span>
                 <p className="text-sm font-semibold text-foreground">{item.label}</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</p>
                 <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-primary mt-3 transition-all group-hover:translate-x-1" />

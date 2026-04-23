@@ -13,6 +13,7 @@ import { AgentBadge } from "@/components/agents/AgentBadge";
 import { agents } from "@/components/agents/agentRegistry";
 import { toast } from "@/hooks/use-toast";
 import { useBusinessName } from "@/hooks/useBusinessName";
+import { getPlatformLogo } from "@/components/ui/platform-logos";
 
 type Platform = "reddit" | "quora" | "linkedin" | "medium" | "hackernews" | "twitter";
 type ContentStatus = "draft" | "generating" | "ready" | "posted" | "failed";
@@ -20,7 +21,6 @@ type ContentStatus = "draft" | "generating" | "ready" | "posted" | "failed";
 interface PlatformConfig {
   id: Platform;
   name: string;
-  icon: string;
   color: string;
   bgColor: string;
   borderColor: string;
@@ -40,12 +40,12 @@ interface ContentPost {
 }
 
 const platforms: PlatformConfig[] = [
-  { id: "reddit", name: "Reddit", icon: "📢", color: "text-[hsl(16,100%,50%)]", bgColor: "bg-[hsl(16,100%,96%)]", borderColor: "border-[hsl(16,100%,85%)]", description: "Subreddit posts & comments", autoPost: false },
-  { id: "quora", name: "Quora", icon: "❓", color: "text-[hsl(0,72%,51%)]", bgColor: "bg-[hsl(0,72%,97%)]", borderColor: "border-[hsl(0,72%,90%)]", description: "Answer relevant questions", autoPost: false },
-  { id: "linkedin", name: "LinkedIn", icon: "💼", color: "text-[hsl(210,85%,40%)]", bgColor: "bg-[hsl(210,85%,96%)]", borderColor: "border-[hsl(210,85%,85%)]", description: "Professional articles & posts", autoPost: true },
-  { id: "medium", name: "Medium", icon: "✍️", color: "text-foreground", bgColor: "bg-secondary", borderColor: "border-border", description: "Long-form articles", autoPost: false },
-  { id: "hackernews", name: "Hacker News", icon: "🔶", color: "text-[hsl(24,100%,50%)]", bgColor: "bg-[hsl(24,100%,97%)]", borderColor: "border-[hsl(24,100%,85%)]", description: "Tech community visibility", autoPost: false },
-  { id: "twitter", name: "X / Twitter", icon: "𝕏", color: "text-foreground", bgColor: "bg-secondary", borderColor: "border-border", description: "Short-form & threads", autoPost: false },
+  { id: "reddit", name: "Reddit", color: "text-[hsl(16,100%,50%)]", bgColor: "bg-[hsl(16,100%,96%)]", borderColor: "border-[hsl(16,100%,85%)]", description: "Subreddit posts & comments", autoPost: false },
+  { id: "quora", name: "Quora", color: "text-[hsl(0,72%,51%)]", bgColor: "bg-[hsl(0,72%,97%)]", borderColor: "border-[hsl(0,72%,90%)]", description: "Answer relevant questions", autoPost: false },
+  { id: "linkedin", name: "LinkedIn", color: "text-[hsl(210,85%,40%)]", bgColor: "bg-[hsl(210,85%,96%)]", borderColor: "border-[hsl(210,85%,85%)]", description: "Professional articles & posts", autoPost: true },
+  { id: "medium", name: "Medium", color: "text-foreground", bgColor: "bg-secondary", borderColor: "border-border", description: "Long-form articles", autoPost: false },
+  { id: "hackernews", name: "Hacker News", color: "text-[hsl(24,100%,50%)]", bgColor: "bg-[hsl(24,100%,97%)]", borderColor: "border-[hsl(24,100%,85%)]", description: "Tech community visibility", autoPost: false },
+  { id: "twitter", name: "X / Twitter", color: "text-foreground", bgColor: "bg-secondary", borderColor: "border-border", description: "Short-form & threads", autoPost: false },
 ];
 
 const initialPosts: ContentPost[] = [
@@ -224,7 +224,7 @@ export default function Distribution() {
                     onClick={() => setSelectedPlatform(p.id)}
                     className={`platform-badge justify-start ${selectedPlatform === p.id ? `${p.bgColor} ${p.borderColor} ${p.color}` : ""}`}
                   >
-                    <span className="text-lg">{p.icon}</span>
+                    <span className="shrink-0">{getPlatformLogo(p.id, "h-5 w-5")}</span>
                     <div className="text-left">
                       <div className="text-xs font-semibold">{p.name}</div>
                       <div className="text-[10px] text-muted-foreground">{p.description}</div>
@@ -262,7 +262,7 @@ export default function Distribution() {
           const posted = platformPosts.filter(post => post.status === "posted").length;
           return (
             <div key={p.id} className={`card-reach p-4 text-center ${p.bgColor} border ${p.borderColor}`}>
-              <div className="text-2xl mb-2">{p.icon}</div>
+              <div className="flex justify-center mb-2">{getPlatformLogo(p.id, "h-7 w-7")}</div>
               <div className="text-xs font-semibold text-foreground">{p.name}</div>
               <div className="text-[10px] text-muted-foreground mt-1">{posted} posts</div>
               <div className="flex items-center justify-center gap-1 mt-1">
@@ -294,8 +294,8 @@ export default function Distribution() {
             <div key={post.id} className="card-reach p-5 animate-fade-in">
               <div className="flex items-start gap-4">
                 {/* Platform icon */}
-                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${platform.bgColor} border ${platform.borderColor} text-lg shrink-0`}>
-                  {platform.icon}
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${platform.bgColor} border ${platform.borderColor} shrink-0`}>
+                  {getPlatformLogo(platform.id, "h-5 w-5")}
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -396,7 +396,7 @@ export default function Distribution() {
           {platforms.slice(0, 3).map((p) => (
             <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
               <div className="flex items-center gap-2">
-                <span className="text-lg">{p.icon}</span>
+                <span className="shrink-0">{getPlatformLogo(p.id, "h-5 w-5")}</span>
                 <span className="text-xs font-medium text-foreground">{p.name}</span>
               </div>
               <Switch defaultChecked={p.autoPost} />

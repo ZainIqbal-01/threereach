@@ -211,7 +211,7 @@ export default function Overview() {
                 label: "Distribute Content",
                 desc: "AI-generate & post",
                 href: "/dashboard/distribution",
-                icon: "📢",
+                icon: "reddit" as const,
                 color: "from-success/10 to-success/5",
               },
             ].map((item) => (

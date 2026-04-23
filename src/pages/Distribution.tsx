@@ -37,12 +37,12 @@ interface ContentPost {
 }
 
 const platforms: PlatformConfig[] = [
-  { id: "reddit", name: "Reddit", color: "text-[hsl(16,100%,50%)]", bgColor: "bg-[hsl(16,100%,96%)]", borderColor: "border-[hsl(16,100%,85%)]", description: "Subreddit posts & comments", autoPost: false },
-  { id: "quora", name: "Quora", color: "text-[hsl(0,72%,51%)]", bgColor: "bg-[hsl(0,72%,97%)]", borderColor: "border-[hsl(0,72%,90%)]", description: "Answer relevant questions", autoPost: false },
-  { id: "linkedin", name: "LinkedIn", color: "text-[hsl(210,85%,40%)]", bgColor: "bg-[hsl(210,85%,96%)]", borderColor: "border-[hsl(210,85%,85%)]", description: "Professional articles & posts", autoPost: true },
-  { id: "medium", name: "Medium", color: "text-foreground", bgColor: "bg-secondary", borderColor: "border-border", description: "Long-form articles", autoPost: false },
-  { id: "hackernews", name: "Hacker News", color: "text-[hsl(24,100%,50%)]", bgColor: "bg-[hsl(24,100%,97%)]", borderColor: "border-[hsl(24,100%,85%)]", description: "Tech community visibility", autoPost: false },
-  { id: "twitter", name: "X / Twitter", color: "text-foreground", bgColor: "bg-secondary", borderColor: "border-border", description: "Short-form & threads", autoPost: false },
+  { id: "reddit", name: "Reddit", description: "Subreddit posts & comments", autoPost: false },
+  { id: "quora", name: "Quora", description: "Answer relevant questions", autoPost: false },
+  { id: "linkedin", name: "LinkedIn", description: "Professional articles & posts", autoPost: true },
+  { id: "medium", name: "Medium", description: "Long-form articles", autoPost: false },
+  { id: "hackernews", name: "Hacker News", description: "Tech community visibility", autoPost: false },
+  { id: "twitter", name: "X / Twitter", description: "Short-form & threads", autoPost: false },
 ];
 
 const initialPosts: ContentPost[] = [
@@ -215,19 +215,24 @@ export default function Distribution() {
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Select Platform</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {platforms.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setSelectedPlatform(p.id)}
-                    className={`platform-badge justify-start ${selectedPlatform === p.id ? `${p.bgColor} ${p.borderColor} ${p.color}` : ""}`}
-                  >
-                    <span className="shrink-0">{getPlatformLogo(p.id, "h-5 w-5")}</span>
-                    <div className="text-left">
-                      <div className="text-xs font-semibold">{p.name}</div>
-                      <div className="text-[10px] text-muted-foreground">{p.description}</div>
-                    </div>
-                  </button>
-                ))}
+                {platforms.map((p) => {
+                  const brand = getPlatformBrand(p.id);
+                  const active = selectedPlatform === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedPlatform(p.id)}
+                      className="platform-badge justify-start"
+                      style={active ? { background: brand.bg, borderColor: brand.ring, color: brand.text } : undefined}
+                    >
+                      <span className="shrink-0">{getPlatformLogo(p.id, "h-5 w-5")}</span>
+                      <div className="text-left">
+                        <div className="text-xs font-semibold">{p.name}</div>
+                        <div className="text-[10px] text-muted-foreground">{p.description}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -257,8 +262,13 @@ export default function Distribution() {
         {platforms.map((p) => {
           const platformPosts = posts.filter(post => post.platform === p.id);
           const posted = platformPosts.filter(post => post.status === "posted").length;
+          const brand = getPlatformBrand(p.id);
           return (
-            <div key={p.id} className={`card-reach p-4 text-center ${p.bgColor} border ${p.borderColor}`}>
+            <div
+              key={p.id}
+              className="card-reach p-4 text-center border"
+              style={{ background: brand.bg, borderColor: brand.ring }}
+            >
               <div className="flex justify-center mb-2">{getPlatformLogo(p.id, "h-7 w-7")}</div>
               <div className="text-xs font-semibold text-foreground">{p.name}</div>
               <div className="text-[10px] text-muted-foreground mt-1">{posted} posts</div>

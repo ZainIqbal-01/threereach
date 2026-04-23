@@ -5,10 +5,12 @@ import { AnalyzingPhase } from "@/components/brand-intelligence/AnalyzingPhase";
 import { ResultsPhase } from "@/components/brand-intelligence/ResultsPhase";
 import { mockAnalysis, generateCompetitorData } from "@/components/brand-intelligence/mockData";
 import { saveScan } from "@/components/brand-intelligence/scanHistory";
+import { useBusinessProfile } from "@/hooks/useBusinessProfile";
 import { toast } from "@/hooks/use-toast";
 import type { AnalysisPhase, AnalysisData, CompetitorData, ScanRecord } from "@/components/brand-intelligence/types";
 
 export default function BrandIntelligence() {
+  const { profile } = useBusinessProfile();
   const [phase, setPhase] = useState<AnalysisPhase>("input");
   const [brandName, setBrandName] = useState("");
   const [website, setWebsite] = useState("");
@@ -45,7 +47,20 @@ export default function BrandIntelligence() {
 
     try {
       const { data, error } = await supabase.functions.invoke("analyze-brand", {
-        body: { brandName, website, description, industry, competitors },
+        body: {
+          brandName,
+          website,
+          description,
+          industry,
+          competitors,
+          detailedInfo: profile.detailedInfo ?? "",
+          targetAudience: profile.audience ?? "",
+          resources: (profile.resources ?? []).map((r) => ({
+            type: r.type,
+            name: r.name,
+            url: r.type === "link" ? r.value : "",
+          })),
+        },
       });
 
       if (error) throw error;

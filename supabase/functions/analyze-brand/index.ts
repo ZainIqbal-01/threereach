@@ -42,13 +42,29 @@ serve(async (req) => {
     const website = sanitizeUrl(body.website);
     const description = enforceLength(sanitizeString(body.description), 1000);
     const industry = enforceLength(sanitizeString(body.industry), 100);
+    const detailedInfo = enforceLength(sanitizeString(body.detailedInfo), 5000);
+    const targetAudience = enforceLength(sanitizeString(body.targetAudience), 500);
 
-    // Validate competitors: max 10, each max 200 chars
     const rawCompetitors = Array.isArray(body.competitors) ? body.competitors : [];
     const competitors = rawCompetitors
       .slice(0, 10)
       .map((c: unknown) => enforceLength(sanitizeString(c), 200))
       .filter(Boolean);
+
+    // Enrichment: links + uploaded resource titles. Each capped, max 20.
+    const rawResources = Array.isArray(body.resources) ? body.resources : [];
+    const resources = rawResources
+      .slice(0, 20)
+      .map((r: unknown) => {
+        if (!r || typeof r !== "object") return null;
+        const obj = r as Record<string, unknown>;
+        return {
+          type: enforceLength(sanitizeString(obj.type), 20),
+          name: enforceLength(sanitizeString(obj.name), 200),
+          url: sanitizeUrl(obj.url),
+        };
+      })
+      .filter((r): r is { type: string; name: string; url: string } => !!r && !!r.name);
 
     if (!brandName) {
       return errorResponse("brandName is required (max 200 chars)", 400);
@@ -63,41 +79,25 @@ serve(async (req) => {
       return errorResponse("Service configuration error", 503);
     }
 
-    const systemPrompt = `You are an AI Brand Visibility Analyst. Analyze how visible a brand is across AI engines (ChatGPT, Gemini, Perplexity). Return a JSON object with this exact structure:
+    const enrichmentBlock = [
+      detailedInfo ? `Additional brand context provided by the founder:\n${detailedInfo}` : "",
+      targetAudience ? `Target audience: ${targetAudience}` : "",
+      resources.length
+        ? `Supporting resources (titles + links):\n${resources.map((r) => `- [${r.type}] ${r.name}${r.url ? ` (${r.url})` : ""}`).join("\n")}`
+        : "",
+    ].filter(Boolean).join("\n\n");
+
+    const systemPrompt = `You are an AI Brand Visibility Analyst. Analyze how visible a brand is across AI engines (ChatGPT, Gemini, Perplexity). Ground your analysis in any user-provided context. Return a JSON object with this exact structure:
 {
   "overallScore": <number 0-100>,
   "status": "<invisible|weak|visible|strong>",
-  "engines": [
-    {
-      "engine": "ChatGPT",
-      "mentioned": <boolean>,
-      "position": <number or null>,
-      "sentiment": "<positive|neutral|negative>",
-      "snippet": "<realistic AI response snippet about this brand>",
-      "reasons": ["<reason1>", "<reason2>", "<reason3>"]
-    },
-    { same for "Gemini" },
-    { same for "Perplexity" }
-  ],
-  "gaps": ["<gap1>", "<gap2>", "<gap3>", "<gap4>", "<gap5>"],
-  "improvementPlan": [
-    { "title": "<action>", "description": "<details>", "priority": "<high|medium|low>" }
-  ],
-  "competitors": [
-    {
-      "name": "<competitor name>",
-      "score": <number 0-100>,
-      "status": "<invisible|weak|visible|strong>",
-      "engines": [
-        { "engine": "ChatGPT", "mentioned": <boolean>, "sentiment": "<positive|neutral|negative>" },
-        { "engine": "Gemini", "mentioned": <boolean>, "sentiment": "<positive|neutral|negative>" },
-        { "engine": "Perplexity", "mentioned": <boolean>, "sentiment": "<positive|neutral|negative>" }
-      ]
-    }
-  ]
+  "engines": [...],
+  "gaps": [...],
+  "improvementPlan": [...],
+  "competitors": [...]
 }
 
-Be realistic. Score lower for unknown brands. Provide actionable, specific gaps and improvement plans.`;
+Be realistic. Score lower for unknown brands. Use the founder-provided context to inform gaps and recommendations.`;
 
     const userPrompt = `Analyze brand visibility for:
 - Brand: ${brandName}
@@ -105,6 +105,8 @@ Be realistic. Score lower for unknown brands. Provide actionable, specific gaps 
 - Industry: ${industry || "Not specified"}
 - Description: ${description || "Not provided"}
 - Competitors to benchmark: ${competitors.length ? competitors.join(", ") : "None specified"}
+
+${enrichmentBlock || "No additional context provided."}
 
 Provide a thorough, realistic analysis.`;
 

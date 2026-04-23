@@ -104,6 +104,7 @@ export default function Onboarding() {
   };
 
   const isFormValid = formData.websiteUrl.trim() !== "" || formData.businessName.trim() !== "";
+  void user; // referenced via guard
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">

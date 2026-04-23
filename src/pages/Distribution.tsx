@@ -297,11 +297,15 @@ export default function Distribution() {
           const status = statusConfig[post.status];
           const StatusIcon = status.icon;
           
+          const brand = getPlatformBrand(platform.id);
           return (
             <div key={post.id} className="card-reach p-5 animate-fade-in">
               <div className="flex items-start gap-4">
                 {/* Platform icon */}
-                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${platform.bgColor} border ${platform.borderColor} shrink-0`}>
+                <div
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border shrink-0"
+                  style={{ background: brand.bg, borderColor: brand.ring }}
+                >
                   {getPlatformLogo(platform.id, "h-5 w-5")}
                 </div>
                 
@@ -310,7 +314,7 @@ export default function Distribution() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className={`text-xs font-semibold ${platform.color}`}>{platform.name}</span>
+                        <span className="text-xs font-semibold" style={{ color: brand.text }}>{platform.name}</span>
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium ${status.className}`}>
                           <StatusIcon className="h-3 w-3" />
                           {status.label}

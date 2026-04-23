@@ -7,11 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Upload, Link2, FileText, X, Plus, Sparkles, CheckCircle2, FileCheck2, Loader2 } from "lucide-react";
+import { Upload, Link2, FileText, X, Plus, Sparkles, CheckCircle2, FileCheck2 } from "lucide-react";
 import { toast } from "sonner";
 import { useBusinessProfile, BusinessResource } from "@/hooks/useBusinessProfile";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   open: boolean;
@@ -20,80 +18,70 @@ interface Props {
 }
 
 const ACCEPTED = ".pdf,.doc,.docx,.txt,.md,.csv";
-const MAX_BYTES = 10 * 1024 * 1024; // 10MB per file (cloud storage)
+const MAX_BYTES = 5 * 1024 * 1024; // 5MB per file
 
 export function EnrichmentDialog({ open, onOpenChange, missing }: Props) {
-  const { user } = useAuth();
   const { profile, update, addResources, removeResource } = useBusinessProfile();
   const [detailedInfo, setDetailedInfo] = useState(profile.detailedInfo ?? "");
   const [linkUrl, setLinkUrl] = useState("");
   const [linkLabel, setLinkLabel] = useState("");
-  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resources = profile.resources ?? [];
 
   const handleFiles = async (files: FileList | null) => {
     if (!files?.length) return;
-    if (!user) {
-      toast.error("Please sign in to upload documents");
-      return;
+    const items: BusinessResource[] = [];
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_BYTES) {
+        toast.error(`${file.name} exceeds the 5MB limit`);
+        continue;
+      }
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      items.push({
+        id: crypto.randomUUID(),
+        type: "document",
+        name: file.name,
+        value: dataUrl,
+        size: file.size,
+        addedAt: new Date().toISOString(),
+      });
     }
-    setUploading(true);
-    try {
-      const items: Omit<BusinessResource, "id" | "addedAt">[] = [];
-      for (const file of Array.from(files)) {
-        if (file.size > MAX_BYTES) {
-          toast.error(`${file.name} exceeds the 10MB limit`);
-          continue;
-        }
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${user.id}/${Date.now()}-${safeName}`;
-        const { error } = await supabase.storage
-          .from("business-resources")
-          .upload(path, file, { contentType: file.type, upsert: false });
-        if (error) {
-          toast.error(`Upload failed: ${file.name}`);
-          continue;
-        }
-        items.push({
-          type: "document",
-          name: file.name,
-          value: path,
-          size: file.size,
-          mimeType: file.type,
-        });
-      }
-      if (items.length) {
-        await addResources(items);
-        toast.success(`${items.length} document${items.length > 1 ? "s" : ""} uploaded`);
-      }
-    } finally {
-      setUploading(false);
+    if (items.length) {
+      addResources(items);
+      toast.success(`${items.length} document${items.length > 1 ? "s" : ""} added`);
     }
   };
 
-  const addLink = async () => {
+  const addLink = () => {
     const url = linkUrl.trim();
     if (!url) return;
     try {
+      // Will throw if invalid
       new URL(url.startsWith("http") ? url : `https://${url}`);
     } catch {
       toast.error("Please enter a valid URL");
       return;
     }
-    await addResources([{
+    addResources([{
+      id: crypto.randomUUID(),
       type: "link",
       name: linkLabel.trim() || url,
       value: url.startsWith("http") ? url : `https://${url}`,
+      addedAt: new Date().toISOString(),
     }]);
     setLinkUrl("");
     setLinkLabel("");
     toast.success("Link added");
   };
 
-  const handleSave = async () => {
-    await update({ detailedInfo: detailedInfo.trim() });
+  const handleSave = () => {
+    update({ detailedInfo: detailedInfo.trim() });
     toast.success("Brand context saved — your AI agents are smarter now");
     onOpenChange(false);
   };
@@ -160,16 +148,11 @@ export function EnrichmentDialog({ open, onOpenChange, missing }: Props) {
           <TabsContent value="documents" className="space-y-3 pt-4">
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-colors p-6 text-center group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-colors p-6 text-center group"
             >
-              {uploading ? (
-                <Loader2 className="h-8 w-8 mx-auto mb-2 text-primary animate-spin" />
-              ) : (
-                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
-              )}
-              <p className="text-sm font-semibold text-foreground">{uploading ? "Uploading…" : "Upload documents"}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">PDF, DOC, DOCX, TXT, MD, CSV — up to 10MB each</p>
+              <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
+              <p className="text-sm font-semibold text-foreground">Upload documents</p>
+              <p className="text-xs text-muted-foreground mt-0.5">PDF, DOC, DOCX, TXT, MD, CSV — up to 5MB each</p>
             </button>
             <input
               ref={fileInputRef}

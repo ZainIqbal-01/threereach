@@ -45,22 +45,6 @@ export default function AIScan() {
   const [filterEngine, setFilterEngine] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
-  const persistResults = async (query: string, results: any[]) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !results.length) return;
-    const rows = results.map((r) => ({
-      user_id: user.id,
-      engine: r.engine,
-      query,
-      status: r.status,
-      score: r.status === "mentioned" ? 80 : r.status === "weak" ? 45 : 0,
-      confidence: r.status === "mentioned" ? 80 : r.status === "weak" ? 45 : 0,
-      response_text: r.context ?? null,
-      raw_results: { context: r.context, position: r.position } as never,
-    }));
-    await supabase.from("scan_history").insert(rows);
-  };
-
   const runFullScan = async () => {
     setIsScanning(true);
     toast({ title: "🔍 Full scan initiated", description: "AI is scanning all engines for brand mentions..." });
@@ -76,7 +60,6 @@ export default function AIScan() {
         context: r.context,
       }));
       setQueries(prev => [...newQueries, ...prev]);
-      await persistResults("Full scan — industry visibility check", data.results || []);
       const mentioned = newQueries.filter((r: QueryResult) => r.status === "mentioned").length;
       toast({ title: "✅ Scan complete!", description: `Found ${mentioned} mention(s) across ${newQueries.length} engines` });
     } catch (err: any) {
@@ -106,7 +89,6 @@ export default function AIScan() {
         context: r.context,
       }));
       setQueries(prev => [...newResults, ...prev]);
-      await persistResults(searchQuery, data.results || []);
       setSearchQuery("");
       const mentioned = newResults.filter((r: QueryResult) => r.status === "mentioned").length;
       toast({ title: "🎯 AI Simulation complete", description: `Found ${mentioned} mention(s) across ${engines.length} engine(s)` });

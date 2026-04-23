@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { History, TrendingUp, TrendingDown } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { MetaCard } from "./UIComponents";
@@ -10,17 +9,9 @@ interface HistoryChartProps {
 }
 
 export function HistoryChart({ currentBrandName }: HistoryChartProps) {
-  const [history, setHistory] = useState<ScanRecord[]>([]);
-
-  useEffect(() => {
-    getScanHistory().then((all) => {
-      setHistory(
-        all
-          .filter((s) => s.brandName.toLowerCase() === currentBrandName.toLowerCase())
-          .reverse()
-      );
-    });
-  }, [currentBrandName]);
+  const history = getScanHistory()
+    .filter(s => s.brandName.toLowerCase() === currentBrandName.toLowerCase())
+    .reverse(); // oldest first for chart
 
   if (history.length < 2) return null;
 

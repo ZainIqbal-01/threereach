@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Bell, ChevronDown, Settings, LogOut, CreditCard, Search, Menu, Sun, Moon } from "lucide-react";
+import { Bell, User, ChevronDown, Settings, LogOut, CreditCard, X, Search, Menu, Sun, Moon } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@/hooks/useTheme";
 import { useBusinessName } from "@/hooks/useBusinessName";
-import { useAuth } from "@/hooks/useAuth";
 import { SearchDialog } from "./SearchDialog";
 
 interface TopBarProps {
@@ -28,7 +27,6 @@ const notifications = [
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Command Center",
-  "/dashboard/agents": "Agent Command Center",
   "/dashboard/brand-intelligence": "AI Brand Intelligence",
   "/dashboard/scan": "AI Visibility Scan",
   "/dashboard/footprint": "Build AI Footprint",
@@ -44,7 +42,6 @@ export function TopBar({ status = "weak", onMenuClick }: TopBarProps) {
   const location = useLocation();
   const workspaceName = useBusinessName();
   const { dark, toggle } = useTheme();
-  const { user, signOut } = useAuth();
   const statusInfo = statusConfig[status];
   const [showNotifs, setShowNotifs] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -55,15 +52,6 @@ export function TopBar({ status = "weak", onMenuClick }: TopBarProps) {
 
   const pageTitle = pageTitles[location.pathname] || "Dashboard";
   const unreadCount = notifs.filter(n => !n.read).length;
-
-  const userName =
-    (user?.user_metadata?.full_name as string | undefined) ||
-    (user?.user_metadata?.name as string | undefined) ||
-    user?.email?.split("@")[0] ||
-    "Guest";
-  const userEmail = user?.email ?? "";
-  const userAvatar = user?.user_metadata?.avatar_url as string | undefined;
-  const initials = userName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -90,9 +78,9 @@ export function TopBar({ status = "weak", onMenuClick }: TopBarProps) {
     setNotifs(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  const logout = async () => {
-    await signOut();
-    navigate("/auth", { replace: true });
+  const logout = () => {
+    localStorage.removeItem("onboardingComplete");
+    navigate("/");
   };
 
   return (
@@ -190,16 +178,12 @@ export function TopBar({ status = "weak", onMenuClick }: TopBarProps) {
                 onClick={() => { setShowUserMenu(!showUserMenu); setShowNotifs(false); }}
                 className="flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 hover:bg-secondary transition-all group"
               >
-                {userAvatar ? (
-                  <img src={userAvatar} alt={userName} className="h-8 w-8 rounded-xl object-cover" />
-                ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-[hsl(var(--accent))] text-primary-foreground text-xs font-bold shadow-sm">
-                    {initials || "G"}
-                  </div>
-                )}
-                <div className="text-left hidden sm:block max-w-[140px]">
-                  <div className="text-xs font-medium text-foreground leading-none truncate">{userName}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 truncate">{userEmail}</div>
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-[hsl(var(--accent))] text-primary-foreground text-xs font-bold shadow-sm">
+                  JD
+                </div>
+                <div className="text-left hidden sm:block">
+                  <div className="text-xs font-medium text-foreground leading-none">John Doe</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">Admin</div>
                 </div>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors hidden sm:block" />
               </button>

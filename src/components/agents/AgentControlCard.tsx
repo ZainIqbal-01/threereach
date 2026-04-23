@@ -71,35 +71,25 @@ export function AgentControlCard({ agent, runtime, onToggle, onDeployMission, on
         </button>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={onOpenDetail}
-              className="text-sm font-bold hover:underline underline-offset-2 truncate min-w-0"
+              className="text-sm font-bold hover:underline underline-offset-2"
               style={{ color: accent }}
-              title={agent.name}
             >
               {agent.name}
             </button>
-          </div>
-          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-            <span className={`text-[9px] px-1.5 py-0.5 rounded-md border font-semibold uppercase tracking-wide ${statusTone}`}>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-md border font-semibold uppercase tracking-wide ${statusTone}`}>
               {statusLabel}
             </span>
-            {(agent.id === "scout" || agent.id === "oracle") && (
-              <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-success/10 text-success border border-success/20 font-semibold uppercase tracking-wide flex items-center gap-1">
-                <span className="h-1 w-1 rounded-full bg-success live-dot" />
-                Live
-              </span>
-            )}
           </div>
-          <p className="text-[11px] text-muted-foreground truncate mt-0.5">{agent.role}</p>
+          <p className="text-[11px] text-muted-foreground truncate">{agent.role}</p>
         </div>
 
         <Switch
           checked={isActive}
           onCheckedChange={onToggle}
           aria-label={`${isActive ? "Pause" : "Deploy"} ${agent.name}`}
-          className="shrink-0"
         />
       </div>
 

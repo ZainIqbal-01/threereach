@@ -1,16 +1,20 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface BusinessResource {
   id: string;
   type: "document" | "link" | "note";
   name: string;
-  // For documents: data URL (base64). For links: the URL. For notes: the text.
+  // For documents: storage path. For links: the URL. For notes: text content.
   value: string;
   size?: number;
+  mimeType?: string;
   addedAt: string;
 }
 
 export interface BusinessProfile {
+  id?: string;
   businessName?: string;
   websiteUrl?: string;
   description?: string;
@@ -24,25 +28,10 @@ export interface BusinessProfile {
   detailedInfo?: string;
   resources?: BusinessResource[];
   enrichmentDismissedAt?: string;
+  onboardingComplete?: boolean;
 }
 
-const STORAGE_KEY = "businessProfile";
-
-function read(): BusinessProfile {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function write(profile: BusinessProfile) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-    window.dispatchEvent(new CustomEvent("businessProfile:updated"));
-  } catch {}
-}
+const DISMISS_KEY = "enrichmentDismissedAt";
 
 /** Returns the list of important fields that are missing or too short. */
 export function getMissingFields(profile: BusinessProfile): string[] {
@@ -57,59 +46,208 @@ export function getMissingFields(profile: BusinessProfile): string[] {
   const hasEnrichment =
     (profile.detailedInfo && profile.detailedInfo.trim().length > 80) ||
     (profile.resources && profile.resources.length > 0);
-  // If the user has provided rich enrichment, suppress most "missing" noise.
   return hasEnrichment ? missing.slice(0, 2) : missing;
 }
 
+interface DbBusinessRow {
+  id: string;
+  name: string;
+  website: string | null;
+  industry: string | null;
+  description: string | null;
+  detailed_info: string | null;
+  target_audience: string | null;
+  competitors: string[] | null;
+  links: string[] | null;
+  onboarding_complete: boolean;
+}
+
+interface DbResourceRow {
+  id: string;
+  kind: string;
+  title: string | null;
+  url: string | null;
+  notes: string | null;
+  file_name: string | null;
+  file_path: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  created_at: string;
+}
+
+function rowToProfile(row: DbBusinessRow | null, resources: DbResourceRow[]): BusinessProfile {
+  if (!row) return { resources: [] };
+  return {
+    id: row.id,
+    businessName: row.name,
+    websiteUrl: row.website ?? undefined,
+    industry: row.industry ?? undefined,
+    description: row.description ?? undefined,
+    detailedInfo: row.detailed_info ?? undefined,
+    audience: row.target_audience ?? undefined,
+    onboardingComplete: row.onboarding_complete,
+    resources: resources.map((r) => ({
+      id: r.id,
+      type: (r.kind as BusinessResource["type"]) || "document",
+      name: r.title || r.file_name || r.url || "Resource",
+      value: r.kind === "link" ? r.url ?? "" : r.kind === "note" ? r.notes ?? "" : r.file_path ?? "",
+      size: r.file_size ?? undefined,
+      mimeType: r.mime_type ?? undefined,
+      addedAt: r.created_at,
+    })),
+  };
+}
+
 export function useBusinessProfile() {
-  const [profile, setProfile] = useState<BusinessProfile>(() => read());
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<BusinessProfile>({ resources: [] });
+  const [loading, setLoading] = useState(true);
+  const migratedRef = useRef(false);
+
+  const dismissedAt =
+    typeof window !== "undefined" ? localStorage.getItem(DISMISS_KEY) ?? undefined : undefined;
+
+  const refresh = useCallback(async () => {
+    if (!user) {
+      setProfile({ resources: [] });
+      setLoading(false);
+      return;
+    }
+    const [{ data: bizRow }, { data: resRows }] = await Promise.all([
+      supabase
+        .from("business_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("business_resources")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+    ]);
+    const next = rowToProfile(bizRow as DbBusinessRow | null, (resRows ?? []) as DbResourceRow[]);
+    next.enrichmentDismissedAt = dismissedAt;
+    setProfile(next);
+    setLoading(false);
+  }, [user, dismissedAt]);
+
+  // One-time migration of legacy localStorage profile into DB
+  const migrateLegacy = useCallback(async () => {
+    if (!user || migratedRef.current) return;
+    migratedRef.current = true;
+    try {
+      const raw = localStorage.getItem("businessProfile");
+      if (!raw) return;
+      const legacy = JSON.parse(raw);
+      // Only migrate if there's no DB profile yet
+      const { data: existing } = await supabase
+        .from("business_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        localStorage.removeItem("businessProfile");
+        return;
+      }
+      if (!legacy.businessName) return;
+      await supabase.from("business_profiles").insert({
+        user_id: user.id,
+        name: legacy.businessName,
+        website: legacy.websiteUrl ?? null,
+        industry: legacy.industry ?? null,
+        description: legacy.description ?? null,
+        detailed_info: legacy.detailedInfo ?? null,
+        target_audience: legacy.audience ?? null,
+        onboarding_complete: localStorage.getItem("onboardingComplete") === "true",
+      });
+      localStorage.removeItem("businessProfile");
+    } catch (e) {
+      console.warn("Legacy migration skipped:", e);
+    }
+  }, [user]);
 
   useEffect(() => {
-    const handler = () => setProfile(read());
-    window.addEventListener("storage", handler);
-    window.addEventListener("businessProfile:updated", handler as EventListener);
-    return () => {
-      window.removeEventListener("storage", handler);
-      window.removeEventListener("businessProfile:updated", handler as EventListener);
-    };
-  }, []);
+    setLoading(true);
+    migrateLegacy().then(() => refresh());
+  }, [user, migrateLegacy, refresh]);
 
-  const update = useCallback((patch: Partial<BusinessProfile>) => {
-    const next = { ...read(), ...patch };
-    write(next);
-    setProfile(next);
-  }, []);
+  const update = useCallback(
+    async (patch: Partial<BusinessProfile>) => {
+      if (!user) return;
+      const fields: Record<string, unknown> = {};
+      if (patch.businessName !== undefined) fields.name = patch.businessName;
+      if (patch.websiteUrl !== undefined) fields.website = patch.websiteUrl;
+      if (patch.industry !== undefined) fields.industry = patch.industry;
+      if (patch.description !== undefined) fields.description = patch.description;
+      if (patch.detailedInfo !== undefined) fields.detailed_info = patch.detailedInfo;
+      if (patch.audience !== undefined) fields.target_audience = patch.audience;
+      if (patch.onboardingComplete !== undefined) fields.onboarding_complete = patch.onboardingComplete;
 
-  const addResources = useCallback((items: BusinessResource[]) => {
-    const current = read();
-    const next: BusinessProfile = {
-      ...current,
-      resources: [...(current.resources ?? []), ...items],
-    };
-    write(next);
-    setProfile(next);
-  }, []);
+      if (profile.id) {
+        await supabase.from("business_profiles").update(fields).eq("id", profile.id);
+      } else {
+        const insertRow = {
+          user_id: user.id,
+          name: (patch.businessName as string) || "My Business",
+          ...fields,
+        };
+        await supabase.from("business_profiles").insert(insertRow);
+      }
+      await refresh();
+    },
+    [user, profile.id, refresh]
+  );
 
-  const removeResource = useCallback((id: string) => {
-    const current = read();
-    const next: BusinessProfile = {
-      ...current,
-      resources: (current.resources ?? []).filter((r) => r.id !== id),
-    };
-    write(next);
-    setProfile(next);
-  }, []);
+  const addResources = useCallback(
+    async (items: Omit<BusinessResource, "id" | "addedAt">[]) => {
+      if (!user) return;
+      const rows = items.map((it) => ({
+        user_id: user.id,
+        business_profile_id: profile.id ?? null,
+        kind: it.type,
+        title: it.name,
+        url: it.type === "link" ? it.value : null,
+        notes: it.type === "note" ? it.value : null,
+        file_name: it.type === "document" ? it.name : null,
+        file_path: it.type === "document" ? it.value : null,
+        file_size: it.size ?? null,
+        mime_type: it.mimeType ?? null,
+      }));
+      await supabase.from("business_resources").insert(rows);
+      await refresh();
+    },
+    [user, profile.id, refresh]
+  );
+
+  const removeResource = useCallback(
+    async (id: string) => {
+      const target = profile.resources?.find((r) => r.id === id);
+      if (target?.type === "document" && target.value) {
+        await supabase.storage.from("business-resources").remove([target.value]);
+      }
+      await supabase.from("business_resources").delete().eq("id", id);
+      await refresh();
+    },
+    [profile.resources, refresh]
+  );
 
   const dismissEnrichment = useCallback(() => {
-    update({ enrichmentDismissedAt: new Date().toISOString() });
-  }, [update]);
+    const ts = new Date().toISOString();
+    localStorage.setItem(DISMISS_KEY, ts);
+    setProfile((p) => ({ ...p, enrichmentDismissedAt: ts }));
+  }, []);
 
   return {
     profile,
+    loading,
     missing: getMissingFields(profile),
     update,
     addResources,
     removeResource,
     dismissEnrichment,
+    refresh,
   };
 }

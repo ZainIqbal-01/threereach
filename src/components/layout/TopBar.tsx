@@ -28,6 +28,7 @@ const notifications = [
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Command Center",
+  "/dashboard/agents": "Agent Command Center",
   "/dashboard/brand-intelligence": "AI Brand Intelligence",
   "/dashboard/scan": "AI Visibility Scan",
   "/dashboard/footprint": "Build AI Footprint",

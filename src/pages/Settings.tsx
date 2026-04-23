@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, Bot, Users, Key, Shield, Plus, Trash2, Save, Copy, Eye, EyeOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,18 +7,31 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StarAgent } from "@/components/StarAgent";
 import { toast } from "@/hooks/use-toast";
+import { useBusinessProfile } from "@/hooks/useBusinessProfile";
 
 interface TeamMember { name: string; email: string; role: string; avatar: string; }
 interface Competitor { name: string; domain: string; tracked: boolean; }
 
 export default function Settings() {
+  const { profile: dbProfile, update: updateProfile } = useBusinessProfile();
   const [profile, setProfile] = useState({
-    businessName: "Three Reach",
-    description: "Three Reach is a leading fintech company providing innovative payment solutions...",
-    industry: "Financial Technology",
-    founded: "2020",
-    website: "https://threereach.com",
+    businessName: "",
+    description: "",
+    industry: "",
+    founded: "",
+    website: "",
   });
+
+  // Hydrate from DB whenever the real profile changes
+  useEffect(() => {
+    setProfile({
+      businessName: dbProfile.businessName ?? "",
+      description: dbProfile.description ?? "",
+      industry: dbProfile.industry ?? "",
+      founded: "",
+      website: dbProfile.websiteUrl ?? "",
+    });
+  }, [dbProfile.businessName, dbProfile.description, dbProfile.industry, dbProfile.websiteUrl]);
 
   const [engines, setEngines] = useState([
     { name: "ChatGPT", description: "OpenAI's conversational AI", enabled: true },
@@ -46,9 +59,19 @@ export default function Settings() {
   const [showAddCompetitor, setShowAddCompetitor] = useState(false);
   const [newCompetitor, setNewCompetitor] = useState({ name: "", domain: "" });
 
-  const saveProfile = () => {
-    localStorage.setItem("businessProfile", JSON.stringify(profile));
-    toast({ title: "✅ Profile saved!", description: "Business profile has been updated" });
+  const saveProfile = async () => {
+    try {
+      await updateProfile({
+        businessName: profile.businessName,
+        description: profile.description,
+        industry: profile.industry,
+        websiteUrl: profile.website,
+      });
+      toast({ title: "✅ Profile saved!", description: "Business profile has been updated" });
+    } catch (e) {
+      console.error("Failed to save profile:", e);
+      toast({ title: "Save failed", description: "Could not update profile. Please try again.", variant: "destructive" });
+    }
   };
 
   const toggleEngine = (index: number) => {

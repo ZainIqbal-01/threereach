@@ -64,7 +64,7 @@ export default function BrandIntelligence() {
       setAnalysisData(result);
       setCompetitorData(data.competitors || competitors.map(generateCompetitorData));
 
-      setTimeout(() => {
+      setTimeout(async () => {
         const record: ScanRecord = {
           id: crypto.randomUUID(),
           brandName,
@@ -75,7 +75,7 @@ export default function BrandIntelligence() {
           competitors: data.competitors || competitors.map(generateCompetitorData),
           data: result,
         };
-        saveScan(record);
+        await saveScan(record);
         setPhase("results");
       }, 800);
 

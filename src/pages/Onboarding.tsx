@@ -55,17 +55,20 @@ export default function Onboarding() {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Redirect to /auth if signed out, or to /dashboard if onboarding already complete
+  // Redirect to /auth if signed out, or to /dashboard if onboarding already complete.
+  // IMPORTANT: don't redirect while the scan animation is running — otherwise the
+  // moment we flip `onboardingComplete` in the DB the parent shell unmounts this
+  // page mid-animation, which looks like a blink/flicker.
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
       navigate("/auth", { replace: true });
       return;
     }
-    if (profile.onboardingComplete) {
+    if (profile.onboardingComplete && !isAnalyzing) {
       navigate("/dashboard", { replace: true });
     }
-  }, [user, authLoading, profile.onboardingComplete, navigate]);
+  }, [user, authLoading, profile.onboardingComplete, isAnalyzing, navigate]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -198,15 +201,10 @@ export default function Onboarding() {
       });
     }
 
-    // 4) Finalize — mark onboarding complete and head to the dashboard.
-    setCurrentStep(analysisSteps.length - 1);
-    await animateProgressTo(100);
-    try {
-      await update({ onboardingComplete: true });
-      await refresh();
-    } catch (e) {
-      console.error("Failed to finalize onboarding:", e);
-    }
+    // Hold on the completed UI for a moment so the user sees 100%, THEN
+    // navigate before flipping the DB flag — this avoids a flicker where the
+    // parent shell unmounts the onboarding page mid-transition.
+    await new Promise((r) => setTimeout(r, 600));
 
     if (scanSucceeded) {
       toast({
@@ -215,8 +213,15 @@ export default function Onboarding() {
       });
     }
 
-    await new Promise((r) => setTimeout(r, 400));
-    navigate("/dashboard");
+    navigate("/dashboard", { replace: true });
+
+    // Persist the completion flag after we've already moved off this page.
+    try {
+      await update({ onboardingComplete: true });
+      await refresh();
+    } catch (e) {
+      console.error("Failed to finalize onboarding:", e);
+    }
   };
 
   const isFormValid =

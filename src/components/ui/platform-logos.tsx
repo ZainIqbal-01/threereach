@@ -76,9 +76,3 @@ export function getPlatformLogo(platform: string, className = "h-5 w-5"): React.
   }
 }
 
-// Allow style prop on logos
-declare module "react" {
-  interface SVGProps<T> {
-    style?: React.CSSProperties;
-  }
-}

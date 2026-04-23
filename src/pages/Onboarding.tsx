@@ -180,7 +180,7 @@ export default function Onboarding() {
           score: rec.overallScore ?? null,
           query: formData.businessName,
           response_text: eng.snippet ?? null,
-          raw_results: eng as unknown as Record<string, unknown>,
+          raw_results: eng as unknown as Json,
         }));
         if (rows.length) {
           await supabase.from("scan_history").insert(rows);

@@ -145,11 +145,16 @@ export default function Overview() {
               <div className="flex items-center gap-4 md:gap-5">
                 <AgentBadge agent={agents.nova} size={48} showRole={false} />
                 <div className="leading-tight">
-                  <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
-                    Welcome back <span className="gradient-text">{businessName}</span>
+                  <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2 flex-wrap">
+                    {greeting}, <span className="gradient-text">{businessName}</span>
                   </h1>
-                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    Here's your AI visibility snapshot for today
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-success live-dot" />
+                      Live · {timeStr}
+                    </span>
+                    <span className="text-border">·</span>
+                    <span>Your AI visibility snapshot</span>
                   </p>
                 </div>
               </div>

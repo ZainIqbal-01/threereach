@@ -214,13 +214,43 @@ export default function Distribution() {
           
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">Topic / Key Message</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider block">Topic / Key Message</label>
+                <span className={`text-[10px] tabular-nums ${topic.length > TOPIC_MAX ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
+                  {topic.length}/{TOPIC_MAX}
+                </span>
+              </div>
               <Textarea
                 placeholder="e.g., How AI is changing business discovery, Why AEO matters in 2026, Our latest product features..."
                 value={topic}
-                onChange={(e) => setTopic(e.target.value)}
+                onChange={(e) => setTopic(e.target.value.slice(0, TOPIC_MAX))}
                 className="min-h-[80px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none"
               />
+            </div>
+
+            {/* Tone presets */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Tone</label>
+              <div className="flex flex-wrap gap-2">
+                {tones.map((t) => {
+                  const active = tone === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTone(t.id)}
+                      className={`text-[11px] font-medium px-3 py-1.5 rounded-full border transition-all ${
+                        active
+                          ? "bg-primary/10 border-primary/40 text-primary"
+                          : "bg-secondary/40 border-border/60 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                      }`}
+                    >
+                      <span className="mr-1">{t.emoji}</span>
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             
             <div>

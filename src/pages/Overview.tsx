@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RedditLogo } from "@/components/ui/platform-logos";
 import {
   Download,

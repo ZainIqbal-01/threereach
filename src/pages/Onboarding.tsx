@@ -51,7 +51,20 @@ export default function Onboarding() {
     const { name, value } = e.target;
     // Sanitize input on change (OWASP A03 - Injection prevention)
     const sanitized = sanitize(value);
-    setFormData((prev) => ({ ...prev, [name]: sanitized }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: sanitized };
+      // Auto-derive business name from URL when name is empty
+      if (name === "websiteUrl" && !prev.businessName.trim() && sanitized.trim()) {
+        try {
+          const u = sanitized.startsWith("http") ? sanitized : `https://${sanitized}`;
+          const host = new URL(u).hostname.replace(/^www\./, "").split(".")[0];
+          if (host && host.length > 1) {
+            next.businessName = host.charAt(0).toUpperCase() + host.slice(1);
+          }
+        } catch { /* ignore */ }
+      }
+      return next;
+    });
     // Clear error for this field when user starts typing
     setFormErrors((prev) => {
       const next = { ...prev };
@@ -59,6 +72,17 @@ export default function Onboarding() {
       return next;
     });
   }, []);
+
+  const fillExample = (example: { websiteUrl: string; businessName: string; description: string; services: string }) => {
+    setFormData(example);
+    setFormErrors({});
+  };
+
+  const examples = [
+    { label: "🚀 SaaS Startup", websiteUrl: "https://linear.app", businessName: "Linear", description: "Modern issue tracking and project management for product teams.", services: "Project Management, Issue Tracking, Roadmaps" },
+    { label: "💳 Fintech", websiteUrl: "https://stripe.com", businessName: "Stripe", description: "Payment infrastructure for the internet.", services: "Payments, Billing, Connect" },
+    { label: "🛒 E-commerce", websiteUrl: "https://shopify.com", businessName: "Shopify", description: "Commerce platform that lets anyone sell anywhere.", services: "Online Store, POS, Shipping" },
+  ];
 
   const handleAnalyze = async () => {
     // Validate all inputs before proceeding
@@ -255,6 +279,20 @@ export default function Onboarding() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Quick-fill examples */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mr-1">Try:</span>
+                      {examples.map((ex) => (
+                        <button
+                          key={ex.label}
+                          type="button"
+                          onClick={() => fillExample(ex)}
+                          className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/30 transition-all"
+                        >
+                          {ex.label}
+                        </button>
+                      ))}
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">

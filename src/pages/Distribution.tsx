@@ -82,8 +82,19 @@ export default function Distribution() {
   const [posts, setPosts] = useState<ContentPost[]>(initialPosts);
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
   const [topic, setTopic] = useState("");
+  const [tone, setTone] = useState<"professional" | "casual" | "thought-leader" | "data-driven">("professional");
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [showGenerator, setShowGenerator] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<ContentStatus | "all">("all");
+  const [filterPlatform, setFilterPlatform] = useState<Platform | "all">("all");
+  const TOPIC_MAX = 280;
+
+  const tones: Array<{ id: typeof tone; label: string; emoji: string }> = [
+    { id: "professional", label: "Professional", emoji: "💼" },
+    { id: "casual", label: "Casual", emoji: "💬" },
+    { id: "thought-leader", label: "Thought Leader", emoji: "🎯" },
+    { id: "data-driven", label: "Data-Driven", emoji: "📊" },
+  ];
 
   const generateContent = async (platform: Platform) => {
     if (!topic.trim()) {
@@ -103,7 +114,7 @@ export default function Distribution() {
 
     try {
       const { data, error } = await supabase.functions.invoke("generate-content", {
-        body: { topic, platform, brandName: businessName, industry: "" },
+        body: { topic, platform, brandName: businessName, industry: "", tone },
       });
 
       if (error) throw error;
@@ -203,13 +214,43 @@ export default function Distribution() {
           
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">Topic / Key Message</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider block">Topic / Key Message</label>
+                <span className={`text-[10px] tabular-nums ${topic.length > TOPIC_MAX ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
+                  {topic.length}/{TOPIC_MAX}
+                </span>
+              </div>
               <Textarea
                 placeholder="e.g., How AI is changing business discovery, Why AEO matters in 2026, Our latest product features..."
                 value={topic}
-                onChange={(e) => setTopic(e.target.value)}
+                onChange={(e) => setTopic(e.target.value.slice(0, TOPIC_MAX))}
                 className="min-h-[80px] rounded-xl border-border/60 bg-secondary/30 focus:bg-card resize-none"
               />
+            </div>
+
+            {/* Tone presets */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Tone</label>
+              <div className="flex flex-wrap gap-2">
+                {tones.map((t) => {
+                  const active = tone === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTone(t.id)}
+                      className={`text-[11px] font-medium px-3 py-1.5 rounded-full border transition-all ${
+                        active
+                          ? "bg-primary/10 border-primary/40 text-primary"
+                          : "bg-secondary/40 border-border/60 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                      }`}
+                    >
+                      <span className="mr-1">{t.emoji}</span>
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             
             <div>
@@ -283,16 +324,51 @@ export default function Distribution() {
 
       {/* Content Feed */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h2 className="text-sm font-semibold text-foreground">Content Feed</h2>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-success" /> Posted</span>
-            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-primary" /> Ready</span>
-            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-muted-foreground/30" /> Draft</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {(["all", "ready", "posted", "draft"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setFilterStatus(s)}
+                className={`text-[10px] font-medium px-2.5 py-1 rounded-full border transition-all capitalize ${
+                  filterStatus === s
+                    ? "bg-primary/10 border-primary/40 text-primary"
+                    : "bg-secondary/40 border-border/60 text-muted-foreground hover:border-primary/30"
+                }`}
+              >
+                {s === "all" ? `All (${posts.length})` : s}
+              </button>
+            ))}
+            <span className="mx-1 h-3 w-px bg-border" />
+            <button
+              onClick={() => setFilterPlatform("all")}
+              className={`text-[10px] font-medium px-2.5 py-1 rounded-full border transition-all ${
+                filterPlatform === "all"
+                  ? "bg-primary/10 border-primary/40 text-primary"
+                  : "bg-secondary/40 border-border/60 text-muted-foreground hover:border-primary/30"
+              }`}
+            >
+              All platforms
+            </button>
+            {platforms.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setFilterPlatform(p.id)}
+                title={p.name}
+                className={`flex h-6 w-6 items-center justify-center rounded-full border transition-all ${
+                  filterPlatform === p.id ? "border-primary/50 ring-2 ring-primary/20" : "border-border/60 opacity-60 hover:opacity-100"
+                }`}
+              >
+                {getPlatformLogo(p.id, "h-3 w-3")}
+              </button>
+            ))}
           </div>
         </div>
 
-        {posts.map((post) => {
+        {posts
+          .filter((p) => (filterStatus === "all" || p.status === filterStatus) && (filterPlatform === "all" || p.platform === filterPlatform))
+          .map((post) => {
           const platform = platforms.find(p => p.id === post.platform)!;
           const status = statusConfig[post.status];
           const StatusIcon = status.icon;

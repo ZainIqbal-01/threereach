@@ -94,6 +94,16 @@ export default function Overview() {
   const navigate = useNavigate();
   const businessName = useBusinessName();
   const [showBoost, setShowBoost] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const hour = now.getHours();
+  const greeting = hour < 5 ? "Working late" : hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : hour < 22 ? "Good evening" : "Working late";
+  const timeStr = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
   const exportDashboard = () => {
     const data = `Three Reach AI - Dashboard Export\nDate: ${new Date().toLocaleDateString()}\n\nVisibility Score: 42/100\nStatus: Weak\n\nEngine Status:\n- ChatGPT: Weak (34% confidence)\n- Gemini: Mentioned (67% confidence)\n- Perplexity: Not Found\n\nFootprint Progress: 40%\nDistribution: 18/60 sources live\nProof Records: 3 verified mentions`;

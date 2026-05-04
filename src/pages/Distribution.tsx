@@ -82,8 +82,19 @@ export default function Distribution() {
   const [posts, setPosts] = useState<ContentPost[]>(initialPosts);
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
   const [topic, setTopic] = useState("");
+  const [tone, setTone] = useState<"professional" | "casual" | "thought-leader" | "data-driven">("professional");
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [showGenerator, setShowGenerator] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<ContentStatus | "all">("all");
+  const [filterPlatform, setFilterPlatform] = useState<Platform | "all">("all");
+  const TOPIC_MAX = 280;
+
+  const tones: Array<{ id: typeof tone; label: string; emoji: string }> = [
+    { id: "professional", label: "Professional", emoji: "💼" },
+    { id: "casual", label: "Casual", emoji: "💬" },
+    { id: "thought-leader", label: "Thought Leader", emoji: "🎯" },
+    { id: "data-driven", label: "Data-Driven", emoji: "📊" },
+  ];
 
   const generateContent = async (platform: Platform) => {
     if (!topic.trim()) {

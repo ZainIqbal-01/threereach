@@ -114,7 +114,7 @@ export default function Distribution() {
 
     try {
       const { data, error } = await supabase.functions.invoke("generate-content", {
-        body: { topic, platform, brandName: businessName, industry: "" },
+        body: { topic, platform, brandName: businessName, industry: "", tone },
       });
 
       if (error) throw error;

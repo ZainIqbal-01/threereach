@@ -279,6 +279,20 @@ export default function Onboarding() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Quick-fill examples */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mr-1">Try:</span>
+                      {examples.map((ex) => (
+                        <button
+                          key={ex.label}
+                          type="button"
+                          onClick={() => fillExample(ex)}
+                          className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/30 transition-all"
+                        >
+                          {ex.label}
+                        </button>
+                      ))}
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">

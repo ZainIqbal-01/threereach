@@ -324,16 +324,51 @@ export default function Distribution() {
 
       {/* Content Feed */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h2 className="text-sm font-semibold text-foreground">Content Feed</h2>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-success" /> Posted</span>
-            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-primary" /> Ready</span>
-            <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-muted-foreground/30" /> Draft</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {(["all", "ready", "posted", "draft"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setFilterStatus(s)}
+                className={`text-[10px] font-medium px-2.5 py-1 rounded-full border transition-all capitalize ${
+                  filterStatus === s
+                    ? "bg-primary/10 border-primary/40 text-primary"
+                    : "bg-secondary/40 border-border/60 text-muted-foreground hover:border-primary/30"
+                }`}
+              >
+                {s === "all" ? `All (${posts.length})` : s}
+              </button>
+            ))}
+            <span className="mx-1 h-3 w-px bg-border" />
+            <button
+              onClick={() => setFilterPlatform("all")}
+              className={`text-[10px] font-medium px-2.5 py-1 rounded-full border transition-all ${
+                filterPlatform === "all"
+                  ? "bg-primary/10 border-primary/40 text-primary"
+                  : "bg-secondary/40 border-border/60 text-muted-foreground hover:border-primary/30"
+              }`}
+            >
+              All platforms
+            </button>
+            {platforms.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setFilterPlatform(p.id)}
+                title={p.name}
+                className={`flex h-6 w-6 items-center justify-center rounded-full border transition-all ${
+                  filterPlatform === p.id ? "border-primary/50 ring-2 ring-primary/20" : "border-border/60 opacity-60 hover:opacity-100"
+                }`}
+              >
+                {getPlatformLogo(p.id, "h-3 w-3")}
+              </button>
+            ))}
           </div>
         </div>
 
-        {posts.map((post) => {
+        {posts
+          .filter((p) => (filterStatus === "all" || p.status === filterStatus) && (filterPlatform === "all" || p.platform === filterPlatform))
+          .map((post) => {
           const platform = platforms.find(p => p.id === post.platform)!;
           const status = statusConfig[post.status];
           const StatusIcon = status.icon;

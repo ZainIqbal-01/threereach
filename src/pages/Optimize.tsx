@@ -72,6 +72,7 @@ export default function Optimize() {
     files: number;
     summary: string;
   } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [scanIdx, setScanIdx] = useState(0);
   const [demoMode, setDemoMode] = useState(false);
 

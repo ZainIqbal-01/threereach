@@ -67,7 +67,7 @@ export function LiveSignalsPanel({ brand, domain }: LiveSignalsPanelProps) {
         </div>
       )}
 
-      {data && (
+      {data && data.sources && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
             <Stat

@@ -45,10 +45,8 @@ describe("Overview page (smoke)", () => {
     localStorage.clear();
     // jsdom lacks URL.createObjectURL
     if (!URL.createObjectURL) {
-      // @ts-expect-error - jsdom shim
-      URL.createObjectURL = vi.fn(() => "blob:mock");
-      // @ts-expect-error - jsdom shim
-      URL.revokeObjectURL = vi.fn();
+      (URL as unknown as { createObjectURL: () => string }).createObjectURL = vi.fn(() => "blob:mock");
+      (URL as unknown as { revokeObjectURL: () => void }).revokeObjectURL = vi.fn();
     }
   });
 

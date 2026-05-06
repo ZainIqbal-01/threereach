@@ -329,6 +329,9 @@ export default function Overview() {
         ))}
       </div>
 
+      {/* Smart Recommendations */}
+      <NextBestAction score={42} footprintProgress={40} distributionLive={18} distributionTotal={60} />
+
       {/* Analytics Charts */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">

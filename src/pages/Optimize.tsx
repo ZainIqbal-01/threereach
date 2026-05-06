@@ -161,6 +161,23 @@ export default function Optimize() {
     setRunning(true);
     setStep("running");
     setError(null);
+
+    if (demoMode) {
+      setTimeout(() => {
+        const prNumber = Math.floor(100 + Math.random() * 900);
+        setResult({
+          pr_url: `https://github.com/${selectedRepo}/pull/${prNumber}`,
+          pr_number: prNumber,
+          files: scope.length + 2,
+          summary: `Demo: AI generated ${scope.length === 1 ? "1 optimization" : scope.length + " optimizations"} for ${selectedRepo}. In production, this opens a real PR on your GitHub repo with SEO, GEO, sitemap and performance fixes.`,
+        });
+        setStep("done");
+        setRunning(false);
+        toast({ title: "Demo PR ready", description: `Mock pull request #${prNumber}` });
+      }, 2200);
+      return;
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke("github-optimize", {
         body: {

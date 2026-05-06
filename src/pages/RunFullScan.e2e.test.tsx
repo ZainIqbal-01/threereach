@@ -83,10 +83,9 @@ describe("Run Full Scan — entry points (E2E smoke)", () => {
     const user = userEvent.setup();
     renderApp();
 
-    const recoSection = screen
-      .getByText(/Smart Recommendations/i)
-      .closest("div")!.parentElement!.parentElement!;
-    const tile = within(recoSection).getByText("Run Full Scan").closest("a")!;
+    // NextBestAction renders before the AI Engine Status section, so the first
+    // "Run Full Scan" occurrence belongs to the recommendation tile.
+    const tile = screen.getAllByText("Run Full Scan")[0].closest("a")!;
     await user.click(tile);
 
     expectScanPageReady();

@@ -157,6 +157,55 @@ export default function AIScan() {
         </Button>
       </div>
 
+      {/* In-page progress banner while scanning */}
+      {isScanning && (
+        <div role="status" aria-live="polite" data-testid="scan-progress" className="card-reach flex items-center gap-3 border-primary/30 bg-primary/5">
+          <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-foreground">Scanning AI engines…</p>
+            <p className="text-[11px] text-muted-foreground">Querying ChatGPT, Gemini, and Perplexity in parallel</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error banner with Retry */}
+      {scanError && !isScanning && (
+        <div role="alert" data-testid="scan-error" className="card-reach flex items-start gap-3 border-destructive/40 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">Scan failed</p>
+            <p className="text-[11px] text-muted-foreground break-words">{scanError}</p>
+          </div>
+          <Button onClick={runFullScan} size="sm" variant="outline" className="h-8 rounded-lg text-xs gap-1.5">
+            <RotateCcw className="h-3 w-3" /> Retry
+          </Button>
+        </div>
+      )}
+
+      {/* Per-engine partial errors */}
+      {engineErrors.length > 0 && !isScanning && (
+        <div role="alert" data-testid="engine-errors" className="card-reach border-warning/40 bg-warning/5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              <p className="text-xs font-semibold text-foreground">Partial results — {engineErrors.length} engine(s) failed</p>
+            </div>
+            <Button onClick={runFullScan} size="sm" variant="outline" className="h-7 rounded-lg text-[11px] gap-1.5">
+              <RotateCcw className="h-3 w-3" /> Retry
+            </Button>
+          </div>
+          <ul className="space-y-1 mt-2">
+            {engineErrors.map((e) => (
+              <li key={e.engine} className="text-[11px] text-muted-foreground flex items-center gap-2">
+                {getEngineLogo(e.engine, "h-3 w-3")}
+                <span className="font-medium text-foreground">{e.engine}:</span>
+                <span>{e.message}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Query Simulation */}
       <div className="card-reach">
         <h3 className="text-sm font-semibold text-foreground mb-1">Query Simulation</h3>

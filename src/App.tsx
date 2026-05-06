@@ -15,6 +15,7 @@ import Reports from "./pages/Reports";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
 import AgentCommandCenter from "./pages/AgentCommandCenter";
+import Optimize from "./pages/Optimize";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

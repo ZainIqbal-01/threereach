@@ -34,6 +34,7 @@ function ProtectedRoutes() {
         <Route path="/" element={<Overview />} />
         <Route path="/agents" element={<AgentCommandCenter />} />
         <Route path="/scan" element={<AIScan />} />
+        <Route path="/optimize" element={<Optimize />} />
         <Route path="/brand-intelligence" element={<BrandIntelligence />} />
         <Route path="/footprint" element={<BuildFootprint />} />
         <Route path="/distribution" element={<Distribution />} />

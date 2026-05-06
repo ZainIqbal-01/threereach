@@ -127,7 +127,27 @@ export default function Optimize() {
     }
   }
 
-  async function runOptimization() {
+  function startDemoConnect() {
+    setDemoMode(true);
+    setStep("scanning");
+    setScanIdx(0);
+    setUsername("demo-user");
+    let i = 0;
+    const tick = () => {
+      i += 1;
+      setScanIdx(i);
+      if (i < SCAN_STEPS.length - 1) {
+        setTimeout(tick, 700);
+      } else {
+        setTimeout(() => {
+          setRepos(MOCK_REPOS);
+          setSelectedRepo(MOCK_REPOS[0].full_name);
+          setStep("configure");
+        }, 600);
+      }
+    };
+    setTimeout(tick, 600);
+  }
     if (!selectedRepo) {
       toast({ title: "Select a repo", variant: "destructive" });
       return;

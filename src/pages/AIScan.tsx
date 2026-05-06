@@ -44,16 +44,38 @@ export default function AIScan() {
   const [viewingProof, setViewingProof] = useState<QueryResult | null>(null);
   const [filterEngine, setFilterEngine] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [engineErrors, setEngineErrors] = useState<{ engine: string; message: string }[]>([]);
+  // Track active toast id to prevent duplicate destructive toasts on rapid retries
+  const lastErrorToastRef = useRef<{ key: string; at: number } | null>(null);
+
+  const showErrorToast = (title: string, description: string) => {
+    const key = `${title}::${description}`;
+    const now = Date.now();
+    if (lastErrorToastRef.current && lastErrorToastRef.current.key === key && now - lastErrorToastRef.current.at < 1500) {
+      return;
+    }
+    lastErrorToastRef.current = { key, at: now };
+    toast({ title, description, variant: "destructive" });
+  };
 
   const runFullScan = async () => {
     setIsScanning(true);
+    setScanError(null);
+    setEngineErrors([]);
     toast({ title: "🔍 Full scan initiated", description: "AI is scanning all engines for brand mentions..." });
     try {
       const { data, error } = await supabase.functions.invoke("ai-scan", {
         body: { query: "Top companies in our industry", brandName: businessName, engines: ["ChatGPT", "Gemini", "Perplexity"] },
       });
       if (error) throw error;
-      const newQueries: QueryResult[] = (data.results || []).map((r: any, i: number) => ({
+      const rawResults: any[] = data?.results || [];
+      const failed = rawResults.filter((r) => r.error || r.status === "error");
+      const ok = rawResults.filter((r) => !r.error && r.status !== "error");
+      if (failed.length) {
+        setEngineErrors(failed.map((r) => ({ engine: r.engine || "Unknown", message: r.error || "Engine failed" })));
+      }
+      const newQueries: QueryResult[] = ok.map((r: any, i: number) => ({
         id: Date.now() + i, query: "Full scan — industry visibility check", engine: r.engine,
         status: r.status, position: r.position || null,
         date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
@@ -61,10 +83,17 @@ export default function AIScan() {
       }));
       setQueries(prev => [...newQueries, ...prev]);
       const mentioned = newQueries.filter((r: QueryResult) => r.status === "mentioned").length;
-      toast({ title: "✅ Scan complete!", description: `Found ${mentioned} mention(s) across ${newQueries.length} engines` });
+      toast({
+        title: failed.length ? "⚠️ Scan completed with errors" : "✅ Scan complete!",
+        description: failed.length
+          ? `${ok.length} engine(s) succeeded, ${failed.length} failed`
+          : `Found ${mentioned} mention(s) across ${newQueries.length} engines`,
+      });
     } catch (err: any) {
       console.error("Scan error:", err);
-      toast({ title: "Scan failed", description: err?.message || "Could not complete scan", variant: "destructive" });
+      const message = err?.message || "Could not complete scan";
+      setScanError(message);
+      showErrorToast("Scan failed", message);
     } finally {
       setIsScanning(false);
     }

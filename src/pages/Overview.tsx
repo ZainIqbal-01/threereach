@@ -96,6 +96,7 @@ const categoryIcon = (item: ActivityItem) => {
 export default function Overview() {
   const navigate = useNavigate();
   const businessName = useBusinessName();
+  const { profile } = useBusinessProfile();
   const [showBoost, setShowBoost] = useState(false);
   const [now, setNow] = useState(() => new Date());
 

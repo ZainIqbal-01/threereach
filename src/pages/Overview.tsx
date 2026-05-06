@@ -27,6 +27,7 @@ import { ProofCount } from "@/components/dashboard/ProofCount";
 import { VisibilityTrendChart } from "@/components/dashboard/VisibilityTrendChart";
 import { EngineBreakdownChart } from "@/components/dashboard/EngineBreakdownChart";
 import { ContentActivityChart } from "@/components/dashboard/ContentActivityChart";
+import { NextBestAction } from "@/components/dashboard/NextBestAction";
 import { AgentBadge } from "@/components/agents/AgentBadge";
 import { AgentHub } from "@/components/agents/AgentHub";
 import { agents } from "@/components/agents/agentRegistry";
@@ -327,6 +328,9 @@ export default function Overview() {
           </Link>
         ))}
       </div>
+
+      {/* Smart Recommendations */}
+      <NextBestAction score={42} footprintProgress={40} distributionLive={18} distributionTotal={60} />
 
       {/* Analytics Charts */}
       <div className="space-y-3">

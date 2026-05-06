@@ -157,6 +157,96 @@ export type Database = {
           },
         ]
       }
+      github_connections: {
+        Row: {
+          created_at: string
+          default_branch: string | null
+          default_repo: string | null
+          encrypted_token: string
+          github_username: string | null
+          id: string
+          scopes: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_branch?: string | null
+          default_repo?: string | null
+          encrypted_token: string
+          github_username?: string | null
+          id?: string
+          scopes?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_branch?: string | null
+          default_repo?: string | null
+          encrypted_token?: string
+          github_username?: string | null
+          id?: string
+          scopes?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      optimization_runs: {
+        Row: {
+          branch: string
+          created_at: string
+          diff_preview: Json | null
+          error: string | null
+          files_changed: number | null
+          id: string
+          pr_number: number | null
+          pr_url: string | null
+          repo: string
+          scope: string[]
+          status: string
+          summary: string | null
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          branch: string
+          created_at?: string
+          diff_preview?: Json | null
+          error?: string | null
+          files_changed?: number | null
+          id?: string
+          pr_number?: number | null
+          pr_url?: string | null
+          repo: string
+          scope?: string[]
+          status?: string
+          summary?: string | null
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          diff_preview?: Json | null
+          error?: string | null
+          files_changed?: number | null
+          id?: string
+          pr_number?: number | null
+          pr_url?: string | null
+          repo?: string
+          scope?: string[]
+          status?: string
+          summary?: string | null
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

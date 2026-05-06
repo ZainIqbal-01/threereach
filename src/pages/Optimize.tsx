@@ -148,6 +148,8 @@ export default function Optimize() {
     };
     setTimeout(tick, 600);
   }
+
+  async function runOptimization() {
     if (!selectedRepo) {
       toast({ title: "Select a repo", variant: "destructive" });
       return;

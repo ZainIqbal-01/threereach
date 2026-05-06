@@ -118,10 +118,7 @@ describe("Run Full Scan — entry points (E2E smoke)", () => {
     renderApp();
 
     // Navigate via NextBestAction tile (entry point #1)
-    const recoSection = screen
-      .getByText(/Smart Recommendations/i)
-      .closest("div")!.parentElement!.parentElement!;
-    await user.click(within(recoSection).getByText("Run Full Scan").closest("a")!);
+    await user.click(screen.getAllByText("Run Full Scan")[0].closest("a")!);
     expectScanPageReady();
 
     // Now actually run the scan

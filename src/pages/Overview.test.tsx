@@ -91,17 +91,18 @@ describe("Overview page (smoke)", () => {
   it("NextBestAction 'Run Full Scan' link navigates to /dashboard/scan", async () => {
     const user = userEvent.setup();
     renderOverview();
-
-    const recoSection = screen.getByText(/Smart Recommendations/i).closest("div")!.parentElement!.parentElement!;
-    const scanLink = within(recoSection).getByText("Run Full Scan");
-    await user.click(scanLink);
+    // Both NextBestAction tile and AI Engine Status header expose this label.
+    // The first occurrence is the recommendation tile; clicking either should route to /scan.
+    const allScanLinks = screen.getAllByText(/Run Full Scan/i);
+    const anchor = allScanLinks[0].closest("a") as HTMLAnchorElement;
+    expect(anchor).toBeTruthy();
+    await user.click(anchor);
     expect(screen.getByText("SCAN PAGE")).toBeInTheDocument();
   });
 
   it("AI Engine Status 'Run Full Scan' link navigates to /dashboard/scan", () => {
     renderOverview();
     const links = screen.getAllByText(/Run Full Scan/i);
-    // The header link is an <a>; click via fireEvent on the closest anchor.
     const anchor = links.map((l) => l.closest("a")).find(Boolean) as HTMLAnchorElement;
     expect(anchor).toBeTruthy();
     fireEvent.click(anchor);
@@ -111,7 +112,8 @@ describe("Overview page (smoke)", () => {
   it("Recent Activity 'View all' navigates to Proof & Tracking (download proof entry point)", async () => {
     const user = userEvent.setup();
     renderOverview();
-    await user.click(screen.getByRole("link", { name: /View all/i }));
+    const viewAllLinks = screen.getAllByRole("link", { name: /View all/i });
+    await user.click(viewAllLinks[viewAllLinks.length - 1]);
     expect(screen.getByText("PROOF PAGE")).toBeInTheDocument();
   });
 

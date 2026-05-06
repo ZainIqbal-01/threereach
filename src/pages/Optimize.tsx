@@ -20,7 +20,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBusinessName } from "@/hooks/useBusinessName";
 import { toast } from "@/hooks/use-toast";
 
-type Step = "connect" | "configure" | "running" | "done";
+type Step = "connect" | "scanning" | "configure" | "running" | "done";
+
+const MOCK_REPOS: Repo[] = [
+  { full_name: "acme/marketing-site", private: false, default_branch: "main" },
+  { full_name: "acme/landing-page", private: false, default_branch: "main" },
+  { full_name: "acme/docs", private: true, default_branch: "main" },
+  { full_name: "acme/blog", private: false, default_branch: "main" },
+];
+
+const SCAN_STEPS = [
+  "Authenticating with GitHub…",
+  "Fetching your repositories…",
+  "Analyzing repo structure & frameworks…",
+  "Detecting SEO/GEO opportunities…",
+  "Ready to optimize.",
+];
 
 interface Repo {
   full_name: string;

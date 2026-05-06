@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, Clock, Eye, Camera, ExternalLink, Filter, Zap, RefreshCw, X, ChevronDown } from "lucide-react";
+import { useRef, useState } from "react";
+import { AlertTriangle, Search, Clock, Eye, Camera, ExternalLink, Filter, Zap, RefreshCw, RotateCcw, X, ChevronDown } from "lucide-react";
 import { getEngineLogo } from "@/components/ui/ai-engine-logos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,16 +44,38 @@ export default function AIScan() {
   const [viewingProof, setViewingProof] = useState<QueryResult | null>(null);
   const [filterEngine, setFilterEngine] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [engineErrors, setEngineErrors] = useState<{ engine: string; message: string }[]>([]);
+  // Track active toast id to prevent duplicate destructive toasts on rapid retries
+  const lastErrorToastRef = useRef<{ key: string; at: number } | null>(null);
+
+  const showErrorToast = (title: string, description: string) => {
+    const key = `${title}::${description}`;
+    const now = Date.now();
+    if (lastErrorToastRef.current && lastErrorToastRef.current.key === key && now - lastErrorToastRef.current.at < 1500) {
+      return;
+    }
+    lastErrorToastRef.current = { key, at: now };
+    toast({ title, description, variant: "destructive" });
+  };
 
   const runFullScan = async () => {
     setIsScanning(true);
+    setScanError(null);
+    setEngineErrors([]);
     toast({ title: "🔍 Full scan initiated", description: "AI is scanning all engines for brand mentions..." });
     try {
       const { data, error } = await supabase.functions.invoke("ai-scan", {
         body: { query: "Top companies in our industry", brandName: businessName, engines: ["ChatGPT", "Gemini", "Perplexity"] },
       });
       if (error) throw error;
-      const newQueries: QueryResult[] = (data.results || []).map((r: any, i: number) => ({
+      const rawResults: any[] = data?.results || [];
+      const failed = rawResults.filter((r) => r.error || r.status === "error");
+      const ok = rawResults.filter((r) => !r.error && r.status !== "error");
+      if (failed.length) {
+        setEngineErrors(failed.map((r) => ({ engine: r.engine || "Unknown", message: r.error || "Engine failed" })));
+      }
+      const newQueries: QueryResult[] = ok.map((r: any, i: number) => ({
         id: Date.now() + i, query: "Full scan — industry visibility check", engine: r.engine,
         status: r.status, position: r.position || null,
         date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
@@ -61,10 +83,17 @@ export default function AIScan() {
       }));
       setQueries(prev => [...newQueries, ...prev]);
       const mentioned = newQueries.filter((r: QueryResult) => r.status === "mentioned").length;
-      toast({ title: "✅ Scan complete!", description: `Found ${mentioned} mention(s) across ${newQueries.length} engines` });
+      toast({
+        title: failed.length ? "⚠️ Scan completed with errors" : "✅ Scan complete!",
+        description: failed.length
+          ? `${ok.length} engine(s) succeeded, ${failed.length} failed`
+          : `Found ${mentioned} mention(s) across ${newQueries.length} engines`,
+      });
     } catch (err: any) {
       console.error("Scan error:", err);
-      toast({ title: "Scan failed", description: err?.message || "Could not complete scan", variant: "destructive" });
+      const message = err?.message || "Could not complete scan";
+      setScanError(message);
+      showErrorToast("Scan failed", message);
     } finally {
       setIsScanning(false);
     }
@@ -127,6 +156,55 @@ export default function AIScan() {
           {isScanning ? "Scanning..." : "Run New Scan"}
         </Button>
       </div>
+
+      {/* In-page progress banner while scanning */}
+      {isScanning && (
+        <div role="status" aria-live="polite" data-testid="scan-progress" className="card-reach flex items-center gap-3 border-primary/30 bg-primary/5">
+          <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-foreground">Scanning AI engines…</p>
+            <p className="text-[11px] text-muted-foreground">Querying ChatGPT, Gemini, and Perplexity in parallel</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error banner with Retry */}
+      {scanError && !isScanning && (
+        <div role="alert" data-testid="scan-error" className="card-reach flex items-start gap-3 border-destructive/40 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">Scan failed</p>
+            <p className="text-[11px] text-muted-foreground break-words">{scanError}</p>
+          </div>
+          <Button onClick={runFullScan} size="sm" variant="outline" className="h-8 rounded-lg text-xs gap-1.5">
+            <RotateCcw className="h-3 w-3" /> Retry
+          </Button>
+        </div>
+      )}
+
+      {/* Per-engine partial errors */}
+      {engineErrors.length > 0 && !isScanning && (
+        <div role="alert" data-testid="engine-errors" className="card-reach border-warning/40 bg-warning/5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              <p className="text-xs font-semibold text-foreground">Partial results — {engineErrors.length} engine(s) failed</p>
+            </div>
+            <Button onClick={runFullScan} size="sm" variant="outline" className="h-7 rounded-lg text-[11px] gap-1.5">
+              <RotateCcw className="h-3 w-3" /> Retry
+            </Button>
+          </div>
+          <ul className="space-y-1 mt-2">
+            {engineErrors.map((e) => (
+              <li key={e.engine} className="text-[11px] text-muted-foreground flex items-center gap-2">
+                {getEngineLogo(e.engine, "h-3 w-3")}
+                <span className="font-medium text-foreground">{e.engine}:</span>
+                <span>{e.message}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Query Simulation */}
       <div className="card-reach">

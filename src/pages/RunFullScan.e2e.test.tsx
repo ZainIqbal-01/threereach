@@ -30,7 +30,8 @@ vi.mock("@/hooks/use-toast", () => ({
   useToast: () => ({ toast: toastSpy }),
 }));
 
-const invokeSpy = vi.fn(async (_name: string, _opts?: unknown) => ({
+type ScanResp = { data: { results: Record<string, unknown>[] } | null; error: { message: string } | null };
+const invokeSpy = vi.fn<(name: string, opts?: unknown) => Promise<ScanResp>>(async () => ({
   data: {
     results: [
       { engine: "ChatGPT", status: "mentioned", position: 2, context: "ctx" },
@@ -38,7 +39,7 @@ const invokeSpy = vi.fn(async (_name: string, _opts?: unknown) => ({
       { engine: "Perplexity", status: "not_found", position: null, context: null },
     ],
   },
-  error: null as null | { message: string },
+  error: null,
 }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { functions: { invoke: (name: string, opts?: unknown) => invokeSpy(name, opts) } },
@@ -179,5 +180,130 @@ describe("Run Full Scan — entry points (E2E smoke)", () => {
       const titles = toastSpy.mock.calls.map((c) => (c[0] as { title?: string })?.title || "");
       expect(titles.some((t) => /scan complete/i.test(t))).toBe(true);
     });
+  });
+
+  it("shows a loading/progress state during scan and clears it on failure", async () => {
+    const user = userEvent.setup();
+    // Hold the invoke pending so we can inspect the loading UI.
+    let resolveInvoke: (v: { data: unknown; error: { message: string } | null }) => void;
+    invokeSpy.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveInvoke = resolve as typeof resolveInvoke;
+        })
+    );
+
+    renderApp();
+    await user.click(screen.getAllByText("Run Full Scan")[0].closest("a")!);
+    expectScanPageReady();
+    await user.click(screen.getByRole("button", { name: /Run New Scan/i }));
+
+    // Loading state visible
+    expect(screen.getByTestId("scan-progress")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Scanning/i })).toBeDisabled();
+
+    // Resolve with an upstream error
+    resolveInvoke!({ data: null, error: { message: "boom" } });
+
+    // Progress clears, error banner appears, page is interactive again
+    await waitFor(() => {
+      expect(screen.queryByTestId("scan-progress")).not.toBeInTheDocument();
+      expect(screen.getByTestId("scan-error")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Run New Scan/i })).not.toBeDisabled();
+    });
+  });
+
+  it("does not duplicate the destructive toast on rapid repeated failures", async () => {
+    const user = userEvent.setup();
+    invokeSpy.mockImplementation(async () => ({
+      data: null as unknown as { results: never[] },
+      error: { message: "Same error" },
+    }));
+
+    renderApp();
+    await user.click(screen.getAllByText("Run Full Scan")[0].closest("a")!);
+    await user.click(screen.getByRole("button", { name: /Run New Scan/i }));
+    await waitFor(() => expect(screen.getByTestId("scan-error")).toBeInTheDocument());
+
+    // Click Retry twice in quick succession
+    const retryBtns = screen.getAllByRole("button", { name: /Retry/i });
+    await user.click(retryBtns[0]);
+    await waitFor(() => expect(screen.getByTestId("scan-error")).toBeInTheDocument());
+    await user.click(screen.getAllByRole("button", { name: /Retry/i })[0]);
+    await waitFor(() => expect(invokeSpy).toHaveBeenCalledTimes(3));
+
+    // Only one destructive toast for "Scan failed" + "Same error" combo
+    const destructive = toastSpy.mock.calls
+      .map((c) => c[0] as { title?: string; description?: string; variant?: string })
+      .filter((t) => t.variant === "destructive" && /scan failed/i.test(t.title || "") && /Same error/.test(t.description || ""));
+    expect(destructive.length).toBe(1);
+
+    invokeSpy.mockReset();
+  });
+
+  it("handles a network/fetch rejection and keeps the page usable", async () => {
+    const user = userEvent.setup();
+    invokeSpy.mockImplementationOnce(async () => {
+      throw new TypeError("Failed to fetch");
+    });
+
+    renderApp();
+    await user.click(screen.getAllByText("Run Full Scan")[0].closest("a")!);
+    await user.click(screen.getByRole("button", { name: /Run New Scan/i }));
+
+    await waitFor(() => {
+      const destructive = toastSpy.mock.calls.find((c) => {
+        const t = c[0] as { title?: string; variant?: string; description?: string };
+        return t.variant === "destructive" && /scan failed/i.test(t.title || "") && /failed to fetch/i.test(t.description || "");
+      });
+      expect(destructive).toBeTruthy();
+    });
+
+    expect(screen.getByTestId("scan-error")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Run New Scan/i })).not.toBeDisabled();
+    expect(screen.getByPlaceholderText(/Enter a query to test/i)).toBeInTheDocument();
+  });
+
+  it("renders successful prompts + history when ai-scan returns mixed (partial) engine results", async () => {
+    const user = userEvent.setup();
+    invokeSpy.mockImplementationOnce(async () => ({
+      data: {
+        results: [
+          { engine: "ChatGPT", status: "mentioned", position: 1, context: "Top pick: brand X" },
+          { engine: "Gemini", error: "Rate limited" },
+          { engine: "Perplexity", status: "weak", position: 8, context: "marginal mention" },
+        ],
+      },
+      error: null,
+    }));
+
+    renderApp();
+    await user.click(screen.getAllByText("Run Full Scan")[0].closest("a")!);
+    await user.click(screen.getByRole("button", { name: /Run New Scan/i }));
+
+    // Per-engine error banner present
+    const errBanner = await screen.findByTestId("engine-errors");
+    expect(errBanner).toHaveTextContent(/Gemini/i);
+    expect(errBanner).toHaveTextContent(/Rate limited/i);
+
+    // Successful results still rendered in history (new "Full scan" rows)
+    await waitFor(() => {
+      const fullScanRows = screen.getAllByText(/Full scan — industry visibility check/i);
+      expect(fullScanRows.length).toBeGreaterThanOrEqual(2);
+    });
+
+    // Ranking position from successful engine visible (#1)
+    expect(screen.getByText("#1")).toBeInTheDocument();
+
+    // Toast announces partial completion (not a destructive failure)
+    const partialToast = toastSpy.mock.calls.find((c) =>
+      /completed with errors/i.test((c[0] as { title?: string }).title || "")
+    );
+    expect(partialToast).toBeTruthy();
+
+    // Retry button works from the partial-errors banner
+    const retry = within(errBanner).getByRole("button", { name: /Retry/i });
+    await user.click(retry);
+    await waitFor(() => expect(invokeSpy).toHaveBeenCalledTimes(2));
   });
 });

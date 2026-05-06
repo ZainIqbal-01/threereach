@@ -30,9 +30,10 @@ describe("validateOnboardingForm", () => {
     expect(r.valid).toBe(true);
   });
 
-  it("rejects malformed URLs", () => {
-    const r = validateOnboardingForm({ ...base, websiteUrl: "ht!tp://" });
+  it("rejects URLs over the length cap", () => {
+    const r = validateOnboardingForm({ ...base, websiteUrl: "a".repeat(501) });
     expect(r.valid).toBe(false);
+    expect(r.errors.websiteUrl).toMatch(/500/);
   });
 
   it("enforces description length cap", () => {

@@ -14,6 +14,7 @@ import {
   Zap,
   Sparkles,
   Bot,
+  GitPullRequest,
 } from "lucide-react";
 import { StarAgent } from "@/components/StarAgent";
 import { getAgentForRoute } from "@/components/agents/agentRegistry";

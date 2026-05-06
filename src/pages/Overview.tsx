@@ -28,6 +28,8 @@ import { VisibilityTrendChart } from "@/components/dashboard/VisibilityTrendChar
 import { EngineBreakdownChart } from "@/components/dashboard/EngineBreakdownChart";
 import { ContentActivityChart } from "@/components/dashboard/ContentActivityChart";
 import { NextBestAction } from "@/components/dashboard/NextBestAction";
+import { LiveSignalsPanel } from "@/components/dashboard/LiveSignalsPanel";
+import { useBusinessProfile } from "@/hooks/useBusinessProfile";
 import { AgentBadge } from "@/components/agents/AgentBadge";
 import { AgentHub } from "@/components/agents/AgentHub";
 import { agents } from "@/components/agents/agentRegistry";

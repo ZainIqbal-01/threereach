@@ -141,4 +141,43 @@ describe("Run Full Scan — entry points (E2E smoke)", () => {
       expect(titles.some((t) => /scan complete/i.test(t))).toBe(true);
     });
   });
+
+  it("shows an error toast and keeps the scan page usable when ai-scan fails", async () => {
+    const user = userEvent.setup();
+    // One-shot failure for the next invoke call
+    invokeSpy.mockImplementationOnce(async () => ({
+      data: null as unknown as { results: never[] },
+      error: { message: "Gemini gateway timed out" },
+    }));
+
+    renderApp();
+    await user.click(screen.getAllByText("Run Full Scan")[0].closest("a")!);
+    expectScanPageReady();
+
+    const runBtn = screen.getByRole("button", { name: /Run New Scan/i });
+    await user.click(runBtn);
+
+    // Error toast surfaced with the upstream message
+    await waitFor(() => {
+      const calls = toastSpy.mock.calls.map((c) => c[0] as { title?: string; description?: string; variant?: string });
+      const failure = calls.find((c) => /scan failed/i.test(c.title || ""));
+      expect(failure).toBeTruthy();
+      expect(failure?.variant).toBe("destructive");
+      expect(failure?.description).toMatch(/Gemini gateway timed out/i);
+    });
+
+    // Page is still functional: button re-enabled, simulator + history still rendered
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Run New Scan/i })).not.toBeDisabled();
+    });
+    expect(screen.getByPlaceholderText(/Enter a query to test/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scan History/i)).toBeInTheDocument();
+
+    // And a follow-up scan can succeed (default mock implementation)
+    await user.click(screen.getByRole("button", { name: /Run New Scan/i }));
+    await waitFor(() => {
+      const titles = toastSpy.mock.calls.map((c) => (c[0] as { title?: string })?.title || "");
+      expect(titles.some((t) => /scan complete/i.test(t))).toBe(true);
+    });
+  });
 });

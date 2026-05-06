@@ -41,7 +41,7 @@ const invokeSpy = vi.fn(async () => ({
   error: null,
 }));
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { functions: { invoke: (...a: unknown[]) => invokeSpy(...a) } },
+  supabase: { functions: { invoke: (...a: [string, unknown?]) => invokeSpy(...a) } },
 }));
 
 // ── Harness ─────────────────────────────────────────────────────────────────

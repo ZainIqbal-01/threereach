@@ -231,9 +231,11 @@ export default function Optimize() {
       {/* Step indicator */}
       <div className="flex items-center gap-2 text-[11px]">
         {(["connect", "configure", "running", "done"] as Step[]).map((s, i) => {
-          const idx = ["connect", "configure", "running", "done"].indexOf(step);
-          const active = i === idx;
-          const done = i < idx || step === "done";
+          const order = ["connect", "configure", "running", "done"];
+          // map "scanning" to the connect index for display
+          const currentIdx = step === "scanning" ? 0 : order.indexOf(step);
+          const active = i === currentIdx;
+          const done = i < currentIdx || step === "done";
           return (
             <div key={s} className="flex items-center gap-2">
               <div

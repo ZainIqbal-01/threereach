@@ -73,17 +73,19 @@ export function NextBestAction({
       });
     }
 
-    items.push({
-      id: "intel",
-      priority: "low",
-      icon: Brain,
-      title: "Benchmark against competitors",
-      description: "See how 3 top competitors rank in AI engines & where you can outperform.",
-      impact: "Strategic",
-      cta: "View Intelligence",
-      href: "/dashboard/brand-intelligence",
-      accent: "success",
-    });
+    if (items.length < 3) {
+      items.push({
+        id: "intel",
+        priority: "low",
+        icon: Brain,
+        title: "Benchmark against competitors",
+        description: "See how 3 top competitors rank in AI engines & where you can outperform.",
+        impact: "Strategic",
+        cta: "View Intelligence",
+        href: "/dashboard/brand-intelligence",
+        accent: "success",
+      });
+    }
 
     return items.slice(0, 3);
   }, [score, footprintProgress, distributionLive, distributionTotal]);

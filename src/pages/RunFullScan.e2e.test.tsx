@@ -30,7 +30,7 @@ vi.mock("@/hooks/use-toast", () => ({
   useToast: () => ({ toast: toastSpy }),
 }));
 
-const invokeSpy = vi.fn(async () => ({
+const invokeSpy = vi.fn(async (_name: string, _opts?: unknown) => ({
   data: {
     results: [
       { engine: "ChatGPT", status: "mentioned", position: 2, context: "ctx" },
@@ -38,10 +38,10 @@ const invokeSpy = vi.fn(async () => ({
       { engine: "Perplexity", status: "not_found", position: null, context: null },
     ],
   },
-  error: null,
+  error: null as null | { message: string },
 }));
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { functions: { invoke: (...a: [string, unknown?]) => invokeSpy(...a) } },
+  supabase: { functions: { invoke: (name: string, opts?: unknown) => invokeSpy(name, opts) } },
 }));
 
 // ── Harness ─────────────────────────────────────────────────────────────────

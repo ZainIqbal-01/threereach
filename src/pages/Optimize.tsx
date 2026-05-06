@@ -260,58 +260,118 @@ export default function Optimize() {
 
       {/* Step 1: Connect */}
       {step === "connect" && (
-        <div className="card-reach space-y-4">
-          <div className="flex items-center gap-2">
-            <Github className="h-4 w-4" />
-            <h3 className="text-sm font-semibold text-foreground">Connect GitHub</h3>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Paste a fine-grained Personal Access Token. We use it only to read your repo and open a
-            pull request — token is stored encrypted and never leaves your account.
-          </p>
-
-          <div className="rounded-xl border border-border/60 bg-secondary/30 p-3 space-y-1.5">
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Required token permissions
+        <div className="space-y-4">
+          {/* One-click demo */}
+          <div className="card-reach space-y-3 border-primary/40 bg-gradient-to-br from-primary/5 to-transparent">
+            <div className="flex items-center gap-2">
+              <Github className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Quick connect (Demo)</h3>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">RECOMMENDED</span>
             </div>
-            <ul className="text-[11px] text-muted-foreground list-disc pl-5 space-y-0.5">
-              <li>Repository → <strong>Contents: Read &amp; Write</strong></li>
-              <li>Repository → <strong>Pull requests: Read &amp; Write</strong></li>
-              <li>Repository → <strong>Metadata: Read</strong> (default)</li>
-            </ul>
-            <a
-              href="https://github.com/settings/personal-access-tokens/new"
-              target="_blank"
-              rel="noreferrer"
-              className="text-[11px] text-primary inline-flex items-center gap-1 mt-1"
+            <p className="text-xs text-muted-foreground">
+              Try the full optimizer flow with a simulated GitHub account and mock repositories. No token required.
+            </p>
+            <Button
+              onClick={startDemoConnect}
+              className="w-full h-11 rounded-xl gap-2 btn-primary-glow"
             >
-              Create token on GitHub <ExternalLink className="h-3 w-3" />
-            </a>
+              <Github className="h-4 w-4" /> Connect GitHub (Demo)
+            </Button>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="pat" className="text-xs">GitHub Personal Access Token</Label>
-            <div className="relative">
-              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                id="pat"
-                type="password"
-                placeholder="github_pat_..."
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                className="pl-9 h-11 rounded-xl"
-              />
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">or use a real token</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
+          <div className="card-reach space-y-4">
+            <div className="flex items-center gap-2">
+              <Github className="h-4 w-4" />
+              <h3 className="text-sm font-semibold text-foreground">Connect with Personal Access Token</h3>
             </div>
-          </div>
+            <p className="text-xs text-muted-foreground">
+              Paste a fine-grained PAT. We use it only to read your repo and open a pull request —
+              stored encrypted and never leaves your account.
+            </p>
 
-          <Button
-            onClick={saveToken}
-            disabled={!token.trim() || savingToken}
-            className="w-full h-11 rounded-xl gap-2"
-          >
-            {savingToken ? <Loader2 className="h-4 w-4 animate-spin" /> : <Github className="h-4 w-4" />}
-            {savingToken ? "Verifying..." : "Connect repository"}
-          </Button>
+            <div className="rounded-xl border border-border/60 bg-secondary/30 p-3 space-y-1.5">
+              <div className="flex items-center gap-2 text-[11px] font-semibold text-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Required token permissions
+              </div>
+              <ul className="text-[11px] text-muted-foreground list-disc pl-5 space-y-0.5">
+                <li>Repository → <strong>Contents: Read &amp; Write</strong></li>
+                <li>Repository → <strong>Pull requests: Read &amp; Write</strong></li>
+                <li>Repository → <strong>Metadata: Read</strong> (default)</li>
+              </ul>
+              <a
+                href="https://github.com/settings/personal-access-tokens/new"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] text-primary inline-flex items-center gap-1 mt-1"
+              >
+                Create token on GitHub <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pat" className="text-xs">GitHub Personal Access Token</Label>
+              <div className="relative">
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  id="pat"
+                  type="password"
+                  placeholder="github_pat_..."
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  className="pl-9 h-11 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <Button
+              onClick={saveToken}
+              disabled={!token.trim() || savingToken}
+              variant="outline"
+              className="w-full h-11 rounded-xl gap-2"
+            >
+              {savingToken ? <Loader2 className="h-4 w-4 animate-spin" /> : <Github className="h-4 w-4" />}
+              {savingToken ? "Verifying..." : "Connect with token"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 1b: Scanning animation (after demo connect) */}
+      {step === "scanning" && (
+        <div className="card-reach py-10 space-y-5">
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Github className="h-8 w-8 text-primary" />
+              </div>
+              <div className="absolute -inset-2 rounded-3xl border-2 border-primary/30 animate-ping" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Scanning your GitHub workspace…</p>
+          </div>
+          <div className="max-w-sm mx-auto space-y-2">
+            {SCAN_STEPS.map((label, i) => {
+              const done = i < scanIdx;
+              const active = i === scanIdx;
+              return (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  {done ? (
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                  ) : active ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border border-border shrink-0" />
+                  )}
+                  <span className={done || active ? "text-foreground" : "text-muted-foreground"}>{label}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

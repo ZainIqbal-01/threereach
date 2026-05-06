@@ -335,6 +335,9 @@ export default function Overview() {
       {/* Smart Recommendations */}
       <NextBestAction score={42} footprintProgress={40} distributionLive={18} distributionTotal={60} />
 
+      {/* Live Public Signals (real keyless APIs + AI scoring) */}
+      <LiveSignalsPanel brand={businessName} domain={profile?.websiteUrl} />
+
       {/* Analytics Charts */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">

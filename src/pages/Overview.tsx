@@ -28,6 +28,8 @@ import { VisibilityTrendChart } from "@/components/dashboard/VisibilityTrendChar
 import { EngineBreakdownChart } from "@/components/dashboard/EngineBreakdownChart";
 import { ContentActivityChart } from "@/components/dashboard/ContentActivityChart";
 import { NextBestAction } from "@/components/dashboard/NextBestAction";
+import { LiveSignalsPanel } from "@/components/dashboard/LiveSignalsPanel";
+import { useBusinessProfile } from "@/hooks/useBusinessProfile";
 import { AgentBadge } from "@/components/agents/AgentBadge";
 import { AgentHub } from "@/components/agents/AgentHub";
 import { agents } from "@/components/agents/agentRegistry";
@@ -94,6 +96,7 @@ const categoryIcon = (item: ActivityItem) => {
 export default function Overview() {
   const navigate = useNavigate();
   const businessName = useBusinessName();
+  const { profile } = useBusinessProfile();
   const [showBoost, setShowBoost] = useState(false);
   const [now, setNow] = useState(() => new Date());
 
@@ -331,6 +334,9 @@ export default function Overview() {
 
       {/* Smart Recommendations */}
       <NextBestAction score={42} footprintProgress={40} distributionLive={18} distributionTotal={60} />
+
+      {/* Live Public Signals (real keyless APIs + AI scoring) */}
+      <LiveSignalsPanel brand={businessName} domain={profile?.websiteUrl} />
 
       {/* Analytics Charts */}
       <div className="space-y-3">

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { AlertTriangle, Search, Clock, Eye, Camera, ExternalLink, Filter, Zap, RefreshCw, RotateCcw, X, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
+import { AlertTriangle, Search, Clock, Eye, Camera, ExternalLink, Filter, Zap, RefreshCw, RotateCcw, X, ChevronDown, Sparkles, GitPullRequest } from "lucide-react";
 import { getEngineLogo } from "@/components/ui/ai-engine-logos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -269,7 +270,33 @@ export default function AIScan() {
         </div>
       )}
 
-      {/* History */}
+      {/* Optimize Code CTA — appears after a scan completes */}
+      {!isScanning && queries.length > 0 && (
+        <div className="card-reach border-primary/40 bg-gradient-to-br from-primary/5 via-card to-card">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                Fix what the scan found
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-primary/15 text-primary">
+                  NEW
+                </span>
+              </h3>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Connect your GitHub repo and we'll auto-open a Pull Request with SEO, GEO, sitemap
+                and performance optimizations tailored to this scan.
+              </p>
+            </div>
+            <Button asChild className="rounded-xl h-10 gap-2 btn-primary-glow w-full md:w-auto text-xs">
+              <Link to="/dashboard/optimize?from=scan">
+                <GitPullRequest className="h-4 w-4" /> Optimize my code
+              </Link>
+            </Button>
+          </div>
+        </div>
+      )}
       <div className="card-reach">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-foreground">Scan History ({filteredQueries.length})</h3>

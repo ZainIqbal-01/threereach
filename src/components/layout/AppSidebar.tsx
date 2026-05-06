@@ -14,6 +14,7 @@ import {
   Zap,
   Sparkles,
   Bot,
+  GitPullRequest,
 } from "lucide-react";
 import { StarAgent } from "@/components/StarAgent";
 import { getAgentForRoute } from "@/components/agents/agentRegistry";
@@ -24,6 +25,7 @@ const navigation = [
   { name: "Agent Command", href: "/dashboard/agents", icon: Bot },
   { name: "AI Brand Intelligence", href: "/dashboard/brand-intelligence", icon: Brain },
   { name: "AI Visibility Scan", href: "/dashboard/scan", icon: Search },
+  { name: "Optimize Code", href: "/dashboard/optimize", icon: GitPullRequest },
   { name: "Build AI Footprint", href: "/dashboard/footprint", icon: Building2 },
   { name: "Distribution", href: "/dashboard/distribution", icon: Share2 },
   { name: "Proof & Tracking", href: "/dashboard/proof", icon: Shield },

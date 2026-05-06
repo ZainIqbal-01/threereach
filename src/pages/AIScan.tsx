@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, Clock, Eye, Camera, ExternalLink, Filter, Zap, RefreshCw, X, ChevronDown } from "lucide-react";
+import { useRef, useState } from "react";
+import { AlertTriangle, Search, Clock, Eye, Camera, ExternalLink, Filter, Zap, RefreshCw, RotateCcw, X, ChevronDown } from "lucide-react";
 import { getEngineLogo } from "@/components/ui/ai-engine-logos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

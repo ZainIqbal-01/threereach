@@ -1,95 +1,110 @@
-# Make the MVP actually work — keyless public APIs + Lovable AI scoring
 
-Today the dashboard renders mock numbers. We'll replace the mocks with real, verifiable signals from public APIs that need **no API key**, and use **Lovable AI** (already configured via `LOVABLE_API_KEY`) to score them. All four user-selected surfaces (Scan, Overview tiles, Brand Intelligence, Proof & Tracking) get live data.
+# Lovable-Style Chat Workspace
 
-## What you'll see after this ships
-- **Overview tiles** show real counts: Wikipedia ✓/✗, Reddit mentions (last 30d), HN threads, GitHub repos, Wayback snapshots.
-- **AI Scan page** lists real cross-source mentions with clickable proof links instead of fake "Best fintech in Pakistan" rows.
-- **Brand Intelligence** 3-phase scan calls real APIs in phase 2 and uses Lovable AI to summarize findings in phase 3.
-- **Proof & Tracking** lists real verifiable URLs with timestamps and source logos.
+Reshape the entire dashboard around a **chat + live workspace** layout, mirroring Lovable's editor: conversation on the left drives every action; a tabbed Preview/Code/Files panel on the right reflects the result. All existing modules remain — they're rendered inside the workspace pane and triggered through chat tools.
 
-## New: one edge function, six sources
+## New App Shell
 
-Single proxy `supabase/functions/public-signals/index.ts` (avoids browser CORS, lets us cache + rate-limit + score in one round-trip):
+Replace `AppLayout` with a 3-pane layout:
 
-| Source | Endpoint (no key) | Used for |
-|---|---|---|
-| Wikipedia | `en.wikipedia.org/api/rest_v1/page/summary/{brand}` | Authority signal |
-| Wayback Machine | `archive.org/wayback/available?url={domain}` | Historical footprint |
-| Reddit | `reddit.com/search.json?q={brand}&sort=new&limit=25` | Real mentions |
-| Hacker News | `hn.algolia.com/api/v1/search?query={brand}` | Tech mentions |
-| GitHub | `api.github.com/search/repositories?q={brand}` | OSS presence |
-| DuckDuckGo IA | `api.duckduckgo.com/?q={brand}&format=json` | Instant-answer snippet |
-
-Request body: `{ brand: string, domain?: string }`. Response shape:
 ```text
-{
-  brand, fetchedAt,
-  sources: {
-    wikipedia: { found, title, extract, url } | null,
-    wayback:   { snapshots, firstSeen, lastSeen } | null,
-    reddit:    { count, items: [{title, subreddit, url, created_utc, score}] },
-    hn:        { count, items: [{title, url, points, created_at}] },
-    github:    { count, items: [{name, stars, url, description}] },
-    ddg:       { abstract, url, related: [...] } | null,
-  },
-  score: { overall, breakdown: { authority, mentions, freshness, ecosystem }, status: "weak"|"mentioned"|"strong" },
-  insights: string[]   // Lovable AI summary bullets
-}
+┌──────────┬──────────────────┬───────────────────────────┐
+│ Sidebar  │   Chat Panel     │   Workspace (tabbed)      │
+│ (chats + │  messages,       │  [Preview] [Code] [Files] │
+│  modules)│  composer,       │                           │
+│          │  tool cards      │  renders active module    │
+└──────────┴──────────────────┴───────────────────────────┘
 ```
 
-The function fans out with `Promise.allSettled` (so one slow source can't block the rest), then sends a compact JSON of the results to Lovable AI Gateway (`google/gemini-3-flash-preview`) with a tool-call schema to compute `score` + `insights`. Per-source failures surface as `null` + an `errors[]` array — the existing partial-results banner on the Scan page already handles that.
+- **Left rail (60px)** — collapsed icon sidebar: Star Agent mascot, "New chat", chat history list, module shortcuts (Scan, Brand Intel, Optimize, Distribution, Agents, Reports, Settings), theme toggle.
+- **Chat panel (~420px, resizable)** — message stream with markdown rendering, tool-call cards (e.g. "Running AI scan…", "Opening PR #123"), composer with slash commands (`/scan`, `/optimize`, `/brand`, `/post`, `/connect github`), file/URL attach.
+- **Workspace pane (flex)** — three tabs:
+  - **Preview** — renders the live module relevant to the conversation (Overview dashboard by default; switches to ScanResults, BrandIntel results, Optimize wizard, Distribution composer, Agent hub, etc.).
+  - **Code** — diff viewer for GitHub Optimizer runs (file list + monospace diff + PR link).
+  - **Files** — generated artifacts (llms.txt, sitemap.xml, schema JSON-LD, reports) with download.
 
-## Frontend wiring
+## Chat Engine (Hybrid)
 
-### New hook
-`src/hooks/usePublicSignals.ts` — wraps `supabase.functions.invoke("public-signals", { body })`, caches in `sessionStorage` for 10 min keyed by `brand+domain`, exposes `{ data, loading, error, refetch }`.
+New edge function `chat-orchestrator`:
+- Uses Lovable AI Gateway (`google/gemini-2.5-flash`) with **tool-calling**.
+- Sends full conversation history each turn.
+- Available tools (mapped to existing flows):
+  - `run_ai_scan({engines, query})` → calls `ai-scan`
+  - `analyze_brand({url})` → calls `analyze-brand`
+  - `optimize_repo({repo, scope})` → calls `github-optimize` (mock fallback when no PAT)
+  - `generate_content({platform, topic})` → calls `generate-content`
+  - `fetch_signals()` → calls `public-signals`
+  - `open_module({name})` → switches workspace pane
+  - `update_business_profile(...)`
+- Each tool returns a structured result the UI renders as a rich card (status, metrics, links).
+- Heavy/destructive actions (real GitHub PR, real social posting) stay mocked unless the user has connected creds — keeps the "no keys required" guarantee.
 
-### Surfaces
+## Persistence (Lovable Cloud)
 
-1. **Overview** (`src/pages/Overview.tsx`)
-   - Replace static counts in the four Quick Stats cards with `signals.sources.*.count` / boolean.
-   - Pass real `score.overall` to `<ScoreCard>` instead of `42`.
-   - "Recent Activity" feed gets seeded from `signals.sources.reddit.items` + `hn.items` (newest 4).
+Two new tables with RLS (auth.uid() = user_id):
 
-2. **AI Scan** (`src/pages/AIScan.tsx`)
-   - Replace `initialQueries` mock with rows generated from real `reddit`, `hn`, `wikipedia` items.
-   - "Run New Scan" button calls the new function; the existing loading/error/retry/per-engine-error UX (already built) maps cleanly: each `source` is treated like an "engine".
+- `chat_conversations` — id, user_id, title, last_message_at, pinned, archived.
+- `chat_messages` — id, conversation_id, user_id, role (`user`|`assistant`|`tool`|`system`), content (text), tool_name, tool_input jsonb, tool_output jsonb, status, created_at.
 
-3. **Brand Intelligence** (`src/components/brand-intelligence/AnalyzingPhase.tsx` + `ResultsPhase.tsx`)
-   - Phase 2 calls `public-signals` instead of advancing on a timer.
-   - Phase 3 renders `score.breakdown` in the existing radial chart and `insights[]` in the bullet list.
+Realtime enabled on `chat_messages` so streamed assistant chunks and tool progress appear live.
 
-4. **Proof & Tracking** (`src/pages/ProofTracking.tsx`)
-   - Mentions list reads from `signals.sources.reddit.items` + `hn.items` with their canonical URLs, timestamps, and source logos (we already have Reddit + HN platform logos in `platform-logos.tsx`).
+## Frontend Pieces
 
-## Persistence (optional, low cost)
+New:
+- `src/pages/Workspace.tsx` — the new shell, becomes the main `/dashboard/*` route.
+- `src/components/chat/ChatPanel.tsx` — message list + composer.
+- `src/components/chat/MessageBubble.tsx` — markdown via `react-markdown` + code highlight.
+- `src/components/chat/ToolCallCard.tsx` — status, inputs, results, retry.
+- `src/components/chat/SlashCommandMenu.tsx` — autocomplete (`/scan`, `/optimize`, …).
+- `src/components/chat/ConversationList.tsx` — sidebar history (rename, delete, pin).
+- `src/components/workspace/WorkspaceTabs.tsx` — Preview / Code / Files tabs.
+- `src/components/workspace/CodeDiffViewer.tsx` — file tree + diff.
+- `src/components/workspace/FilesPanel.tsx` — artifact downloads.
+- `src/components/workspace/PreviewRouter.tsx` — maps `activeModule` state → existing pages (Overview, AIScan, BrandIntelligence, Optimize, Distribution, AgentCommandCenter, Reports, Settings, BuildFootprint, ProofTracking, Billing).
+- `src/hooks/useChat.ts` — conversation state, send, tool dispatch, realtime sub.
+- `src/hooks/useWorkspace.ts` — active module + active tab + artifact list.
 
-After a successful scan we insert one row per source into the existing `scan_history` table (`engine` column doubles as source name: `wikipedia`, `reddit`, etc.). No schema change needed. This makes the dashboard reflect history across sessions.
+Edited:
+- `src/App.tsx` — `/dashboard/*` renders `Workspace`; legacy routes still resolvable inside the Preview tab.
+- `src/components/layout/AppSidebar.tsx` — slim into icon rail used by Workspace; Star Agent mascot retained.
+- `src/pages/Optimize.tsx`, `AIScan.tsx`, `BrandIntelligence.tsx`, etc. — wrap with a `embedded` mode prop so they render cleanly inside the Preview tab (no duplicate page chrome).
+- Keep ⌘K palette; add it to chat composer for quick tool insertion.
 
-## Tests
+## Backend Pieces
 
-Extend the existing Vitest suite:
-- `src/hooks/usePublicSignals.test.ts` — caches in sessionStorage, dedupes in-flight calls, surfaces errors.
-- Add to `RunFullScan.e2e.test.tsx`: mock `public-signals` with realistic mixed-source results and assert per-source rows render + AI-generated insights appear.
+- `supabase/functions/chat-orchestrator/index.ts` — JWT-validated, CORS, Zod-validated body, streams assistant text + tool events; calls existing functions via `supabase.functions.invoke`.
+- Migration: tables above + indexes (`conversation_id`, `user_id`), realtime publication, no destructive changes to current schema.
 
-## Out of scope (callable in a follow-up)
-- Auth-gated user-specific scoring (today the function reads `brand`/`domain` from the body and is a public proxy — fine for MVP).
-- Rate limit per IP (Lovable AI's 429/402 are surfaced as toasts).
-- Adding sources that DO need keys (Twitter, LinkedIn).
+## Coverage Map (every existing feature reachable)
 
-## Files touched
+| Module | Trigger | Workspace pane |
+|---|---|---|
+| Overview dashboard | default / `/overview` | Preview |
+| AI Visibility Scan | "Run a scan" / `/scan` | Preview (live results) |
+| Brand Intelligence | "Analyze brand X" | Preview (3-phase animation) |
+| Build Footprint | "Generate footprint" | Files (artifacts) + Preview |
+| GitHub Optimizer | "Optimize my site" / `/optimize` | Code tab (diff + PR) |
+| Distribution | "Post about …" | Preview composer |
+| Agents (7) | "Run agent X" / `@agent` | Preview hub + tool cards |
+| Proof Tracking | "Show proofs" | Preview |
+| Reports | "Generate report" | Files (PDF) |
+| Settings / Billing | sidebar icons | Preview |
+| Onboarding | first-run, in chat | Inline chat wizard |
 
-**New**
-- `supabase/functions/public-signals/index.ts`
-- `src/hooks/usePublicSignals.ts`
-- `src/hooks/usePublicSignals.test.ts`
+## Visual Style
 
-**Edited**
-- `src/pages/Overview.tsx` — real counts + score
-- `src/pages/AIScan.tsx` — real rows from signals
-- `src/pages/ProofTracking.tsx` — real mention list
-- `src/components/brand-intelligence/AnalyzingPhase.tsx` + `ResultsPhase.tsx` — real fetch + AI insights
-- `src/pages/RunFullScan.e2e.test.tsx` — extra mixed-source test
+Stays on the existing design system (navy/electric/cyan, light default, semantic tokens, `card-reach`, glassmorphic surfaces, Star Agent). Chat bubbles use `card-glass` + subtle `gradient-border`; tool cards use `card-premium` with status pills. No new colors — only existing tokens from `index.css`.
 
-No DB migration. No new dependencies. No new secrets (`LOVABLE_API_KEY` already present).
+## Out of Scope
+
+- No real GitHub OAuth flow added (still PAT + demo mock).
+- No real social-network posting (Distribution stays simulated).
+- No removal of existing pages — they're embedded, not deleted, so deep links keep working.
+
+## Rollout
+
+1. DB migration + edge function.
+2. Chat hook + components (no routing change yet).
+3. New `Workspace` shell behind `/dashboard`; legacy pages embedded.
+4. Wire each tool → existing function; verify Scan, Optimize, Brand Intel end-to-end.
+5. Polish: slash menu, artifacts panel, realtime streaming, history rename/delete.

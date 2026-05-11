@@ -1,0 +1,43 @@
+import { create } from "zustand";
+
+export type WorkspaceModule =
+  | "overview" | "scan" | "brand" | "optimize" | "distribution"
+  | "agents" | "footprint" | "proof" | "reports" | "settings" | "billing";
+
+export type WorkspaceTab = "preview" | "code" | "files";
+
+export interface WorkspaceArtifact {
+  id: string;
+  name: string;
+  mime: string;
+  content: string; // text or data URL
+}
+
+export interface WorkspaceDiff {
+  pr_url?: string;
+  pr_number?: number;
+  files: { path: string; patch: string }[];
+  summary?: string;
+}
+
+interface WorkspaceState {
+  module: WorkspaceModule;
+  tab: WorkspaceTab;
+  artifacts: WorkspaceArtifact[];
+  diff: WorkspaceDiff | null;
+  setModule: (m: WorkspaceModule) => void;
+  setTab: (t: WorkspaceTab) => void;
+  addArtifact: (a: WorkspaceArtifact) => void;
+  setDiff: (d: WorkspaceDiff | null) => void;
+}
+
+export const useWorkspace = create<WorkspaceState>((set) => ({
+  module: "overview",
+  tab: "preview",
+  artifacts: [],
+  diff: null,
+  setModule: (module) => set({ module }),
+  setTab: (tab) => set({ tab }),
+  addArtifact: (a) => set((s) => ({ artifacts: [a, ...s.artifacts.filter(x => x.id !== a.id)] })),
+  setDiff: (diff) => set({ diff }),
+}));

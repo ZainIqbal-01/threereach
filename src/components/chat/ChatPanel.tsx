@@ -8,9 +8,11 @@ import { useBusinessName } from "@/hooks/useBusinessName";
 
 const SUGGESTIONS = [
   { label: "Run an AI visibility scan", prompt: "Run an AI visibility scan across ChatGPT, Gemini and Perplexity for my brand." },
+  { label: "Plan a Q1 campaign", prompt: "Plan a Q1 lead-gen campaign across Google Ads, LinkedIn and email with a 20k budget." },
+  { label: "Find keywords + cluster", prompt: "Research keywords for my industry and cluster them by topic and intent." },
+  { label: "Draft a content calendar", prompt: "Draft a 4-week multi-channel content calendar for blog, LinkedIn and email." },
   { label: "Optimize my site", prompt: "Optimize my website with SEO + GEO + sitemap + performance and open a pull request." },
-  { label: "Analyze a competitor", prompt: "Analyze the brand presence of stripe.com in AI answer engines." },
-  { label: "Draft a LinkedIn post", prompt: "Generate a LinkedIn post about why AEO matters in 2026." },
+  { label: "Set up email automation", prompt: "Set up a 5-step welcome email automation for new sign-ups." },
 ];
 
 export function ChatPanel() {

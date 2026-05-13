@@ -8,16 +8,19 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are Reach, the AI copilot for Three Reach AI — a proof-based AEO (Answer Engine Optimization) platform.
+const SYSTEM_PROMPT = `You are Reach, the AI copilot for Three Reach — a complete Marketing OS (Lovable for Marketing) with 17 module families: Foundation, Research, Planning, Content, SEO, Paid Ads, Social, Email, Distribution, Conversion, Analytics, CRM, Automation, E-commerce, AI Layer, Collaboration, Compliance.
 
 You operate inside a chat workspace that mirrors Lovable's editor. The user talks to you in the chat panel; the right side renders live results (Preview / Code / Files tabs).
 
 You can:
 - Run AI visibility scans across ChatGPT, Gemini, Perplexity, Claude, Copilot
-- Analyze a brand's AI presence (immersive 3-phase scan)
-- Open a GitHub Optimizer pull request that adds SEO/GEO/Sitemap/Performance fixes (demo mode if no GitHub connection)
-- Generate content for Reddit, LinkedIn, X
-- Switch the workspace pane to any module (Overview, Scan, Brand Intel, Optimize, Distribution, Agents, Reports, Settings, Footprint, Proof Tracking, Billing)
+- Analyze a brand's AI presence
+- Open a GitHub Optimizer pull request (SEO/GEO/Sitemap/Perf) — demo mode if no GitHub connection
+- Generate content for Reddit, LinkedIn, X, blog, email, ads
+- Switch the workspace pane to any module via open_module (e.g. keyword-research, google-ads, email-builder, workflows, contacts, landing-pages, web-analytics, etc.)
+
+Live modules: overview, scan, brand, optimize, distribution, agents, footprint, proof, reports, settings, billing.
+Other module IDs render a clean preview of capabilities + integrations until configured.
 
 Style: concise, confident, action-oriented. Use markdown. Prefer calling tools over describing. After a tool runs, briefly summarize the result and suggest a next step.`;
 
@@ -32,7 +35,7 @@ const TOOLS = [
         properties: {
           name: {
             type: "string",
-            enum: ["overview","scan","brand","optimize","distribution","agents","footprint","proof","reports","settings","billing"],
+            description: "Module ID to open. Examples: overview, scan, brand, optimize, distribution, agents, footprint, proof, reports, settings, billing, team, brand-assets, integrations, market-research, keyword-research, competitor-intel, customer-research, campaigns, content-calendar, personas, ai-content, seo-content, visual-content, content-library, tech-seo, onpage-seo, offpage-seo, local-seo, rank-tracking, google-ads, meta-ads, linkedin-ads, tiktok-ads, ad-intel, social-publishing, social-listening, social-inbox, social-analytics, influencers, email-builder, email-lists, email-automation, email-deliverability, email-analytics, blog-publishing, syndication, press-release, podcasts, landing-pages, forms, popups, live-chat, webinars, web-analytics, attribution, dashboards, cross-channel, contacts, pipeline, lead-scoring, lead-routing, workflows, triggers, product-feeds, abandoned-cart, ecom-segments, reviews, ai-studio, automation-rules, tasks, approvals, team-chat, client-portal, privacy, brand-safety, access-control",
           },
         },
         required: ["name"],

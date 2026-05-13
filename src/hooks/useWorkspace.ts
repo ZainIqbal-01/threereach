@@ -1,16 +1,16 @@
 import { create } from "zustand";
 
-export type WorkspaceModule =
-  | "overview" | "scan" | "brand" | "optimize" | "distribution"
-  | "agents" | "footprint" | "proof" | "reports" | "settings" | "billing";
-
+// Open string so any Marketing OS module ID is allowed.
+// Live modules: overview, scan, brand, optimize, distribution, agents, footprint, proof, reports, settings, billing.
+// All other IDs are rendered by the generic ModulePage from the registry.
+export type WorkspaceModule = string;
 export type WorkspaceTab = "preview" | "code" | "files";
 
 export interface WorkspaceArtifact {
   id: string;
   name: string;
   mime: string;
-  content: string; // text or data URL
+  content: string;
 }
 
 export interface WorkspaceDiff {
@@ -38,6 +38,6 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
   diff: null,
   setModule: (module) => set({ module }),
   setTab: (tab) => set({ tab }),
-  addArtifact: (a) => set((s) => ({ artifacts: [a, ...s.artifacts.filter(x => x.id !== a.id)] })),
+  addArtifact: (a) => set((s) => ({ artifacts: [a, ...s.artifacts.filter((x) => x.id !== a.id)] })),
   setDiff: (diff) => set({ diff }),
 }));
